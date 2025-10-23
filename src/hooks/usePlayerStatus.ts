@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
 import { SplBalance } from '@/types/spl/balances';
 import { SplFrontierDrawStatus, SplRankedDrawStatus } from '@/types/spl/draws';
 import { SplLeaderboardPlayer } from '@/types/spl/leaderboard';
+import { useCallback, useState } from 'react';
 
 export interface PlayerStatusData {
   username: string;
@@ -11,8 +11,8 @@ export interface PlayerStatusData {
     ranked: SplRankedDrawStatus;
   };
   leaderboards?: {
-    wild: SplLeaderboardPlayer | null;
     foundation: SplLeaderboardPlayer | null;
+    wild: SplLeaderboardPlayer | null;
     modern: SplLeaderboardPlayer | null;
   };
   error?: string;

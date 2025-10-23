@@ -4,8 +4,8 @@ import { SplLeaderboardPlayer } from '@/types/spl/leaderboard';
 
 interface Props {
   leaderboards: {
-    wild: SplLeaderboardPlayer | null;
     foundation: SplLeaderboardPlayer | null;
+    wild: SplLeaderboardPlayer | null;
     modern: SplLeaderboardPlayer | null;
   };
 }
@@ -17,11 +17,12 @@ export default function Leaderboard({ leaderboards }: Props) {
         Leaderboard Rankings #{leaderboards.wild?.season}
       </Typography>
       <Box
-        sx={{ display: 'flex', flexDirection: 'row', gap: 2, width: '100%' }}
+        sx={{ display: 'flex', flexDirection: 'row', gap: 1, width: '100%' }}
       >
-        {Object.entries(leaderboards).map(([format, leaderboard]) => (
-          <Box key={format || format} sx={{ flex: 1 }}>
-            <Card variant="outlined" sx={{ p: 1 }}>
+        {(['foundation', 'modern', 'wild'] as const).map(format => {
+          const leaderboard = leaderboards[format];
+          return (
+            <Card key={format} variant="outlined" sx={{ flex: 1, p: 1 }}>
               <Typography
                 variant="subtitle2"
                 sx={{ textTransform: 'capitalize' }}
@@ -56,8 +57,8 @@ export default function Leaderboard({ leaderboards }: Props) {
                 </Typography>
               )}
             </Card>
-          </Box>
-        ))}
+          );
+        })}
       </Box>
     </Box>
   );

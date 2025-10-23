@@ -61,7 +61,7 @@ export const PlayerCard = ({ player, balances }: Props) => {
               />
             )}
           </Box>
-          <Box>
+          <Box width={'100%'}>
             {/* Leaderboards Section */}
             {player.leaderboards && (
               <Leaderboard leaderboards={player.leaderboards} />
