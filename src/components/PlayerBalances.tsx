@@ -1,22 +1,6 @@
-import {
-  credits_icon_url,
-  dec_icon_url,
-  energy_icon_url,
-  glint_icon_url,
-  gold_icon_url,
-  gp_icon_url,
-  legendary_icon_url,
-  license_icon_url,
-  merits_icon_url,
-  sps_icon_url,
-  unbind_ca_c_icon_url,
-  unbind_ca_e_icon_url,
-  unbind_ca_l_icon_url,
-  unbind_ca_r_icon_url,
-  voucher_icon_url,
-} from '@/lib/statics_icon_urls';
 import { SplBalance } from '@/types/spl/balances';
 import { Box } from '@mui/material';
+import Glint from './Glint';
 import Guild from './Guild';
 import Potions from './Potions';
 import Scrolls from './Scrolls';
@@ -27,48 +11,18 @@ interface Props {
 }
 
 export default function PlayerBalances({ balances }: Props) {
-  // Token to icon URL mapping
-  const tokenMap: Record<string, { label: string; icon: string }> = {
-    DEC: { label: 'Dark Energy Crystals', icon: dec_icon_url },
-    'DEC-B': { label: 'DEC (Bound)', icon: dec_icon_url },
-    CREDITS: { label: 'Credits', icon: credits_icon_url },
-    GP: { label: 'Guild Power', icon: gp_icon_url },
-    GOLD: { label: 'Gold Potions', icon: gold_icon_url },
-    LEGENDARY: { label: 'Legendary Potion', icon: legendary_icon_url },
-    MERITS: { label: 'Merits', icon: merits_icon_url },
-    VOUCHER: { label: 'Voucher', icon: voucher_icon_url },
-    GLINT: { label: 'Glint', icon: glint_icon_url },
-    UNBIND_CA_C: { label: 'Common Unbind Scroll', icon: unbind_ca_c_icon_url },
-    UNBIND_CA_R: { label: 'Rare Unbind Scroll', icon: unbind_ca_r_icon_url },
-    UNBIND_CA_E: { label: 'Epic Unbind Scroll', icon: unbind_ca_e_icon_url },
-    UNBIND_CA_L: {
-      label: 'Legendary Unbind Scroll',
-      icon: unbind_ca_l_icon_url,
-    },
-    ACTIVATED_LICENSE: { label: 'Activated License', icon: license_icon_url },
-    LICENSE: { label: 'License', icon: license_icon_url },
-    RUNNING_LICENSE: { label: 'Running License', icon: license_icon_url },
-    SPS: { label: 'SPS liquid', icon: sps_icon_url },
-    SPSP: { label: 'SPS Staked', icon: sps_icon_url },
-    'SPSP-IN': { label: 'SPS Delegated (In)', icon: sps_icon_url },
-    'SPSP-OUT': { label: 'SPS Delegated (Out)', icon: sps_icon_url },
-    ECR: { label: 'Energy Capture Rate', icon: energy_icon_url },
-    FECR: { label: 'Focus Energy Capture Rate', icon: energy_icon_url },
-  };
-
-  // Filter balances to only show tokens that exist in tokenMap
-  const filteredBalances = balances.filter(balance => tokenMap[balance.token]);
   return (
     <Box
       sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 1 }}
     >
-      <TopBalances balances={filteredBalances} />
+      <TopBalances balances={balances} />
 
       <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
-        <Potions balances={filteredBalances} />
-        <Scrolls balances={filteredBalances} />
-        <Guild balances={filteredBalances} />
+        <Potions balances={balances} />
+        <Scrolls balances={balances} />
+        <Guild balances={balances} />
       </Box>
+      <Glint balances={balances} />
     </Box>
   );
 }

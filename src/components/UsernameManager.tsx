@@ -70,6 +70,22 @@ export default function UsernameManager({
     }
   }, [isInitialized, usernames, onUsernamesChange]);
 
+  // Prevent hydration mismatch by not rendering localStorage-dependent content until initialized
+  if (!isInitialized) {
+    return (
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Manage Players
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="body2">Loading...</Typography>
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Save usernames to localStorage whenever they change
   const saveUsernames = (newUsernames: string[]) => {
     setUsernames(newUsernames);

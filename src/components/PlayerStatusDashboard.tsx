@@ -43,13 +43,10 @@ export default function PlayerStatusDashboard() {
         <Box>
           <Typography variant="h6" gutterBottom>
             Player Data (Last updated:{' '}
-            {new Date(data.timestamp).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
+            {new Date(data.timestamp)
+              .toISOString()
+              .replace('T', ' ')
+              .slice(0, 19)}
             )
           </Typography>
 

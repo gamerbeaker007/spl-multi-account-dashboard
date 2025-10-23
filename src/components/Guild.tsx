@@ -1,32 +1,13 @@
 import { gp_icon_url, merits_icon_url } from '@/lib/statics_icon_urls';
 import { largeNumberFormat } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
-import { Avatar, Box, Stack, Typography } from '@mui/material';
+import { Avatar, Box, Stack, Tooltip, Typography } from '@mui/material';
+import { BalanceItem } from './BalanceItem';
 
 interface Props {
   balances: SplBalance[];
 }
 
-const iconSize = 20;
-
-const MyGuild = ({
-  iconUrl,
-  title,
-  value,
-}: {
-  iconUrl: string;
-  title: string;
-  value: string;
-}) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <Avatar src={iconUrl} sx={{ width: iconSize, height: iconSize }}>
-      {title.slice(0, 2)}
-    </Avatar>
-    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-      {value}
-    </Typography>
-  </Box>
-);
 
 export default function Guild({ balances }: Props) {
   // Extract balance values
@@ -39,12 +20,12 @@ export default function Guild({ balances }: Props) {
         <Typography variant="h6" sx={{ width: '100%' }}>
           Guild
         </Typography>
-        <MyGuild
+        <BalanceItem
           iconUrl={merits_icon_url}
           title="Merits"
           value={largeNumberFormat(merits)}
         />
-        <MyGuild
+        <BalanceItem
           iconUrl={gp_icon_url}
           title="Guild Power"
           value={largeNumberFormat(gp)}

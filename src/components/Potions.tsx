@@ -5,32 +5,12 @@ import {
 } from '@/lib/statics_icon_urls';
 import { largeNumberFormat } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
-import { Avatar, Box, Stack, Typography } from '@mui/material';
+import { Avatar, Box, Stack, Tooltip, Typography } from '@mui/material';
+import { BalanceItem } from './BalanceItem';
 
 interface Props {
   balances: SplBalance[];
 }
-
-const iconSize = 20;
-
-const MyPotion = ({
-  iconUrl,
-  title,
-  value,
-}: {
-  iconUrl: string;
-  title: string;
-  value: string;
-}) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <Avatar src={iconUrl} sx={{ width: iconSize, height: iconSize }}>
-      {title.slice(0, 2)}
-    </Avatar>
-    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-      {value}
-    </Typography>
-  </Box>
-);
 
 export default function Potions({ balances }: Props) {
   // Extract balance values
@@ -44,17 +24,17 @@ export default function Potions({ balances }: Props) {
         <Typography variant="h6" sx={{ width: '100%' }}>
           Potions
         </Typography>
-        <MyPotion
+        <BalanceItem
           iconUrl={gold_icon_url}
           title="Gold"
           value={largeNumberFormat(gold)}
         />
-        <MyPotion
+        <BalanceItem
           iconUrl={legendary_icon_url}
           title="Legendary"
           value={largeNumberFormat(legendary)}
         />
-        <MyPotion
+        <BalanceItem
           iconUrl={midnight_icon_url}
           title="Midnight Potion"
           value={largeNumberFormat(midnight)}

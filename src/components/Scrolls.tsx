@@ -6,32 +6,12 @@ import {
 } from '@/lib/statics_icon_urls';
 import { largeNumberFormat } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
-import { Avatar, Box, Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
+import { BalanceItem } from './BalanceItem';
 
 interface Props {
   balances: SplBalance[];
 }
-
-const iconSize = 20;
-
-const MyScrolls = ({
-  iconUrl,
-  title,
-  value,
-}: {
-  iconUrl: string;
-  title: string;
-  value: string;
-}) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <Avatar src={iconUrl} sx={{ width: iconSize, height: iconSize }}>
-      {title.slice(0, 2)}
-    </Avatar>
-    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-      {value}
-    </Typography>
-  </Box>
-);
 
 export default function Scrolls({ balances }: Props) {
   // Extract balance values
@@ -50,22 +30,22 @@ export default function Scrolls({ balances }: Props) {
         <Typography variant="h6" sx={{ width: '100%' }}>
           Scrolls
         </Typography>
-        <MyScrolls
+        <BalanceItem
           iconUrl={unbind_ca_c_icon_url}
           title="Common Unbind Scroll"
           value={largeNumberFormat(common_unbind)}
         />
-        <MyScrolls
+        <BalanceItem
           iconUrl={unbind_ca_r_icon_url}
           title="Rare Unbind Scroll"
           value={largeNumberFormat(rare_unbind)}
         />
-        <MyScrolls
+        <BalanceItem
           iconUrl={unbind_ca_e_icon_url}
           title="Epic Unbind Scroll"
           value={largeNumberFormat(epic_unbind)}
         />
-        <MyScrolls
+        <BalanceItem
           iconUrl={unbind_ca_l_icon_url}
           title="Legendary Unbind Scroll"
           value={largeNumberFormat(legendary_unbind)}
