@@ -1,13 +1,12 @@
 import { gp_icon_url, merits_icon_url } from '@/lib/statics_icon_urls';
 import { largeNumberFormat } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
-import { Avatar, Box, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { BalanceItem } from './BalanceItem';
 
 interface Props {
   balances: SplBalance[];
 }
-
 
 export default function Guild({ balances }: Props) {
   // Extract balance values

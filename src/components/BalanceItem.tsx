@@ -1,4 +1,4 @@
-import { Tooltip, Box, Avatar, Typography } from "@mui/material";
+import { Tooltip, Box, Avatar, Typography } from '@mui/material';
 const iconSize = 20;
 
 export const BalanceItem = ({
