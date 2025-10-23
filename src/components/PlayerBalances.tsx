@@ -16,24 +16,17 @@ import {
   voucher_icon_url,
 } from '@/lib/statics_icon_urls';
 import { SplBalance } from '@/types/spl/balances';
-import { Avatar, Box, Tooltip, Typography } from '@mui/material';
+import { Box } from '@mui/material';
+import Guild from './Guild';
+import Potions from './Potions';
+import Scrolls from './Scrolls';
+import TopBalances from './TopBalances';
 
 interface Props {
   balances: SplBalance[];
 }
 
 export default function PlayerBalances({ balances }: Props) {
-  console.log(balances);
-
-  const formatBalance = (balance: string | number) => {
-    const numValue =
-      typeof balance === 'string' ? parseFloat(balance) : balance;
-    return numValue.toLocaleString('en-US', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 4,
-    });
-  };
-
   // Token to icon URL mapping
   const tokenMap: Record<string, { label: string; icon: string }> = {
     DEC: { label: 'Dark Energy Crystals', icon: dec_icon_url },
@@ -65,45 +58,17 @@ export default function PlayerBalances({ balances }: Props) {
 
   // Filter balances to only show tokens that exist in tokenMap
   const filteredBalances = balances.filter(balance => tokenMap[balance.token]);
-
   return (
     <Box
       sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 1 }}
     >
-      {filteredBalances.map((balance, idx) => {
-        const tokenInfo = tokenMap[balance.token];
+      <TopBalances balances={filteredBalances} />
 
-        return (
-          <Tooltip key={idx} title={tokenInfo.label} arrow placement="top">
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                p: 0.5,
-                borderRadius: 1,
-                '&:hover': {
-                  bgcolor: 'action.hover',
-                },
-              }}
-            >
-              <Avatar
-                src={tokenInfo.icon}
-                alt={balance.token}
-                sx={{
-                  width: 24,
-                  height: 24,
-                }}
-              >
-                {balance.token.slice(0, 2)}
-              </Avatar>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {formatBalance(balance.balance)}
-              </Typography>
-            </Box>
-          </Tooltip>
-        );
-      })}
+      <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
+        <Potions balances={filteredBalances} />
+        <Scrolls balances={filteredBalances} />
+        <Guild balances={filteredBalances} />
+      </Box>
     </Box>
   );
 }

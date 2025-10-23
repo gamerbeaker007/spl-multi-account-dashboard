@@ -1,10 +1,7 @@
-import { PlayerStatusData, usePlayerStatus } from '@/hooks/usePlayerStatus';
-import { Person as PersonIcon } from '@mui/icons-material';
-import { Alert, Box, Card, CardContent, Chip, Typography } from '@mui/material';
+import { usePlayerStatus } from '@/hooks/usePlayerStatus';
+import { Alert, Box, Container, Typography } from '@mui/material';
 import { useState } from 'react';
-import Leaderboard from './Leaderboard';
-import PlayerBalances from './PlayerBalances';
-import PlayerDraws from './PlayerDraws';
+import { PlayerCard } from './PlayerCard';
 import UsernameManager from './UsernameManager';
 
 export default function PlayerStatusDashboard() {
@@ -21,50 +18,8 @@ export default function PlayerStatusDashboard() {
     }
   };
 
-  const PlayerCard = ({ player }: { player: PlayerStatusData }) => (
-    <Card sx={{ mb: 2 }}>
-      <CardContent>
-        <Typography
-          variant="h6"
-          gutterBottom
-          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-        >
-          <PersonIcon />
-          {player.username}
-          {player.error && <Chip label="Error" color="error" size="small" />}
-        </Typography>
-
-        {player.error ? (
-          <Alert severity="error">{player.error}</Alert>
-        ) : (
-          <Box>
-            {/* Balances Section */}
-            {player.balances &&
-              Array.isArray(player.balances) &&
-              player.balances.length > 0 && (
-                <PlayerBalances balances={player.balances} />
-              )}
-
-            {/* Draws Section */}
-            {player.draws && (
-              <PlayerDraws
-                frontier={player.draws.frontier}
-                ranked={player.draws.ranked}
-              />
-            )}
-
-            {/* Leaderboards Section */}
-            {player.leaderboards && (
-              <Leaderboard leaderboards={player.leaderboards} />
-            )}
-          </Box>
-        )}
-      </CardContent>
-    </Card>
-  );
-
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
+    <Container maxWidth="xl" sx={{ px: { xs: 2, md: 6, lg: 12 } }}>
       <Typography variant="h4" gutterBottom>
         Splinterlands Multi-Account Dashboard
       </Typography>
@@ -98,11 +53,17 @@ export default function PlayerStatusDashboard() {
             )
           </Typography>
 
-          {data.players &&
-            Array.isArray(data.players) &&
-            data.players.map(player => (
-              <PlayerCard key={player.username} player={player} />
-            ))}
+          <Box display="flex" flexDirection="row" flexWrap="wrap" gap={2}>
+            {data.players &&
+              Array.isArray(data.players) &&
+              data.players.map(player => (
+                <PlayerCard
+                  key={player.username}
+                  player={player}
+                  balances={player.balances}
+                />
+              ))}
+          </Box>
         </Box>
       )}
 
@@ -113,6 +74,6 @@ export default function PlayerStatusDashboard() {
           started!
         </Alert>
       )}
-    </Box>
+    </Container>
   );
 }

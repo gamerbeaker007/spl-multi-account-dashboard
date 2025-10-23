@@ -5,6 +5,7 @@ export const credits_icon_url = `${WEB_URL}website/nav/img_credits.png`;
 export const gp_icon_url = `${WEB_URL}website/icons/icon_gp_100.png`;
 export const gold_icon_url = `${WEB_URL}website/ui_elements/shop/potions/potion_6.png`;
 export const legendary_icon_url = `${WEB_URL}website/ui_elements/shop/potions/potion_3.png`;
+export const midnight_icon_url = `${WEB_URL}website/icons/img_midnight-potion_400.png`;
 export const merits_icon_url = `${WEB_URL}website/icons/img_merit_256.png`;
 export const voucher_icon_url = `${WEB_URL}website/icons/img_voucher_chaos-legion_200.png`;
 export const glint_icon_url = `${WEB_URL}website/icons/icon_resource_glint.png`;
