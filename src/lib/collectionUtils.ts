@@ -210,7 +210,12 @@ function getListPrice(
 ): number | null {
   const priceData = findCard(collectionCard, listPrices);
   if (priceData.length > 0) {
-    return (priceData[0] as SplCardListingPriceEntry).low_price_bcx;
+    const sorted = priceData.sort(
+      (a, b) =>
+        (a as SplCardListingPriceEntry).low_price_bcx -
+        (b as SplCardListingPriceEntry).low_price_bcx
+    );
+    return (sorted[0] as SplCardListingPriceEntry).low_price_bcx;
   }
   return null;
 }
@@ -229,7 +234,12 @@ function getMarketPrice(
 ): number | null {
   const priceData = findCard(collectionCard, marketPrices);
   if (priceData.length > 0) {
-    const marketPrice = (priceData[0] as PeakmonstersMarketPriceEntry)
+    const sorted = priceData.sort(
+      (a, b) =>
+        (a as PeakmonstersMarketPriceEntry).last_bcx_price -
+        (b as PeakmonstersMarketPriceEntry).last_bcx_price
+    );
+    const marketPrice = (sorted[0] as PeakmonstersMarketPriceEntry)
       .last_bcx_price;
     if (listPrice) {
       return Math.min(marketPrice, listPrice);
