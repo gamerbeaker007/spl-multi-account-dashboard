@@ -3,10 +3,14 @@ import { Alert, Box, Container, Typography } from '@mui/material';
 import { useState } from 'react';
 import { PlayerCard } from './PlayerCard';
 import UsernameManager from './UsernameManager';
+import { usePlayerCardCollection } from '@/hooks/usePlayerCardCollection';
 
 export default function PlayerStatusDashboard() {
   const [currentUsernames, setCurrentUsernames] = useState<string[]>([]);
   const { data, loading, error, fetchPlayerStatus } = usePlayerStatus();
+  const { data: cardData, loading: cardDataLoading, error: cardDataError, fetchPlayerCardCollection } =
+      usePlayerCardCollection();
+
 
   const handleUsernamesChange = (usernames: string[]) => {
     setCurrentUsernames(usernames);
@@ -15,6 +19,7 @@ export default function PlayerStatusDashboard() {
   const handleFetchData = () => {
     if (currentUsernames.length > 0) {
       fetchPlayerStatus(currentUsernames);
+      fetchPlayerCardCollection(currentUsernames);
     }
   };
 
@@ -57,7 +62,9 @@ export default function PlayerStatusDashboard() {
                 <PlayerCard
                   key={player.username}
                   player={player}
-                  balances={player.balances}
+                  cardData={cardData?.players?.find(p => p.username === player.username)}
+                  cardDataLoading={cardDataLoading}
+                  cardDataError={cardDataError ?? undefined}
                 />
               ))}
           </Box>

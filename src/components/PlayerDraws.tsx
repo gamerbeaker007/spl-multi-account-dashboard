@@ -1,11 +1,12 @@
+import { calculateEnergy } from '@/lib/utils';
+import { SplBalance } from '@/types/spl/balances';
 import { SplFrontierDrawStatus, SplRankedDrawStatus } from '@/types/spl/draws';
 import { Box, Card, Typography } from '@mui/material';
 
 interface Props {
+  balances: SplBalance[];
   frontier: SplFrontierDrawStatus | null;
-  energyFrontier: number;
   ranked: SplRankedDrawStatus | null;
-  energyRanked: number;
 }
 
 const MyProgressBar = ({ value, max }: { value: number; max: number }) => {
@@ -39,24 +40,54 @@ const MyProgressBar = ({ value, max }: { value: number; max: number }) => {
   );
 };
 
-export default function PlayerDraws({
-  frontier,
-  energyFrontier,
-  ranked,
-  energyRanked,
-}: Props) {
+export default function PlayerDraws({ balances, frontier, ranked }: Props) {
+  // Calculate ranked energy from ECR balance
+  const rankedEcr = balances.find(bal => bal.token === 'ECR');
+  const rankedEnergy = rankedEcr
+    ? calculateEnergy(rankedEcr.balance, rankedEcr.last_reward_time)
+    : 0;
+
+  // Calculate frontier energy from FECR balance
+  const frontierEcr = balances.find(bal => bal.token === 'FECR');
+  const frontierEnergy = frontierEcr
+    ? calculateEnergy(
+        frontierEcr.balance,
+        String(frontierEcr.last_reward_block) // API returns timestamp in block field
+      )
+    : 0;
+
   return (
     <Box mb={2} width={'100%'}>
       <Typography variant="h6">Modes</Typography>
       <Box
         sx={{ display: 'flex', flexDirection: 'row', gap: 2, width: '100%' }}
       >
+        {frontier && (
+          <Card variant="outlined" sx={{ flex: 1, p: 1 }}>
+            <Typography variant="subtitle2" color="primary">
+              Frontier
+            </Typography>
+            <MyProgressBar value={frontierEnergy ?? 0} max={50} />
+            <Typography variant="subtitle2" color="secondary">
+              Frontier Draw #{frontier.current_frontier_draw.id}
+            </Typography>
+            <Typography variant="body2">
+              Entries: {frontier.current_frontier_draw.player_entries} /{' '}
+              {frontier.current_frontier_draw.total_entries}
+            </Typography>
+            {frontier.first_unclaimed_frontier_draw && (
+              <Typography variant="body2" color="warning.main">
+                Unclaimed Draw: #{frontier.first_unclaimed_frontier_draw.id}
+              </Typography>
+            )}
+          </Card>
+        )}
         {ranked && (
           <Card variant="outlined" sx={{ flex: 1, p: 1 }}>
             <Typography variant="subtitle2" color="primary">
               Ranked
             </Typography>
-            <MyProgressBar value={energyRanked} max={50} />
+            <MyProgressBar value={rankedEnergy ?? 0} max={50} />
             <Typography variant="subtitle2" color="primary">
               Ranked Draw #{ranked.current_ranked_draw.id}
             </Typography>
@@ -71,27 +102,6 @@ export default function PlayerDraws({
             {ranked.first_unclaimed_ranked_draw && (
               <Typography variant="body2" color="warning.main">
                 Unclaimed Draw: #{ranked.first_unclaimed_ranked_draw.id}
-              </Typography>
-            )}
-          </Card>
-        )}
-
-        {frontier && (
-          <Card variant="outlined" sx={{ flex: 1, p: 1 }}>
-            <Typography variant="subtitle2" color="primary">
-              Frontier
-            </Typography>
-            <MyProgressBar value={energyFrontier} max={50} />
-            <Typography variant="subtitle2" color="secondary">
-              Frontier Draw #{frontier.current_frontier_draw.id}
-            </Typography>
-            <Typography variant="body2">
-              Entries: {frontier.current_frontier_draw.player_entries} /{' '}
-              {frontier.current_frontier_draw.total_entries}
-            </Typography>
-            {frontier.first_unclaimed_frontier_draw && (
-              <Typography variant="body2" color="warning.main">
-                Unclaimed Draw: #{frontier.first_unclaimed_frontier_draw.id}
               </Typography>
             )}
           </Card>

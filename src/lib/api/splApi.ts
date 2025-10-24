@@ -1,10 +1,12 @@
-import axios from 'axios';
-import * as rax from 'retry-axios';
-import logger from '../log/logger.server';
 import { SplBalance } from '@/types/spl/balances';
+import { SplCardCollection } from '@/types/spl/card';
 import { SplFrontierDrawStatus, SplRankedDrawStatus } from '@/types/spl/draws';
 import { SplFormat } from '@/types/spl/format';
 import { SplLeaderboardResponse } from '@/types/spl/leaderboard';
+import { SplCardListingPriceEntry } from '@/types/spl/market';
+import axios from 'axios';
+import * as rax from 'retry-axios';
+import logger from '../log/logger.server';
 
 const splBaseClient = axios.create({
   baseURL: 'https://api.splinterlands.com',
@@ -162,6 +164,60 @@ export async function fetchLeaderboardWithPlayer(
   } catch (error) {
     logger.error(
       `Failed to fetch frontier draws: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+//   'https://api.splinterlands.com/market/for_sale_grouped' \
+export async function fetchListingPrices(): Promise<
+  SplCardListingPriceEntry[]
+> {
+  const url = '/market/for_sale_grouped';
+  logger.info('Fetching market for sale grouped from Splinterlands API');
+
+  try {
+    const res = await splBaseClient.get(url);
+    const data = res.data;
+
+    // Handle API-level error even if HTTP status is 200
+    if (!data) {
+      throw new Error(
+        'Invalid response from Splinterlands API: expected array'
+      );
+    }
+
+    return data as SplCardListingPriceEntry[];
+  } catch (error) {
+    logger.error(
+      `Failed to fetch market for sale grouped: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+//   'https://api.splinterlands.com/cards/collection/beaker007' \
+export async function fetchCardCollection(
+  username: string
+): Promise<SplCardCollection> {
+  const url = '/cards/collection/' + encodeURIComponent(username);
+  logger.info('Fetching card collection from Splinterlands API');
+
+  try {
+    const res = await splBaseClient.get(url);
+    const data = res.data;
+
+    // Handle API-level error even if HTTP status is 200
+    if (!data) {
+      throw new Error(
+        'Invalid response from Splinterlands API: expected array'
+      );
+    }
+
+    return data as SplCardCollection;
+  } catch (error) {
+    logger.error(
+      `Failed to fetch card collection: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
     throw error;
   }

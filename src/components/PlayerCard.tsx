@@ -1,3 +1,4 @@
+import { PlayerCardCollectionData } from '@/hooks/usePlayerCardCollection';
 import { PlayerStatusData } from '@/hooks/usePlayerStatus';
 import { SplBalance } from '@/types/spl/balances';
 import PersonIcon from '@mui/icons-material/Person';
@@ -9,13 +10,17 @@ import PlayerDraws from './PlayerDraws';
 interface Props {
   player: PlayerStatusData;
   balances?: SplBalance[];
+  cardData?: PlayerCardCollectionData;
+  cardDataLoading?: boolean;
+  cardDataError?: string;
 }
 
-export const PlayerCard = ({ player, balances }: Props) => {
-  const frontierEnergy = balances?.find(b => b.token === 'FECR')?.balance || 0;
-  const rankedEnergy = balances?.find(b => b.token === 'ECR')?.balance || 0;
-  console.log('Frontier Energy:', frontierEnergy);
-  console.log('Ranked Energy:', rankedEnergy);
+export const PlayerCard = ({
+  player,
+  cardData,
+  cardDataLoading,
+  cardDataError,
+}: Props) => {
   return (
     <Box
       border="1px solid"
@@ -47,17 +52,21 @@ export const PlayerCard = ({ player, balances }: Props) => {
           <Box>
             {/* Balances Section */}
             {player.balances && player.balances.length > 0 && (
-              <PlayerBalances balances={player.balances} />
+              <PlayerBalances
+                balances={player.balances}
+                cardData={cardData}
+                cardDataLoading={cardDataLoading}
+                cardDataError={cardDataError}
+              />
             )}
           </Box>
           <Box width={'100%'}>
             {/* Draws Section */}
-            {player.draws && (
+            {player.draws && player.balances && (
               <PlayerDraws
+                balances={player.balances}
                 frontier={player.draws.frontier}
-                energyFrontier={frontierEnergy}
                 ranked={player.draws.ranked}
-                energyRanked={rankedEnergy}
               />
             )}
           </Box>
