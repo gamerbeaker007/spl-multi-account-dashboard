@@ -18,39 +18,69 @@ const getAllowedOrigins = (): string[] => {
   if (!origins) {
     throw new Error('ALLOWED_ORIGINS environment variable must be set');
   }
-  return origins.split(',').map(origin => origin.trim());
+  return origins
+    .split(',')
+    .map(origin => origin.trim())
+    .map(origin => (origin.endsWith('/') ? origin.slice(0, -1) : origin)); // Remove trailing slashes
 };
 
 // Validate origin
 export const isValidOrigin = (request: NextRequest): boolean => {
-  const origin = request.headers.get('origin');
-  const referer = request.headers.get('referer');
-  const allowedOrigins = getAllowedOrigins();
+  try {
+    const origin = request.headers.get('origin');
+    const referer = request.headers.get('referer');
+    const host = request.headers.get('host');
+    const allowedOrigins = getAllowedOrigins();
 
-  // For same-origin requests, origin might be null
-  if (!origin && !referer) {
-    return true;
-  }
+    // Log for debugging on Vercel
+    console.log('CSRF Origin Check:', {
+      origin,
+      referer,
+      host,
+      allowedOrigins,
+      method: request.method,
+    });
 
-  // Check origin header
-  if (origin && allowedOrigins.includes(origin)) {
-    return true;
-  }
-
-  // Check referer header as fallback
-  if (referer) {
-    try {
-      const refererOrigin = new URL(referer).origin;
-      if (allowedOrigins.includes(refererOrigin)) {
-        return true;
+    // For same-origin requests, origin might be null
+    if (!origin && !referer) {
+      // Allow if host matches any allowed origin
+      if (host) {
+        const hostWithProtocol = `https://${host}`;
+        if (allowedOrigins.includes(hostWithProtocol)) {
+          return true;
+        }
       }
-    } catch (error) {
-      console.error('Error parsing referer URL:', error);
-      return false;
+      return true; // Allow for development
     }
-  }
 
-  return false;
+    // Check origin header
+    if (origin && allowedOrigins.includes(origin)) {
+      return true;
+    }
+
+    // Check referer header as fallback
+    if (referer) {
+      try {
+        const refererOrigin = new URL(referer).origin;
+        if (allowedOrigins.includes(refererOrigin)) {
+          return true;
+        }
+      } catch (error) {
+        console.error('Error parsing referer URL:', error);
+        return false;
+      }
+    }
+
+    console.warn('Origin validation failed:', {
+      origin,
+      referer,
+      allowedOrigins,
+    });
+    return false;
+  } catch (error) {
+    console.error('Error in isValidOrigin:', error);
+    return false;
+  }
 };
 
 export interface CsrfValidationResult {
@@ -70,6 +100,13 @@ export async function validateCsrfToken(
 
     // First validate origin
     if (!isValidOrigin(request)) {
+      const origin = request.headers.get('origin');
+      const referer = request.headers.get('referer');
+      console.error('CSRF Origin validation failed:', {
+        origin,
+        referer,
+        allowedOrigins: getAllowedOrigins(),
+      });
       return {
         isValid: false,
         error: 'Origin not allowed',
@@ -81,6 +118,7 @@ export async function validateCsrfToken(
     const cookieToken = cookieStore.get('csrf-token')?.value;
 
     if (!cookieToken) {
+      console.error('CSRF: No cookie token found');
       return {
         isValid: false,
         error: 'CSRF session not found',
@@ -93,6 +131,10 @@ export async function validateCsrfToken(
     const tokenToValidate = headerToken || bodyToken;
 
     if (!tokenToValidate) {
+      console.error('CSRF: No token to validate', {
+        hasHeaderToken: !!headerToken,
+        hasBodyToken: !!bodyToken,
+      });
       return {
         isValid: false,
         error: 'Missing CSRF token',
@@ -100,21 +142,24 @@ export async function validateCsrfToken(
     }
 
     // Verify the token
-    const isValid = csrfInstance.verify(getCsrfSecret(), tokenToValidate);
+    const secret = getCsrfSecret();
+    const isValid = csrfInstance.verify(secret, tokenToValidate);
 
     if (!isValid) {
+      console.error('CSRF: Token verification failed');
       return {
         isValid: false,
         error: 'Invalid CSRF token',
       };
     }
 
+    console.log('CSRF validation successful');
     return { isValid: true };
   } catch (error) {
     console.error('CSRF validation error:', error);
     return {
       isValid: false,
-      error: 'CSRF validation failed',
+      error: error instanceof Error ? error.message : 'CSRF validation failed',
     };
   }
 }
