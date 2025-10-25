@@ -85,7 +85,7 @@ export default function PlayerDraws({ balances, frontier, ranked, leaderboards }
             </Typography>
             {frontier.first_unclaimed_frontier_draw && (
               <Typography variant="body2" color="warning.main">
-                Unclaimed Draw: #{frontier.first_unclaimed_frontier_draw.id}
+                Unclaimed Prizes: #{frontier.first_unclaimed_frontier_draw.id}
               </Typography>
             )}
           </Card>
@@ -108,7 +108,7 @@ export default function PlayerDraws({ balances, frontier, ranked, leaderboards }
             </Typography>
             {ranked.first_unclaimed_ranked_draw && (
               <Typography variant="body2" color="warning.main">
-                Unclaimed Draw: #{ranked.first_unclaimed_ranked_draw.id}
+                Unclaimed Prizes: #{ranked.first_unclaimed_ranked_draw.id}
               </Typography>
             )}
           </Card>
