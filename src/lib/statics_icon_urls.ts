@@ -1,4 +1,4 @@
-import { SplFormat } from "@/types/spl/format";
+import { SplFormat } from '@/types/spl/format';
 
 export const WEB_URL = `https://d36mxiodymuqjm.cloudfront.net/`;
 
@@ -24,7 +24,6 @@ export const wild_league_icon_url = `${WEB_URL}website/icons/leagues/wild_150/le
 export const modern_league_icon_url = `${WEB_URL}website/icons/leagues/modern_150/league_0.png`;
 export const avatar_icon_url = `${WEB_URL}website/icons/avatars/avatar_0.png`;
 export const foundation_league_icon_url = `${WEB_URL}website/icons/leagues/wild_150/league_0.png`;
-
 
 export const edition_alpha_icon_url = `${WEB_URL}website/icons/icon-edition-alpha.svg`;
 export const edition_beta_icon_url = `${WEB_URL}website/icons/icon-edition-beta.svg`;

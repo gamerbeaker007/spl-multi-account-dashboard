@@ -1,3 +1,4 @@
+import { useAuth } from '@/contexts/AuthContext';
 import { useUsernameContext } from '@/contexts/UsernameContext';
 import { Add as AddIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import {
@@ -11,6 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import React, { useState } from 'react';
+import { MdLockPerson } from 'react-icons/md';
 
 interface UsernameManagerProps {
   onFetchData: () => void;
@@ -21,10 +23,18 @@ export default function UsernameManager({
   onFetchData,
   loading = false,
 }: UsernameManagerProps) {
-  const { usernames, addUsername, removeUsername, isInitialized } =
-    useUsernameContext();
+  const {
+    usernames,
+    addUsername,
+    removeUsername,
+    setUsernames,
+    isInitialized,
+  } = useUsernameContext();
+  const { loginUser } = useAuth();
   const [newUsername, setNewUsername] = useState('');
   const [error, setError] = useState('');
+  const [authorizingAll, setAuthorizingAll] = useState(false);
+  const [, setAuthResults] = useState<Record<string, string>>({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,13 +61,48 @@ export default function UsernameManager({
   };
 
   const handleClearAll = () => {
-    usernames.forEach(username => removeUsername(username));
+    setUsernames([]);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSubmit(e);
     }
+  };
+
+  const handleAuthorizeAll = async () => {
+    if (!usernames.length) return;
+
+    setAuthorizingAll(true);
+    setAuthResults({});
+
+    // Reset previous results
+    const results: Record<string, string> = {};
+
+    for (const username of usernames) {
+      try {
+        await loginUser(username);
+
+        // If loginUser doesn't throw an error, it was successful
+        results[username] = 'success';
+      } catch (error) {
+        // Store the error message for display instead of console logging
+        const errorMsg =
+          error instanceof Error ? error.message : 'Login failed';
+        results[username] = errorMsg;
+      }
+
+      // Update results after each attempt
+      setAuthResults({ ...results });
+
+      // Small delay between requests to avoid overwhelming
+      if (usernames.indexOf(username) < usernames.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+
+    setAuthorizingAll(false);
+    onFetchData();
   };
 
   if (!isInitialized) {
@@ -113,6 +158,16 @@ export default function UsernameManager({
               >
                 Add
               </Button>
+              <Button
+                size="medium"
+                variant="outlined"
+                onClick={handleAuthorizeAll}
+                startIcon={<MdLockPerson />}
+                disabled={!usernames.length || loading || authorizingAll}
+              >
+                {authorizingAll ? 'Authorizing...' : 'Authorize All'}
+              </Button>
+
               {usernames.length > 0 && (
                 <Button
                   variant="outlined"
@@ -135,12 +190,6 @@ export default function UsernameManager({
                 >
                   {loading ? 'Fetching...' : 'Fetch Data'}
                 </Button>
-
-                {usernames.length === 0 && (
-                  <Typography variant="body2" color="text.secondary">
-                    Add at least one username to fetch data
-                  </Typography>
-                )}
               </Box>
             </Box>
           </Box>

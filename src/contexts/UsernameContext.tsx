@@ -80,8 +80,8 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({
 
   const reorderUsernames = (oldIndex: number, newIndex: number) => {
     const newUsernames = [...usernames];
-    const [movedItem] = newUsernames.splice(oldIndex, 1);
-    newUsernames.splice(newIndex, 0, movedItem);
+    const [removed] = newUsernames.splice(oldIndex, 1);
+    newUsernames.splice(newIndex, 0, removed);
     setUsernames(newUsernames);
   };
 

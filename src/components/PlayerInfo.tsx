@@ -1,10 +1,8 @@
-import {
-  avatar_icon_url,
-  findLeagueLogoUrl
-} from '@/lib/statics_icon_urls';
+import { avatar_icon_url, findLeagueLogoUrl } from '@/lib/statics_icon_urls';
 import { SplFormat } from '@/types/spl/format';
 import { SplLeaderboardPlayer } from '@/types/spl/leaderboard';
 import { Avatar, Box, Typography } from '@mui/material';
+import { AuthenticationStatus } from './AuthenticationStatus';
 
 interface Props {
   username: string;
@@ -43,7 +41,6 @@ function getHighestLeaderboard(leaderboards: Props['leaderboards']): {
   }, null);
 }
 
-
 export default function PlayerInfo({ username, leaderboards }: Props) {
   const result = getHighestLeaderboard(leaderboards);
   const leaderboard = result?.leaderboard || null;
@@ -67,6 +64,11 @@ export default function PlayerInfo({ username, leaderboards }: Props) {
         mb: 1,
       }}
     >
+      {/* Authentication Status */}
+      <Box sx={{ mb: 1 }}>
+        <AuthenticationStatus username={username} />
+      </Box>
+
       <Box
         display={'flex'}
         flexDirection="row"

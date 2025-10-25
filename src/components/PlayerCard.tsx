@@ -1,11 +1,13 @@
 import { PlayerCardCollectionData } from '@/hooks/usePlayerCardCollection';
 import { PlayerStatusData } from '@/hooks/usePlayerStatus';
 import { SplBalance } from '@/types/spl/balances';
+import { SplDailyProgress } from '@/types/spl/dailies';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import DragHandleIcon from '@mui/icons-material/DragHandle';
 import { Alert, Box, IconButton } from '@mui/material';
 import Leaderboard from './Leaderboard';
 import PlayerBalances from './PlayerBalances';
+import PlayerDailies from './PlayerDailies';
 import PlayerDraws from './PlayerDraws';
 import PlayerInfo from './PlayerInfo';
 
@@ -15,6 +17,13 @@ interface Props {
   cardData?: PlayerCardCollectionData;
   cardDataLoading?: boolean;
   cardDataError?: string;
+  dailyProgress?: {
+    foundation?: SplDailyProgress;
+    wild?: SplDailyProgress;
+    modern?: SplDailyProgress;
+  };
+  dailyProgressLoading?: boolean;
+  dailyProgressError?: string;
 }
 
 export const PlayerCard = ({
@@ -22,6 +31,9 @@ export const PlayerCard = ({
   cardData,
   cardDataLoading,
   cardDataError,
+  dailyProgress,
+  dailyProgressLoading,
+  dailyProgressError,
 }: Props) => {
   const {
     attributes,
@@ -57,7 +69,7 @@ export const PlayerCard = ({
       border="1px solid"
       borderColor={isOver ? 'primary.main' : 'secondary.main'}
       borderRadius={2}
-      width={400}
+      width={450}
       display="flex"
       flexDirection="row"
       flexWrap="wrap"
@@ -115,6 +127,7 @@ export const PlayerCard = ({
               />
             )}
           </Box>
+
           <Box width={'100%'}>
             {/* Draws Section */}
             {player.draws && player.balances && (
@@ -125,6 +138,15 @@ export const PlayerCard = ({
                 leaderboards={player.leaderboards}
               />
             )}
+          </Box>
+          <Box width={'100%'}>
+            {/* Daily Progress Section */}
+            <PlayerDailies
+              leaderboards={player.leaderboards}
+              dailyProgress={dailyProgress}
+              dailyProgressLoading={dailyProgressLoading}
+              dailyProgressError={dailyProgressError ?? undefined}
+            />
           </Box>
           <Box width={'100%'}>
             {/* Leaderboards Section */}

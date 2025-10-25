@@ -55,7 +55,7 @@
 
   // Auto-save
   "files.autoSave": "afterDelay",
-  "files.autoSaveDelay": 1000,
+  "files.autoSaveDelay": 5000,
 
   // Emmet for JSX/TSX
   "emmet.includeLanguages": {

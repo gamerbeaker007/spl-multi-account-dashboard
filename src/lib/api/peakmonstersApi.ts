@@ -1,4 +1,6 @@
-import { PeakmonstersMarketPriceEntry, PeakmonstersMarketPrices } from '@/types/peakmonsters/market';
+import {
+  PeakmonstersMarketPriceEntry
+} from '@/types/peakmonsters/market';
 import axios from 'axios';
 import * as rax from 'retry-axios';
 import logger from '../log/logger.server';
@@ -28,7 +30,9 @@ pkmClient.defaults.raxConfig = {
 };
 
 //   'https://peakmonsters.com/api/market/cards/prices' \
-export async function fetchMarketPrices(): Promise<PeakmonstersMarketPriceEntry[]> {
+export async function fetchMarketPrices(): Promise<
+  PeakmonstersMarketPriceEntry[]
+> {
   const url = '/market/cards/prices';
   logger.info('Fetching market prices from Peakmonsters API');
 

@@ -3,7 +3,6 @@ export interface SplCardCollection {
   cards: SplPlayerCard[];
 }
 export interface SplPlayerCard {
-
   player: string;
   uid: string;
   card_detail_id: number;
@@ -61,8 +60,7 @@ export interface SplPlayerCard {
   foil: number;
   mint: string | null;
   level: number;
-};
-
+}
 
 export interface EnrichedCollectionCard extends SplPlayerCard {
   count: number;

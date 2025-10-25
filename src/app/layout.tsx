@@ -1,6 +1,7 @@
 'use client';
 
 import MuiThemeProvider from '@/components/ThemeProvider';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { UsernameProvider } from '@/contexts/UsernameContext';
 
 export default function RootLayout({
@@ -11,9 +12,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <MuiThemeProvider>
-          <UsernameProvider>{children}</UsernameProvider>
-        </MuiThemeProvider>
+        <AuthProvider>
+          <MuiThemeProvider>
+            <UsernameProvider>{children}</UsernameProvider>
+          </MuiThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

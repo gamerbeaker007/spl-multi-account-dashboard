@@ -1,4 +1,5 @@
 import { useUsernameContext } from '@/contexts/UsernameContext';
+import { useDailyProgress } from '@/hooks/useDailyProgress';
 import { usePlayerCardCollection } from '@/hooks/usePlayerCardCollection';
 import { usePlayerStatus } from '@/hooks/usePlayerStatus';
 import {
@@ -17,9 +18,18 @@ import UsernameManager from './UsernameManager';
 export default function PlayerStatusDashboard() {
   const { usernames, reorderUsernames } = useUsernameContext();
   const { data, loading, error, fetchPlayerStatus } = usePlayerStatus();
-  const { data: cardData, loading: cardDataLoading, error: cardDataError, fetchPlayerCardCollection } =
-      usePlayerCardCollection();
-
+  const {
+    data: cardData,
+    loading: cardDataLoading,
+    error: cardDataError,
+    fetchPlayerCardCollection,
+  } = usePlayerCardCollection();
+  const {
+    data: dailyProgress,
+    loading: dailyProgressLoading,
+    error: dailyProgressError,
+    fetchDailyProgress,
+  } = useDailyProgress();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -30,6 +40,8 @@ export default function PlayerStatusDashboard() {
     if (usernames.length > 0) {
       fetchPlayerStatus(usernames);
       fetchPlayerCardCollection(usernames);
+
+      fetchDailyProgress(usernames);
     }
   };
 
@@ -100,6 +112,13 @@ export default function PlayerStatusDashboard() {
                       )}
                       cardDataLoading={cardDataLoading}
                       cardDataError={cardDataError ?? undefined}
+                      dailyProgress={
+                        dailyProgress?.players?.find(
+                          p => p.username === player.username
+                        )?.dailyProgress
+                      }
+                      dailyProgressLoading={dailyProgressLoading}
+                      dailyProgressError={dailyProgressError ?? undefined}
                     />
                   );
                 })}
