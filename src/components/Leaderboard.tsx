@@ -24,11 +24,13 @@ export default function Leaderboard({ leaderboards }: Props) {
     return ratingB - ratingA;
   });
 
+  const firstValidSeason = leaderboardsArray.find(([, leaderboard]) => leaderboard?.season)?.[1]?.season;
+  
   return (
     <Box sx={{ mt: 2 }}>
       <Typography variant="h6">Leaderboard Rankings</Typography>
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
-        Season #{leaderboards.wild?.season}
+        Season #{firstValidSeason}
       </Typography>
       <Box
         sx={{ display: 'flex', flexDirection: 'row', gap: 1, width: '100%' }}
