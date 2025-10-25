@@ -75,7 +75,6 @@ export const useDailyProgress = (): UseDailyProgressReturn => {
         }
 
         const responseData: DailyProgressResponse = await response.json();
-        console.log('Fetched daily progress data:', responseData);
         setData(responseData);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';

@@ -40,15 +40,6 @@ export const isValidOrigin = (request: NextRequest): boolean => {
     const host = request.headers.get('host');
     const allowedOrigins = getAllowedOrigins();
 
-    // Log for debugging on Vercel
-    console.log('CSRF Origin Check:', {
-      origin,
-      referer,
-      host,
-      allowedOrigins,
-      method: request.method,
-    });
-
     // For same-origin requests, origin might be null
     if (!origin && !referer) {
       // Allow if host matches any allowed origin
@@ -175,7 +166,6 @@ export async function validateCsrfToken(
       };
     }
 
-    console.log('CSRF validation successful');
     return { isValid: true };
   } catch (error) {
     console.error('CSRF validation error:', error);

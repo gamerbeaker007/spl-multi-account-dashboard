@@ -37,16 +37,13 @@ export default function PlayerStatusDashboard() {
     if (usernames.length > 0) {
       fetchPlayerStatus(usernames);
       fetchPlayerCardCollection(usernames);
-      console.log('Fetching daily progress for usernames:', usernames);
       fetchDailyProgress(usernames);
     }
   };
 
   const handleAuthChange = () => {
-    console.log('Authentication status changed');
     // Refresh daily progress when authentication changes
     if (usernames.length > 0) {
-      console.log('Refetching daily progress for usernames:', usernames);
       fetchDailyProgress(usernames);
     }
   };

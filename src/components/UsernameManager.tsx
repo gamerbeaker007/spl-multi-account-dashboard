@@ -59,7 +59,6 @@ export default function UsernameManager({ onFetchData, loading = false }: Userna
   useEffect(() => {
     // Only trigger if authentication just completed successfully
     if (authCompletedRef.current && !authInProgress && !authenticatingAll) {
-      console.log('Authentication completed, triggering onFetchData');
       onFetchData();
       authCompletedRef.current = false; // Reset the flag
     }
