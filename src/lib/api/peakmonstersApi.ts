@@ -1,6 +1,4 @@
-import {
-  PeakmonstersMarketPriceEntry
-} from '@/types/peakmonsters/market';
+import { PeakmonstersMarketPriceEntry } from '@/types/peakmonsters/market';
 import axios from 'axios';
 import * as rax from 'retry-axios';
 import logger from '../log/logger.server';

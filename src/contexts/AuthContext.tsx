@@ -175,14 +175,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           u => u.username !== username.toLowerCase()
         );
         updatedUsers.push(newUser);
-        
+
         // Also update localStorage
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUsers));
         } catch (error) {
-          console.error('Error saving authenticated users to localStorage:', error);
+          console.error(
+            'Error saving authenticated users to localStorage:',
+            error
+          );
         }
-        
+
         return updatedUsers;
       });
     } catch (err) {
@@ -201,20 +204,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logoutUser = async (username: string) => {
     try {
       setError(null);
-      
+
       // Use functional update to ensure we have the latest state
       setAuthenticatedUsers(currentUsers => {
         const updatedUsers = currentUsers.filter(
           u => u.username !== username.toLowerCase()
         );
-        
+
         // Also update localStorage
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUsers));
         } catch (error) {
-          console.error('Error saving authenticated users to localStorage:', error);
+          console.error(
+            'Error saving authenticated users to localStorage:',
+            error
+          );
         }
-        
+
         return updatedUsers;
       });
     } catch (error) {
@@ -228,15 +234,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logoutAll = async () => {
     try {
       setError(null);
-      
+
       // Clear all authenticated users
       setAuthenticatedUsers([]);
-      
+
       // Also clear localStorage
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
       } catch (error) {
-        console.error('Error clearing authenticated users from localStorage:', error);
+        console.error(
+          'Error clearing authenticated users from localStorage:',
+          error
+        );
       }
     } catch (error) {
       const errorMsg = 'Logout all error';
