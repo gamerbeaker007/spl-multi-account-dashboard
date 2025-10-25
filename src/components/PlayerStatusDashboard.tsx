@@ -68,7 +68,7 @@ export default function PlayerStatusDashboard() {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ px: { xs: 2, md: 6, lg: 12 } }}>
+    <Container maxWidth="xl" sx={{ px: { xs: 2, md: 6, lg: 8 } }}>
       <Typography variant="h4" gutterBottom>
         Splinterlands Multi-Account Dashboard
       </Typography>
