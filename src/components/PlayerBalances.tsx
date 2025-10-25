@@ -21,14 +21,6 @@ export default function PlayerBalances({
   cardDataLoading,
   cardDataError,
 }: Props) {
-  console.log(
-    'cardData:',
-    cardData,
-    'loading:',
-    cardDataLoading,
-    'error:',
-    cardDataError
-  );
   return (
     <Box
       sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 1 }}

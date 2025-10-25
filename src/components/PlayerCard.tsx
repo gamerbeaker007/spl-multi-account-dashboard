@@ -1,11 +1,13 @@
 import { PlayerCardCollectionData } from '@/hooks/usePlayerCardCollection';
 import { PlayerStatusData } from '@/hooks/usePlayerStatus';
 import { SplBalance } from '@/types/spl/balances';
-import PersonIcon from '@mui/icons-material/Person';
-import { Alert, Box, Chip, Typography } from '@mui/material';
+import { useDraggable, useDroppable } from '@dnd-kit/core';
+import DragHandleIcon from '@mui/icons-material/DragHandle';
+import { Alert, Box, IconButton } from '@mui/material';
 import Leaderboard from './Leaderboard';
 import PlayerBalances from './PlayerBalances';
 import PlayerDraws from './PlayerDraws';
+import PlayerInfo from './PlayerInfo';
 
 interface Props {
   player: PlayerStatusData;
@@ -21,10 +23,39 @@ export const PlayerCard = ({
   cardDataLoading,
   cardDataError,
 }: Props) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDragNodeRef,
+    transform,
+    isDragging,
+  } = useDraggable({
+    id: player.username,
+  });
+
+  const { setNodeRef: setDropNodeRef, isOver } = useDroppable({
+    id: player.username,
+  });
+
+  // Combine both refs
+  const setNodeRef = (node: HTMLElement | null) => {
+    setDragNodeRef(node);
+    setDropNodeRef(node);
+  };
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+        zIndex: isDragging ? 1000 : 'auto',
+      }
+    : undefined;
+
   return (
     <Box
+      ref={setNodeRef}
+      style={style}
       border="1px solid"
-      borderColor="secondary.main"
+      borderColor={isOver ? 'primary.main' : 'secondary.main'}
       borderRadius={2}
       width={400}
       display="flex"
@@ -32,23 +63,47 @@ export const PlayerCard = ({
       flexWrap="wrap"
       gap={2}
       p={2}
-      sx={{ mb: 2 }}
+      sx={{
+        mb: 2,
+        position: 'relative',
+        opacity: isDragging ? 0.5 : 1,
+        backgroundColor: isOver ? 'action.hover' : 'transparent',
+        transition: 'all 0.2s ease',
+        '&:hover .drag-handle': {
+          opacity: 1,
+        },
+      }}
     >
-      <Box width="100%">
-        <Typography
-          variant="h6"
-          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-        >
-          <PersonIcon />
-          {player.username}
-          {player.error && <Chip label="Error" color="error" size="small" />}
-        </Typography>
-      </Box>
+      {/* Drag Handle */}
+      <IconButton
+        className="drag-handle"
+        {...listeners}
+        {...attributes}
+        sx={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          opacity: 0.3,
+          transition: 'opacity 0.2s ease',
+          cursor: 'grab',
+          '&:active': {
+            cursor: 'grabbing',
+          },
+          zIndex: 10,
+        }}
+        size="small"
+      >
+        <DragHandleIcon fontSize="small" />
+      </IconButton>
 
       {player.error ? (
         <Alert severity="error">{player.error}</Alert>
       ) : (
         <>
+          <PlayerInfo
+            username={player.username}
+            leaderboards={player.leaderboards}
+          />
           <Box>
             {/* Balances Section */}
             {player.balances && player.balances.length > 0 && (
@@ -67,6 +122,7 @@ export const PlayerCard = ({
                 balances={player.balances}
                 frontier={player.draws.frontier}
                 ranked={player.draws.ranked}
+                leaderboards={player.leaderboards}
               />
             )}
           </Box>

@@ -1,5 +1,7 @@
-import { Box, Card, Typography } from '@mui/material';
+import { Avatar, Box, Card, Typography } from '@mui/material';
 
+import { findLeagueLogoUrl } from '@/lib/statics_icon_urls';
+import { SplFormat } from '@/types/spl/format';
 import { SplLeaderboardPlayer } from '@/types/spl/leaderboard';
 
 interface Props {
@@ -10,17 +12,32 @@ interface Props {
   };
 }
 
+const leagueLogoSize = 64;
+
 export default function Leaderboard({ leaderboards }: Props) {
+  const leaderboardsArray = (
+    Object.entries(leaderboards) as [SplFormat, SplLeaderboardPlayer | null][]
+  ).sort((a, b) => {
+    // Sort by rating descending
+    const ratingA = a[1]?.rating || 0;
+    const ratingB = b[1]?.rating || 0;
+    return ratingB - ratingA;
+  });
+
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography variant="h6">
-        Leaderboard Rankings #{leaderboards.wild?.season}
+      <Typography variant="h6">Leaderboard Rankings</Typography>
+      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+        Season #{leaderboards.wild?.season}
       </Typography>
       <Box
         sx={{ display: 'flex', flexDirection: 'row', gap: 1, width: '100%' }}
       >
-        {(['foundation', 'modern', 'wild'] as const).map(format => {
-          const leaderboard = leaderboards[format];
+        {leaderboardsArray.map(([format, leaderboard]) => {
+          if ((leaderboard?.battles ?? 0) <= 0) return null;
+
+          const logoUrl = findLeagueLogoUrl(format, leaderboard?.league);
+
           return (
             <Card key={format} variant="outlined" sx={{ flex: 1, p: 1 }}>
               <Typography
@@ -31,6 +48,13 @@ export default function Leaderboard({ leaderboards }: Props) {
               </Typography>
               {leaderboard ? (
                 <Box>
+                  {logoUrl && (
+                    <Avatar
+                      src={logoUrl}
+                      alt={`${format} league logo`}
+                      sx={{ width: leagueLogoSize, height: leagueLogoSize }}
+                    />
+                  )}
                   <Typography variant="body2">
                     Rank: #{leaderboard.rank}
                   </Typography>

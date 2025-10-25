@@ -1,3 +1,5 @@
+import { SplFormat } from "@/types/spl/format";
+
 export const WEB_URL = `https://d36mxiodymuqjm.cloudfront.net/`;
 
 export const dec_icon_url = `${WEB_URL}website/icon_dec.png`;
@@ -17,6 +19,12 @@ export const license_icon_url = `${WEB_URL}website/ui_elements/shop/nodes/power_
 export const sps_icon_url = `${WEB_URL}website/land/resources/sps.png`;
 export const energy_icon_url = `${WEB_URL}website/icons/icon_resource_glint.png`;
 export const hammer_icon_url = `${WEB_URL}website/land/deedOverview/hammer.svg`;
+
+export const wild_league_icon_url = `${WEB_URL}website/icons/leagues/wild_150/league_0.png`;
+export const modern_league_icon_url = `${WEB_URL}website/icons/leagues/modern_150/league_0.png`;
+export const avatar_icon_url = `${WEB_URL}website/icons/avatars/avatar_0.png`;
+export const foundation_league_icon_url = `${WEB_URL}website/icons/leagues/wild_150/league_0.png`;
+
 
 export const edition_alpha_icon_url = `${WEB_URL}website/icons/icon-edition-alpha.svg`;
 export const edition_beta_icon_url = `${WEB_URL}website/icons/icon-edition-beta.svg`;
@@ -79,3 +87,19 @@ export const EDITION_ICON_MAPPING = {
   17: edition_conclave_extra_icon_url,
   18: edition_conclave_rewards_icon_url,
 } as const;
+
+export function findLeagueLogoUrl(
+  format: SplFormat | null,
+  league: number | undefined
+): string | null {
+  if (!format || !league) return null;
+
+  const formatIconUrlMap = {
+    foundation: foundation_league_icon_url,
+    wild: wild_league_icon_url,
+    modern: modern_league_icon_url,
+  };
+
+  const leagueIconUrl = formatIconUrlMap[format] || wild_league_icon_url;
+  return leagueIconUrl.replace('0.png', `${league}.png`);
+}

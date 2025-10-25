@@ -1,12 +1,18 @@
 import { calculateEnergy } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
 import { SplFrontierDrawStatus, SplRankedDrawStatus } from '@/types/spl/draws';
+import { SplLeaderboardPlayer } from '@/types/spl/leaderboard';
 import { Box, Card, Typography } from '@mui/material';
 
 interface Props {
   balances: SplBalance[];
   frontier: SplFrontierDrawStatus | null;
   ranked: SplRankedDrawStatus | null;
+  leaderboards?: {
+    foundation: SplLeaderboardPlayer | null;
+    wild: SplLeaderboardPlayer | null;
+    modern: SplLeaderboardPlayer | null;
+  };
 }
 
 const MyProgressBar = ({ value, max }: { value: number; max: number }) => {
@@ -40,7 +46,12 @@ const MyProgressBar = ({ value, max }: { value: number; max: number }) => {
   );
 };
 
-export default function PlayerDraws({ balances, frontier, ranked }: Props) {
+export default function PlayerDraws({
+  balances,
+  frontier,
+  ranked,
+  leaderboards,
+}: Props) {
   // Calculate ranked energy from ECR balance
   const rankedEcr = balances.find(bal => bal.token === 'ECR');
   const rankedEnergy = rankedEcr
@@ -56,13 +67,18 @@ export default function PlayerDraws({ balances, frontier, ranked }: Props) {
       )
     : 0;
 
+  const hasFrontierMatches = (leaderboards?.foundation?.battles ?? 0) > 0;
+  const hasRankedMatches =
+    ((leaderboards?.wild?.battles ?? 0) ||
+      (leaderboards?.modern?.battles ?? 0)) > 0;
+
   return (
     <Box mb={2} width={'100%'}>
       <Typography variant="h6">Modes</Typography>
       <Box
         sx={{ display: 'flex', flexDirection: 'row', gap: 2, width: '100%' }}
       >
-        {frontier && (
+        {frontier && hasFrontierMatches && (
           <Card variant="outlined" sx={{ flex: 1, p: 1 }}>
             <Typography variant="subtitle2" color="primary">
               Frontier
@@ -82,7 +98,7 @@ export default function PlayerDraws({ balances, frontier, ranked }: Props) {
             )}
           </Card>
         )}
-        {ranked && (
+        {ranked && hasRankedMatches && (
           <Card variant="outlined" sx={{ flex: 1, p: 1 }}>
             <Typography variant="subtitle2" color="primary">
               Ranked

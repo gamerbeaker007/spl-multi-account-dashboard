@@ -1,3 +1,4 @@
+import { useUsernameContext } from '@/contexts/UsernameContext';
 import { Add as AddIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import {
   Alert,
@@ -9,207 +10,172 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 interface UsernameManagerProps {
-  onUsernamesChange: (usernames: string[]) => void;
   onFetchData: () => void;
   loading?: boolean;
 }
 
-const STORAGE_KEY = 'spl-dashboard-usernames';
-
-// Custom hook to handle localStorage with hydration safety
-function useLocalStorageState(key: string, defaultValue: string[]) {
-  const [state, setState] = useState<string[]>(defaultValue);
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        const parsedUsernames = JSON.parse(stored);
-        if (Array.isArray(parsedUsernames)) {
-          setState(parsedUsernames);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading from localStorage:', error);
-    } finally {
-      setIsInitialized(true);
-    }
-  }, [key]);
-
-  const setValue = (newValue: string[]) => {
-    setState(newValue);
-    try {
-      localStorage.setItem(key, JSON.stringify(newValue));
-    } catch (error) {
-      console.error('Error saving to localStorage:', error);
-    }
-  };
-
-  return [state, setValue, isInitialized] as const;
-}
-
 export default function UsernameManager({
-  onUsernamesChange,
   onFetchData,
   loading = false,
 }: UsernameManagerProps) {
-  const [userInput, setUserInput] = useState('');
-  const [usernames, setUsernames, isInitialized] = useLocalStorageState(
-    STORAGE_KEY,
-    []
-  );
+  const { usernames, addUsername, removeUsername, isInitialized } =
+    useUsernameContext();
+  const [newUsername, setNewUsername] = useState('');
+  const [error, setError] = useState('');
 
-  // Notify parent when usernames are loaded and component is initialized
-  useEffect(() => {
-    if (isInitialized && usernames.length > 0) {
-      onUsernamesChange(usernames);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const trimmedUsername = newUsername.trim();
+
+    if (!trimmedUsername) {
+      setError('Username cannot be empty');
+      return;
     }
-  }, [isInitialized, usernames, onUsernamesChange]);
 
-  // Prevent hydration mismatch by not rendering localStorage-dependent content until initialized
+    if (usernames.includes(trimmedUsername)) {
+      setError('Username already exists');
+      return;
+    }
+
+    addUsername(trimmedUsername);
+    setNewUsername('');
+    setError('');
+  };
+
+  const handleRemoveUsername = (usernameToRemove: string) => {
+    removeUsername(usernameToRemove);
+  };
+
+  const handleClearAll = () => {
+    usernames.forEach(username => removeUsername(username));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSubmit(e);
+    }
+  };
+
   if (!isInitialized) {
     return (
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Manage Players
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body2">Loading...</Typography>
-          </Box>
+          <Typography>Loading...</Typography>
         </CardContent>
       </Card>
     );
   }
 
-  // Save usernames to localStorage whenever they change
-  const saveUsernames = (newUsernames: string[]) => {
-    setUsernames(newUsernames);
-    onUsernamesChange(newUsernames);
-  };
-
-  const handleAddUser = () => {
-    const trimmedInput = userInput.trim();
-    if (trimmedInput && !usernames.includes(trimmedInput)) {
-      const newUsernames = [...usernames, trimmedInput];
-      saveUsernames(newUsernames);
-      setUserInput('');
-    }
-  };
-
-  const handleRemoveUser = (username: string) => {
-    const newUsernames = usernames.filter(u => u !== username);
-    saveUsernames(newUsernames);
-  };
-
-  const handleClearAll = () => {
-    saveUsernames([]);
-  };
-
-  const handleKeyPress = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      handleAddUser();
-    }
-  };
-
-  const isDuplicate = Boolean(
-    userInput.trim() && usernames.includes(userInput.trim())
-  );
-
   return (
-    <Card sx={{ mb: 3 }}>
-      <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Manage Players
-        </Typography>
+    <>
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Manage Player Usernames
+          </Typography>
 
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 2,
-            mb: 2,
-            alignItems: 'flex-start',
-            flexWrap: 'wrap',
-          }}
-        >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <TextField
-              label="Username"
-              value={userInput}
-              onChange={e => setUserInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              size="small"
-              sx={{ minWidth: 200 }}
-              error={isDuplicate}
-              helperText={isDuplicate ? 'Username already added' : ''}
-            />
-          </Box>
-
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <Button
-              variant="contained"
-              onClick={handleAddUser}
-              startIcon={<AddIcon />}
-              disabled={!userInput.trim() || isDuplicate}
-              size="small"
+            {/* Add Username Form */}
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              sx={{
+                display: 'flex',
+                gap: 1,
+                mb: 2,
+                flexWrap: 'wrap',
+                alignItems: 'flex-start',
+              }}
             >
-              Add Player
-            </Button>
-
-            <Button
-              variant="outlined"
-              onClick={onFetchData}
-              disabled={usernames.length === 0 || loading}
-              startIcon={<RefreshIcon />}
-              size="small"
-            >
-              {loading ? 'Loading...' : `Fetch Data (${usernames.length})`}
-            </Button>
-
-            {usernames.length > 0 && (
-              <Button
-                variant="text"
-                onClick={handleClearAll}
-                color="error"
+              <TextField
                 size="small"
+                label="Enter username"
+                value={newUsername}
+                onChange={e => {
+                  setNewUsername(e.target.value);
+                  if (error) setError('');
+                }}
+                onKeyDown={handleKeyDown}
+                error={!!error}
+                helperText={error}
+                sx={{ minWidth: 200, maxWidth: 400, flex: 1 }}
+              />
+              <Button
+                size="medium"
+                type="submit"
+                variant="outlined"
+                startIcon={<AddIcon />}
+                disabled={!newUsername.trim() || loading}
               >
-                Clear All
+                Add
               </Button>
-            )}
-          </Box>
-        </Box>
-
-        {usernames.length > 0 && (
-          <Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Players ({usernames.length}):
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              {usernames.map(username => (
-                <Chip
-                  key={username}
-                  label={username}
-                  onDelete={() => handleRemoveUser(username)}
-                  color="primary"
+              {usernames.length > 0 && (
+                <Button
                   variant="outlined"
-                  size="small"
-                />
-              ))}
+                  onClick={handleClearAll}
+                  color="error"
+                  size="medium"
+                >
+                  Clear All
+                </Button>
+              )}
+              {/* Fetch Data Button */}
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<RefreshIcon />}
+                  onClick={onFetchData}
+                  disabled={usernames.length === 0 || loading}
+                  size="medium"
+                >
+                  {loading ? 'Fetching...' : 'Fetch Data'}
+                </Button>
+
+                {usernames.length === 0 && (
+                  <Typography variant="body2" color="text.secondary">
+                    Add at least one username to fetch data
+                  </Typography>
+                )}
+              </Box>
             </Box>
           </Box>
-        )}
 
-        {usernames.length === 0 && (
-          <Alert severity="info" sx={{ mt: 2 }}>
-            Add Splinterlands usernames to get started. They&apos;ll be saved
-            automatically!
-          </Alert>
-        )}
-      </CardContent>
-    </Card>
+          {/* Current Usernames */}
+          {usernames.length > 0 && (
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Current Players ({usernames.length}):
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {usernames.map(username => (
+                  <Chip
+                    key={username}
+                    label={username}
+                    onDelete={() => handleRemoveUsername(username)}
+                    color="primary"
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {/* Instructions */}
+          {usernames.length === 0 && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              <Typography variant="body2">
+                Add player usernames above and click &quot;Fetch Data&quot; to
+                load their balances, draws, and leaderboard positions.
+              </Typography>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 }
