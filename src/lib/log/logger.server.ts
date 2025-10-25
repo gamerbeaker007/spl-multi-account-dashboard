@@ -32,10 +32,7 @@ class Logger {
   }
 
   debug(message: string): void {
-    if (
-      process.env.NODE_ENV === 'development' &&
-      process.env.DEBUG_LOGS === 'true'
-    ) {
+    if (process.env.NODE_ENV === 'development' && process.env.DEBUG_LOGS === 'true') {
       console.log(this.formatMessage(LOG_LEVELS.DEBUG, message));
     }
   }

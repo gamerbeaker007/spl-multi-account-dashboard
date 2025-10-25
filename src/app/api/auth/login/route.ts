@@ -13,27 +13,18 @@ export async function POST(request: NextRequest) {
       signature = requestBody.signature;
     } catch (err) {
       console.error('Failed to parse JSON body in login request', err);
-      return NextResponse.json(
-        { error: 'Invalid JSON in request body' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
     }
 
     // Validate CSRF token
     const csrfValidation = await validateCsrfToken(request, requestBody);
     if (!csrfValidation.isValid) {
-      return NextResponse.json(
-        { error: csrfValidation.error },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: csrfValidation.error }, { status: 403 });
     }
 
     // Validate required fields
     if (!username || !timestamp || !signature) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     // Call SPL API
@@ -42,10 +33,7 @@ export async function POST(request: NextRequest) {
     // Create response
     // Check for encryption key
     if (!process.env.SECRET_ENCRYPTION_KEY) {
-      return NextResponse.json(
-        { error: 'Server configuration error' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
     // Encrypt the token
@@ -69,9 +57,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json(
-      { error: 'Internal server error during login' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error during login' }, { status: 500 });
   }
 }

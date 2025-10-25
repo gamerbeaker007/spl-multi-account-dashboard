@@ -8,10 +8,7 @@ export const largeNumberFormat = (balance: string | number) => {
   }).format(numValue);
 };
 
-export const calculateEnergy = (
-  ecr: number,
-  lastUpdatedTime: string
-): number => {
+export const calculateEnergy = (ecr: number, lastUpdatedTime: string): number => {
   const lastUpdatedTimeDate = new Date(lastUpdatedTime);
 
   const msInOneHour = 60 * 60 * 1000; // Milliseconds in one hour

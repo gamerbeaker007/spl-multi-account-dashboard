@@ -2,13 +2,7 @@
 
 import { useCsrfToken } from '@/hooks/useCsrf';
 import { KeychainKeyTypes, KeychainSDK } from 'keychain-sdk';
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 interface AuthenticatedUser {
   username: string;
@@ -21,11 +15,7 @@ interface AuthContextType {
   authenticatedUsers: AuthenticatedUser[];
   loading: boolean;
   error: string | null;
-  loginUser: (
-    username: string,
-    timestamp?: number,
-    signature?: string
-  ) => Promise<void>;
+  loginUser: (username: string, timestamp?: number, signature?: string) => Promise<void>;
   logoutUser: (username: string) => Promise<void>;
   logoutAll: () => Promise<void>;
   clearError: () => void;
@@ -39,9 +29,7 @@ const STORAGE_KEY = 'spl-dashboard-auth-users';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { getCsrfToken } = useCsrfToken();
-  const [authenticatedUsers, setAuthenticatedUsers] = useState<
-    AuthenticatedUser[]
-  >([]);
+  const [authenticatedUsers, setAuthenticatedUsers] = useState<AuthenticatedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,20 +44,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch (error) {
-      console.error(
-        'Error loading authenticated users from localStorage:',
-        error
-      );
+      console.error('Error loading authenticated users from localStorage:', error);
     } finally {
       setLoading(false);
     }
   }, []);
 
   // Sign message with Keychain
-  const signWithKeychain = async (
-    username: string,
-    message: string
-  ): Promise<string> => {
+  const signWithKeychain = async (username: string, message: string): Promise<string> => {
     try {
       interface HiveKeychainWindow extends Window {
         hive_keychain?: unknown;
@@ -86,10 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (result?.success) {
-        const signature =
-          typeof result.result === 'string'
-            ? result.result
-            : result.message || '';
+        const signature = typeof result.result === 'string' ? result.result : result.message || '';
 
         if (!signature) {
           throw new Error('Keychain returned empty signature');
@@ -115,11 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Login function for a specific user
-  const loginUser = async (
-    username: string,
-    timestamp?: number,
-    signature?: string
-  ) => {
+  const loginUser = async (username: string, timestamp?: number, signature?: string) => {
     try {
       setError(null);
 
@@ -130,8 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const message = `${username.toLowerCase()}${finalTimestamp}`;
 
       // Get signature if not provided
-      const finalSignature =
-        signature || (await signWithKeychain(username, message));
+      const finalSignature = signature || (await signWithKeychain(username, message));
 
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -149,8 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMsg =
-          errorData.error || `Login failed with status: ${response.status}`;
+        const errorMsg = errorData.error || `Login failed with status: ${response.status}`;
         setError(errorMsg);
         throw new Error(errorMsg);
       }
@@ -171,19 +144,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Use functional update to ensure we have the latest state
       setAuthenticatedUsers(currentUsers => {
-        const updatedUsers = currentUsers.filter(
-          u => u.username !== username.toLowerCase()
-        );
+        const updatedUsers = currentUsers.filter(u => u.username !== username.toLowerCase());
         updatedUsers.push(newUser);
 
         // Also update localStorage
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUsers));
         } catch (error) {
-          console.error(
-            'Error saving authenticated users to localStorage:',
-            error
-          );
+          console.error('Error saving authenticated users to localStorage:', error);
         }
 
         return updatedUsers;
@@ -207,18 +175,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Use functional update to ensure we have the latest state
       setAuthenticatedUsers(currentUsers => {
-        const updatedUsers = currentUsers.filter(
-          u => u.username !== username.toLowerCase()
-        );
+        const updatedUsers = currentUsers.filter(u => u.username !== username.toLowerCase());
 
         // Also update localStorage
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUsers));
         } catch (error) {
-          console.error(
-            'Error saving authenticated users to localStorage:',
-            error
-          );
+          console.error('Error saving authenticated users to localStorage:', error);
         }
 
         return updatedUsers;
@@ -242,10 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
       } catch (error) {
-        console.error(
-          'Error clearing authenticated users from localStorage:',
-          error
-        );
+        console.error('Error clearing authenticated users from localStorage:', error);
       }
     } catch (error) {
       const errorMsg = 'Logout all error';
@@ -256,16 +216,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check if a specific user is authenticated
   const isUserAuthenticated = (username: string): boolean => {
-    return authenticatedUsers.some(
-      u => u.username === username.toLowerCase() && u.isAuthenticated
-    );
+    return authenticatedUsers.some(u => u.username === username.toLowerCase() && u.isAuthenticated);
   };
 
   // Get encrypted token for a specific user
   const getUserToken = (username: string): string | null => {
-    const user = authenticatedUsers.find(
-      u => u.username === username.toLowerCase()
-    );
+    const user = authenticatedUsers.find(u => u.username === username.toLowerCase());
     return user?.encryptedToken || null;
   };
 
@@ -286,9 +242,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     getUserToken,
   };
 
-  return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

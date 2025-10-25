@@ -31,14 +31,11 @@ export interface UsePlayerStatusReturn {
   refetch: () => Promise<void>;
 }
 
-export function usePlayerStatus(
-  initialUsernames: string[] = []
-): UsePlayerStatusReturn {
+export function usePlayerStatus(initialUsernames: string[] = []): UsePlayerStatusReturn {
   const [data, setData] = useState<PlayerStatusResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastUsernames, setLastUsernames] =
-    useState<string[]>(initialUsernames);
+  const [lastUsernames, setLastUsernames] = useState<string[]>(initialUsernames);
 
   const fetchPlayerStatus = useCallback(async (usernames: string[]) => {
     if (!usernames.length) {
@@ -66,8 +63,7 @@ export function usePlayerStatus(
       const result: PlayerStatusResponse = await response.json();
       setData(result);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to fetch player status';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch player status';
       setError(errorMessage);
       setData(null);
     } finally {

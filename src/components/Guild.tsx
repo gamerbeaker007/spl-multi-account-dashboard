@@ -19,16 +19,8 @@ export default function Guild({ balances }: Props) {
         <Typography variant="h6" sx={{ width: '100%' }}>
           Guild
         </Typography>
-        <BalanceItem
-          iconUrl={merits_icon_url}
-          title="Merits"
-          value={largeNumberFormat(merits)}
-        />
-        <BalanceItem
-          iconUrl={gp_icon_url}
-          title="Guild Power"
-          value={largeNumberFormat(gp)}
-        />
+        <BalanceItem iconUrl={merits_icon_url} title="Merits" value={largeNumberFormat(merits)} />
+        <BalanceItem iconUrl={gp_icon_url} title="Guild Power" value={largeNumberFormat(gp)} />
       </Stack>
     </Box>
   );

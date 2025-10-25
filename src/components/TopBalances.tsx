@@ -1,8 +1,4 @@
-import {
-  credits_icon_url,
-  dec_icon_url,
-  sps_icon_url,
-} from '@/lib/statics_icon_urls';
+import { credits_icon_url, dec_icon_url, sps_icon_url } from '@/lib/statics_icon_urls';
 import { largeNumberFormat } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
 import { Avatar, Box, Card, Tooltip, Typography } from '@mui/material';
@@ -13,15 +9,7 @@ interface Props {
 
 const iconSize = 20;
 
-const MyCard = ({
-  iconUrl,
-  title,
-  value,
-}: {
-  iconUrl: string;
-  title: string;
-  value: string;
-}) => (
+const MyCard = ({ iconUrl, title, value }: { iconUrl: string; title: string; value: string }) => (
   <Card variant="outlined" sx={{ flex: 1 }}>
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <Avatar src={iconUrl} sx={{ width: iconSize, height: iconSize }}>
@@ -56,33 +44,21 @@ export default function TopBalances({ balances }: Props) {
   return (
     <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
       {/* Box 1: Credits */}
-      <MyCard
-        iconUrl={credits_icon_url}
-        title="Credits"
-        value={largeNumberFormat(credits)}
-      />
+      <MyCard iconUrl={credits_icon_url} title="Credits" value={largeNumberFormat(credits)} />
 
       {/* Box 2: DEC Total */}
       <Tooltip
         title={
           <Box>
-            <Typography variant="body2">
-              DEC: {largeNumberFormat(dec)}
-            </Typography>
-            <Typography variant="body2">
-              DEC-B: {largeNumberFormat(decBound)}
-            </Typography>
+            <Typography variant="body2">DEC: {largeNumberFormat(dec)}</Typography>
+            <Typography variant="body2">DEC-B: {largeNumberFormat(decBound)}</Typography>
           </Box>
         }
         arrow
         placement="top"
       >
         <Box sx={{ flex: 1 }}>
-          <MyCard
-            iconUrl={dec_icon_url}
-            title="DEC"
-            value={largeNumberFormat(totalDec)}
-          />
+          <MyCard iconUrl={dec_icon_url} title="DEC" value={largeNumberFormat(totalDec)} />
         </Box>
       </Tooltip>
 
@@ -90,29 +66,17 @@ export default function TopBalances({ balances }: Props) {
       <Tooltip
         title={
           <Box>
-            <Typography variant="body2">
-              SPS Liquid: {largeNumberFormat(sps)}
-            </Typography>
-            <Typography variant="body2">
-              SPS Staked: {largeNumberFormat(spsp)}
-            </Typography>
-            <Typography variant="body2">
-              SPS Delegated In: {largeNumberFormat(spspIn)}
-            </Typography>
-            <Typography variant="body2">
-              SPS Delegated Out: {largeNumberFormat(spspOut)}
-            </Typography>
+            <Typography variant="body2">SPS Liquid: {largeNumberFormat(sps)}</Typography>
+            <Typography variant="body2">SPS Staked: {largeNumberFormat(spsp)}</Typography>
+            <Typography variant="body2">SPS Delegated In: {largeNumberFormat(spspIn)}</Typography>
+            <Typography variant="body2">SPS Delegated Out: {largeNumberFormat(spspOut)}</Typography>
           </Box>
         }
         arrow
         placement="top"
       >
         <Box sx={{ flex: 1 }}>
-          <MyCard
-            iconUrl={sps_icon_url}
-            title="SPS"
-            value={largeNumberFormat(totalSps)}
-          />
+          <MyCard iconUrl={sps_icon_url} title="SPS" value={largeNumberFormat(totalSps)} />
         </Box>
       </Tooltip>
     </Box>

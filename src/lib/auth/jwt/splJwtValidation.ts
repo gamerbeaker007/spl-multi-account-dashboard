@@ -14,9 +14,7 @@ export interface SplJwtValidationResult {
   error?: string;
 }
 
-export async function validateSplJwt(
-  token: string
-): Promise<SplJwtValidationResult> {
+export async function validateSplJwt(token: string): Promise<SplJwtValidationResult> {
   try {
     if (!token) {
       return { valid: false, error: 'No token provided' };

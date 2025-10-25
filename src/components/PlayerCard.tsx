@@ -24,6 +24,7 @@ interface Props {
   };
   dailyProgressLoading?: boolean;
   dailyProgressError?: string;
+  onAuthChange?: () => void;
 }
 
 export const PlayerCard = ({
@@ -34,6 +35,7 @@ export const PlayerCard = ({
   dailyProgress,
   dailyProgressLoading,
   dailyProgressError,
+  onAuthChange,
 }: Props) => {
   const {
     attributes,
@@ -115,6 +117,7 @@ export const PlayerCard = ({
           <PlayerInfo
             username={player.username}
             leaderboards={player.leaderboards}
+            onAuthChange={onAuthChange}
           />
           <Box>
             {/* Balances Section */}
@@ -150,9 +153,7 @@ export const PlayerCard = ({
           </Box>
           <Box width={'100%'}>
             {/* Leaderboards Section */}
-            {player.leaderboards && (
-              <Leaderboard leaderboards={player.leaderboards} />
-            )}
+            {player.leaderboards && <Leaderboard leaderboards={player.leaderboards} />}
           </Box>
         </>
       )}

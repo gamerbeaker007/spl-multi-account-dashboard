@@ -31,16 +31,22 @@ export default function PlayerStatusDashboard() {
     fetchDailyProgress,
   } = useDailyProgress();
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor)
-  );
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
 
   const handleFetchData = () => {
     if (usernames.length > 0) {
       fetchPlayerStatus(usernames);
       fetchPlayerCardCollection(usernames);
+      console.log('Fetching daily progress for usernames:', usernames);
+      fetchDailyProgress(usernames);
+    }
+  };
 
+  const handleAuthChange = () => {
+    console.log('Authentication status changed');
+    // Refresh daily progress when authentication changes
+    if (usernames.length > 0) {
+      console.log('Refetching daily progress for usernames:', usernames);
       fetchDailyProgress(usernames);
     }
   };
@@ -82,11 +88,7 @@ export default function PlayerStatusDashboard() {
         <Box>
           <Typography variant="h6" gutterBottom>
             Player Data (Last updated:{' '}
-            {new Date(data.timestamp)
-              .toISOString()
-              .replace('T', ' ')
-              .slice(0, 19)}
-            )
+            {new Date(data.timestamp).toISOString().replace('T', ' ').slice(0, 19)})
           </Typography>
 
           <DndContext
@@ -98,24 +100,20 @@ export default function PlayerStatusDashboard() {
               {data.players &&
                 Array.isArray(data.players) &&
                 usernames.map(username => {
-                  const player = data.players.find(
-                    p => p.username === username
-                  );
+                  const player = data.players.find(p => p.username === username);
                   if (!player) return null;
 
                   return (
                     <PlayerCard
                       key={player.username}
                       player={player}
-                      cardData={cardData?.players?.find(
-                        p => p.username === player.username
-                      )}
+                      onAuthChange={handleAuthChange}
+                      cardData={cardData?.players?.find(p => p.username === player.username)}
                       cardDataLoading={cardDataLoading}
                       cardDataError={cardDataError ?? undefined}
                       dailyProgress={
-                        dailyProgress?.players?.find(
-                          p => p.username === player.username
-                        )?.dailyProgress
+                        dailyProgress?.players?.find(p => p.username === player.username)
+                          ?.dailyProgress
                       }
                       dailyProgressLoading={dailyProgressLoading}
                       dailyProgressError={dailyProgressError ?? undefined}
@@ -130,8 +128,7 @@ export default function PlayerStatusDashboard() {
       {/* Empty State */}
       {!data && !loading && usernames.length === 0 && (
         <Alert severity="info">
-          Add some player usernames and click &quot;Fetch Data&quot; to get
-          started!
+          Add some player usernames and click &quot;Fetch Data&quot; to get started!
         </Alert>
       )}
     </Container>

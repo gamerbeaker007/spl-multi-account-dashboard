@@ -44,10 +44,7 @@ export type EditionValues = {
  * @returns Array of grouped cards with counts
  */
 function groupBcx(cards: SplPlayerCard[]): EnrichedPlayerCardCollection[] {
-  const grouped = new Map<
-    string,
-    EnrichedPlayerCardCollection & { count: number }
-  >();
+  const grouped = new Map<string, EnrichedPlayerCardCollection & { count: number }>();
 
   cards.forEach(card => {
     const key = `${card.player}-${card.card_detail_id}-${card.xp}-${card.gold}-${card.edition}-${card.level}-${card.bcx}-${card.bcx_unbound}`;
@@ -103,14 +100,8 @@ export async function getPlayerCollectionValue(
     Object.keys(EDITION_MAPPING).forEach(editionKey => {
       const edition = parseInt(editionKey);
 
-      const editionCards = groupedCards.filter(
-        card => card.edition === edition
-      );
-      const collectionValue = getCollectionValue(
-        editionCards,
-        listPrices,
-        marketPrices
-      );
+      const editionCards = groupedCards.filter(card => card.edition === edition);
+      const collectionValue = getCollectionValue(editionCards, listPrices, marketPrices);
 
       result.editionValues[edition as Edition] = {
         listValue: collectionValue.listValue,
@@ -118,11 +109,8 @@ export async function getPlayerCollectionValue(
         bcx: playerCards
           .filter(card => card.edition === edition)
           .reduce((sum, card) => sum + card.bcx, 0),
-        numberOfCards: playerCards.filter(card => card.edition === edition)
-          .length,
-        numberOfSellableCards: sellableCards.filter(
-          card => card.edition === edition
-        ).length,
+        numberOfCards: playerCards.filter(card => card.edition === edition).length,
+        numberOfSellableCards: sellableCards.filter(card => card.edition === edition).length,
       };
       result.totalMarketValue += collectionValue.marketValue;
       result.totalListValue += collectionValue.listValue;
@@ -174,11 +162,7 @@ function getCollectionValue(
         totalListValue += bcx * listPrice;
       }
 
-      const marketPrice = getMarketPrice(
-        collectionCard,
-        marketPrices,
-        listPrice
-      );
+      const marketPrice = getMarketPrice(collectionCard, marketPrices, listPrice);
       if (marketPrice) {
         totalMarketValue += bcx * marketPrice;
       }
@@ -239,8 +223,7 @@ function getMarketPrice(
         (a as PeakmonstersMarketPriceEntry).last_bcx_price -
         (b as PeakmonstersMarketPriceEntry).last_bcx_price
     );
-    const marketPrice = (sorted[0] as PeakmonstersMarketPriceEntry)
-      .last_bcx_price;
+    const marketPrice = (sorted[0] as PeakmonstersMarketPriceEntry).last_bcx_price;
     if (listPrice) {
       return Math.min(marketPrice, listPrice);
     } else {

@@ -1,17 +1,8 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsernameContext } from '@/contexts/UsernameContext';
 import { Add as AddIcon, Refresh as RefreshIcon } from '@mui/icons-material';
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  TextField,
-  Typography,
-} from '@mui/material';
-import React, { useState } from 'react';
+import { Alert, Box, Button, Card, CardContent, Chip, TextField, Typography } from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
 import { MdLockPerson } from 'react-icons/md';
 
 interface UsernameManagerProps {
@@ -19,22 +10,16 @@ interface UsernameManagerProps {
   loading?: boolean;
 }
 
-export default function UsernameManager({
-  onFetchData,
-  loading = false,
-}: UsernameManagerProps) {
-  const {
-    usernames,
-    addUsername,
-    removeUsername,
-    setUsernames,
-    isInitialized,
-  } = useUsernameContext();
+export default function UsernameManager({ onFetchData, loading = false }: UsernameManagerProps) {
+  const { usernames, addUsername, removeUsername, setUsernames, isInitialized } =
+    useUsernameContext();
   const { loginUser } = useAuth();
   const [newUsername, setNewUsername] = useState('');
   const [error, setError] = useState('');
-  const [authorizingAll, setAuthorizingAll] = useState(false);
+  const [authenticatingAll, setAuthenticatingAll] = useState(false);
+  const [authInProgress, setAuthInProgress] = useState(false);
   const [, setAuthResults] = useState<Record<string, string>>({});
+  const authCompletedRef = useRef(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,14 +55,26 @@ export default function UsernameManager({
     }
   };
 
-  const handleAuthorizeAll = async () => {
+  // Simple effect to trigger fetch when auth is complete
+  useEffect(() => {
+    // Only trigger if authentication just completed successfully
+    if (authCompletedRef.current && !authInProgress && !authenticatingAll) {
+      console.log('Authentication completed, triggering onFetchData');
+      onFetchData();
+      authCompletedRef.current = false; // Reset the flag
+    }
+  }, [authInProgress, authenticatingAll, onFetchData]);
+
+  const handleAuthenticateAll = async () => {
     if (!usernames.length) return;
 
-    setAuthorizingAll(true);
+    setAuthenticatingAll(true);
+    setAuthInProgress(true);
     setAuthResults({});
 
     // Reset previous results
     const results: Record<string, string> = {};
+    let hasSuccessfulAuth = false;
 
     for (const username of usernames) {
       try {
@@ -85,10 +82,10 @@ export default function UsernameManager({
 
         // If loginUser doesn't throw an error, it was successful
         results[username] = 'success';
+        hasSuccessfulAuth = true;
       } catch (error) {
         // Store the error message for display instead of console logging
-        const errorMsg =
-          error instanceof Error ? error.message : 'Login failed';
+        const errorMsg = error instanceof Error ? error.message : 'Login failed';
         results[username] = errorMsg;
       }
 
@@ -101,8 +98,14 @@ export default function UsernameManager({
       }
     }
 
-    setAuthorizingAll(false);
-    onFetchData();
+    setAuthenticatingAll(false);
+
+    // Only set authInProgress to false if we had successful authentication
+    // This will trigger the useEffect to call onFetchData
+    if (hasSuccessfulAuth) {
+      authCompletedRef.current = true; // Mark that auth just completed
+      setAuthInProgress(false);
+    }
   };
 
   if (!isInitialized) {
@@ -161,20 +164,15 @@ export default function UsernameManager({
               <Button
                 size="medium"
                 variant="outlined"
-                onClick={handleAuthorizeAll}
+                onClick={handleAuthenticateAll}
                 startIcon={<MdLockPerson />}
-                disabled={!usernames.length || loading || authorizingAll}
+                disabled={!usernames.length || loading || authenticatingAll}
               >
-                {authorizingAll ? 'Authorizing...' : 'Authorize All'}
+                {authenticatingAll ? 'Authenticating...' : 'Authenticate All'}
               </Button>
 
               {usernames.length > 0 && (
-                <Button
-                  variant="outlined"
-                  onClick={handleClearAll}
-                  color="error"
-                  size="medium"
-                >
+                <Button variant="outlined" onClick={handleClearAll} color="error" size="medium">
                   Clear All
                 </Button>
               )}
@@ -218,8 +216,8 @@ export default function UsernameManager({
           {usernames.length === 0 && (
             <Alert severity="info" sx={{ mt: 2 }}>
               <Typography variant="body2">
-                Add player usernames above and click &quot;Fetch Data&quot; to
-                load their balances, draws, and leaderboard positions.
+                Add player usernames above and click &quot;Fetch Data&quot; to load their balances,
+                draws, and leaderboard positions.
               </Typography>
             </Alert>
           )}

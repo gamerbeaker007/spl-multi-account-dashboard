@@ -27,8 +27,7 @@ export function usePlayerCardCollection(
   const [data, setData] = useState<PlayerCardCollectionResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastUsernames, setLastUsernames] =
-    useState<string[]>(initialUsernames);
+  const [lastUsernames, setLastUsernames] = useState<string[]>(initialUsernames);
 
   const fetchPlayerCardCollection = useCallback(async (usernames: string[]) => {
     if (!usernames.length) {
@@ -56,8 +55,7 @@ export function usePlayerCardCollection(
       const result: PlayerCardCollectionResponse = await response.json();
       setData(result);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to fetch player status';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch player status';
       setError(errorMessage);
       setData(null);
     } finally {

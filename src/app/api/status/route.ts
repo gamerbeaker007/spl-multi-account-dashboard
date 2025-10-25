@@ -14,15 +14,10 @@ export async function POST(request: NextRequest) {
     const { users } = body;
 
     if (!users || !Array.isArray(users)) {
-      return NextResponse.json(
-        { error: 'Users array is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Users array is required' }, { status: 400 });
     }
 
-    logger.info(
-      `Multi-account status API route called for ${users.length} users`
-    );
+    logger.info(`Multi-account status API route called for ${users.length} users`);
 
     const playerData = [];
 
@@ -69,28 +64,19 @@ export async function POST(request: NextRequest) {
         // Continue processing other users even if one fails
         playerData.push({
           username: user,
-          error:
-            userError instanceof Error
-              ? userError.message
-              : 'Failed to fetch user data',
+          error: userError instanceof Error ? userError.message : 'Failed to fetch user data',
         });
       }
     }
 
-    logger.info(
-      `Multi-account status API route completed: ${playerData.length} users processed`
-    );
+    logger.info(`Multi-account status API route completed: ${playerData.length} users processed`);
     return NextResponse.json({
       players: playerData,
       timestamp: new Date().toISOString(),
     });
   } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error(`Multi-account status API error: ${errorMessage}`);
-    return NextResponse.json(
-      { error: 'Failed to fetch player data' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch player data' }, { status: 500 });
   }
 }

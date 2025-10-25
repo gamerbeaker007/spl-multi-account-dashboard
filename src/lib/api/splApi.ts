@@ -39,9 +39,7 @@ splBaseClient.defaults.raxConfig = {
 /**
  * Fetch player balances from Splinterlands API
  */
-export async function fetchPlayerBalances(
-  username: string
-): Promise<SplBalance[]> {
+export async function fetchPlayerBalances(username: string): Promise<SplBalance[]> {
   const url = '/players/balances';
   logger.info('Fetching player balances from Splinterlands API');
 
@@ -55,9 +53,7 @@ export async function fetchPlayerBalances(
 
     // Handle API-level error even if HTTP status is 200
     if (!data || !Array.isArray(data)) {
-      throw new Error(
-        'Invalid response from Splinterlands API: expected array'
-      );
+      throw new Error('Invalid response from Splinterlands API: expected array');
     }
 
     logger.info(`Fetched ${data.length} player balances`);
@@ -75,9 +71,7 @@ export async function fetchPlayerBalances(
 /**
  * Fetch Ranked Draws from Splinterlands API
  */
-export async function fetchRankedDraws(
-  username: string
-): Promise<SplRankedDrawStatus> {
+export async function fetchRankedDraws(username: string): Promise<SplRankedDrawStatus> {
   const url = '/ranked_draws/status';
   logger.info('Fetching ranked draws from Splinterlands API');
 
@@ -91,9 +85,7 @@ export async function fetchRankedDraws(
 
     // Handle API-level error even if HTTP status is 200
     if (!data) {
-      throw new Error(
-        'Invalid response from Splinterlands API: expected array'
-      );
+      throw new Error('Invalid response from Splinterlands API: expected array');
     }
 
     return data as SplRankedDrawStatus;
@@ -109,9 +101,7 @@ export async function fetchRankedDraws(
 /**
  * Fetch frontier draws from Splinterlands API
  */
-export async function fetchFrontierDraws(
-  username: string
-): Promise<SplFrontierDrawStatus> {
+export async function fetchFrontierDraws(username: string): Promise<SplFrontierDrawStatus> {
   const url = '/frontier_draws/status';
   logger.info('Fetching frontier draws from Splinterlands API');
 
@@ -125,9 +115,7 @@ export async function fetchFrontierDraws(
 
     // Handle API-level error even if HTTP status is 200
     if (!data) {
-      throw new Error(
-        'Invalid response from Splinterlands API: expected array'
-      );
+      throw new Error('Invalid response from Splinterlands API: expected array');
     }
 
     return data as SplFrontierDrawStatus;
@@ -158,9 +146,7 @@ export async function fetchLeaderboardWithPlayer(
 
     // Handle API-level error even if HTTP status is 200
     if (!data) {
-      throw new Error(
-        'Invalid response from Splinterlands API: expected array'
-      );
+      throw new Error('Invalid response from Splinterlands API: expected array');
     }
 
     return data as SplLeaderboardResponse;
@@ -173,9 +159,7 @@ export async function fetchLeaderboardWithPlayer(
 }
 
 //   'https://api.splinterlands.com/market/for_sale_grouped' \
-export async function fetchListingPrices(): Promise<
-  SplCardListingPriceEntry[]
-> {
+export async function fetchListingPrices(): Promise<SplCardListingPriceEntry[]> {
   const url = '/market/for_sale_grouped';
   logger.info('Fetching market for sale grouped from Splinterlands API');
 
@@ -185,9 +169,7 @@ export async function fetchListingPrices(): Promise<
 
     // Handle API-level error even if HTTP status is 200
     if (!data) {
-      throw new Error(
-        'Invalid response from Splinterlands API: expected array'
-      );
+      throw new Error('Invalid response from Splinterlands API: expected array');
     }
 
     return data as SplCardListingPriceEntry[];
@@ -200,9 +182,7 @@ export async function fetchListingPrices(): Promise<
 }
 
 //   'https://api.splinterlands.com/cards/collection/beaker007' \
-export async function fetchCardCollection(
-  username: string
-): Promise<SplCardCollection> {
+export async function fetchCardCollection(username: string): Promise<SplCardCollection> {
   const url = '/cards/collection/' + encodeURIComponent(username);
   logger.info('Fetching card collection from Splinterlands API');
 
@@ -212,9 +192,7 @@ export async function fetchCardCollection(
 
     // Handle API-level error even if HTTP status is 200
     if (!data) {
-      throw new Error(
-        'Invalid response from Splinterlands API: expected array'
-      );
+      throw new Error('Invalid response from Splinterlands API: expected array');
     }
 
     return data as SplCardCollection;
@@ -243,9 +221,7 @@ export async function getAuthorizationHeader(
 
     return headers ? headers : undefined;
   } catch (error) {
-    logger.warn(
-      `Failed to read auth token from cookies: ${JSON.stringify(error)}`
-    );
+    logger.warn(`Failed to read auth token from cookies: ${JSON.stringify(error)}`);
     return undefined;
   }
 }
@@ -274,9 +250,7 @@ export async function fetchDailyProgress(
 
     // Handle API-level error even if HTTP status is 200
     if (!data) {
-      throw new Error(
-        'Invalid response from Splinterlands API: expected array'
-      );
+      throw new Error('Invalid response from Splinterlands API: expected array');
     }
 
     return data;

@@ -5,20 +5,13 @@ import { isValidOrigin } from '@/lib/auth/csrf';
 
 // Initialize CSRF with a secret from environment
 const csrfInstance = new csrf();
-const CSRF_SECRET =
-  process.env.CSRF_SECRET || 'default-csrf-secret-change-in-production';
+const CSRF_SECRET = process.env.CSRF_SECRET || 'default-csrf-secret-change-in-production';
 
 export async function GET(request: NextRequest) {
   try {
     if (!isValidOrigin(request)) {
-      console.error(
-        '❌ Origin validation failed',
-        'Invalid origin in CSRF request'
-      );
-      return NextResponse.json(
-        { error: 'Origin not allowed' },
-        { status: 403 }
-      );
+      console.error('❌ Origin validation failed', 'Invalid origin in CSRF request');
+      return NextResponse.json({ error: 'Origin not allowed' }, { status: 403 });
     }
 
     // Generate a new CSRF token
@@ -41,9 +34,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error generating CSRF token:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate CSRF token' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to generate CSRF token' }, { status: 500 });
   }
 }

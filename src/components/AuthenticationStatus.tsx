@@ -4,24 +4,39 @@ import LockOpenIcon from '@mui/icons-material/LockOpen';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Box, Button, Chip, Tooltip } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Props {
   username: string;
+  onAuthChange?: () => void;
 }
 
-export const AuthenticationStatus = ({ username }: Props) => {
+export const AuthenticationStatus = ({ username, onAuthChange }: Props) => {
   const { isUserAuthenticated, loginUser, logoutUser, loading } = useAuth();
   const [loggingIn, setLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [justLoggedIn, setJustLoggedIn] = useState(false);
+  const [justLoggedOut, setJustLoggedOut] = useState(false);
 
   const isAuthenticated = isUserAuthenticated(username);
+
+  // Watch for authentication changes and trigger refresh
+  useEffect(() => {
+    if (justLoggedIn && isAuthenticated) {
+      setJustLoggedIn(false);
+      onAuthChange?.();
+    } else if (justLoggedOut && !isAuthenticated) {
+      setJustLoggedOut(false);
+      onAuthChange?.();
+    }
+  }, [isAuthenticated, justLoggedIn, justLoggedOut, onAuthChange]);
 
   const handleLogin = async () => {
     try {
       setLoggingIn(true);
       setLoginError(null);
       await loginUser(username);
+      setJustLoggedIn(true); // Flag that we just logged in
     } catch (error) {
       // Don't log to console - just show user-friendly message
       setLoginError(error instanceof Error ? error.message : 'Login failed');
@@ -34,6 +49,7 @@ export const AuthenticationStatus = ({ username }: Props) => {
     try {
       await logoutUser(username);
       setLoginError(null); // Clear any previous login errors
+      setJustLoggedOut(true); // Flag that we just logged out
     } catch (error) {
       // Logout failures are less common, but still handle gracefully
       setLoginError(error instanceof Error ? error.message : 'Logout failed');

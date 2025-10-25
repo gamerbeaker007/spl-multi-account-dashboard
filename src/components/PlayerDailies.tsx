@@ -1,9 +1,6 @@
 import { SplDailyProgress } from '@/types/spl/dailies';
 import { SplLeaderboardPlayer } from '@/types/spl/leaderboard';
-import {
-  Timer as TimerIcon,
-  EmojiEvents as TrophyIcon,
-} from '@mui/icons-material';
+import { Timer as TimerIcon, EmojiEvents as TrophyIcon } from '@mui/icons-material';
 import {
   Alert,
   Box,
@@ -54,10 +51,7 @@ const DailyProgressCard = ({
 
   const endDate = new Date(progress.end_date);
   const timeRemaining = endDate.getTime() - currentTime;
-  const hoursRemaining = Math.max(
-    0,
-    Math.floor(timeRemaining / (1000 * 60 * 60))
-  );
+  const hoursRemaining = Math.max(0, Math.floor(timeRemaining / (1000 * 60 * 60)));
 
   return (
     <Card variant="outlined" sx={{ mb: 1, flex: 1 }}>
@@ -93,11 +87,7 @@ const DailyProgressCard = ({
               minWidth: 60,
             }}
           />
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ minWidth: '35px' }}
-          >
+          <Typography variant="body2" color="text.secondary" sx={{ minWidth: '35px' }}>
             {Math.round((progress.total_wins / maxEntriesPerDay) * 100)}%
           </Typography>
         </Box>
@@ -128,11 +118,7 @@ const DailyProgressCard = ({
 
         {/* Max Ranked Entries */}
         {progress.current_rewards?.max_ranked_entries && (
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ mt: 1, display: 'block' }}
-          >
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
             Max Ranked Entries: {progress.current_rewards.max_ranked_entries}
           </Typography>
         )}
@@ -160,8 +146,8 @@ export default function PlayerDailies({
 
   if (dailyProgressError) {
     return (
-      <Alert severity="error" sx={{ mb: 2 }}>
-        Daily Progress Error: {dailyProgressError}
+      <Alert severity="warning" sx={{ mb: 2 }}>
+        {dailyProgressError}
       </Alert>
     );
   }
@@ -180,18 +166,12 @@ export default function PlayerDailies({
 
   return (
     <Box width={'100%'}>
-      <Typography
-        variant="h6"
-        gutterBottom
-        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-      >
+      <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <TrophyIcon color="primary" />
         Daily Progress
       </Typography>
 
-      <Box
-        sx={{ display: 'flex', flexDirection: 'row', gap: 1, width: '100%' }}
-      >
+      <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, width: '100%' }}>
         {dailyProgress.foundation && hasFrontierMatches && (
           <DailyProgressCard
             title="Foundation"
@@ -200,19 +180,11 @@ export default function PlayerDailies({
           />
         )}
         {dailyProgress.wild && hasWildMatches && (
-          <DailyProgressCard
-            title="Wild"
-            progress={dailyProgress.wild}
-            color="secondary"
-          />
+          <DailyProgressCard title="Wild" progress={dailyProgress.wild} color="secondary" />
         )}
 
         {dailyProgress.modern && hasModernMatches && (
-          <DailyProgressCard
-            title="Modern"
-            progress={dailyProgress.modern}
-            color="success"
-          />
+          <DailyProgressCard title="Modern" progress={dailyProgress.modern} color="success" />
         )}
       </Box>
     </Box>

@@ -46,12 +46,7 @@ const MyProgressBar = ({ value, max }: { value: number; max: number }) => {
   );
 };
 
-export default function PlayerDraws({
-  balances,
-  frontier,
-  ranked,
-  leaderboards,
-}: Props) {
+export default function PlayerDraws({ balances, frontier, ranked, leaderboards }: Props) {
   // Calculate ranked energy from ECR balance
   const rankedEcr = balances.find(bal => bal.token === 'ECR');
   const rankedEnergy = rankedEcr
@@ -69,15 +64,12 @@ export default function PlayerDraws({
 
   const hasFrontierMatches = (leaderboards?.foundation?.battles ?? 0) > 0;
   const hasRankedMatches =
-    ((leaderboards?.wild?.battles ?? 0) ||
-      (leaderboards?.modern?.battles ?? 0)) > 0;
+    ((leaderboards?.wild?.battles ?? 0) || (leaderboards?.modern?.battles ?? 0)) > 0;
 
   return (
     <Box mb={2} width={'100%'}>
       <Typography variant="h6">Modes</Typography>
-      <Box
-        sx={{ display: 'flex', flexDirection: 'row', gap: 2, width: '100%' }}
-      >
+      <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, width: '100%' }}>
         {frontier && hasFrontierMatches && (
           <Card variant="outlined" sx={{ flex: 1, p: 1 }}>
             <Typography variant="subtitle2" color="primary">
@@ -112,8 +104,7 @@ export default function PlayerDraws({
               {ranked.current_ranked_draw.total_entries}
             </Typography>
             <Typography variant="body2">
-              Has Pass:{' '}
-              {ranked.current_ranked_draw.player_has_pass ? 'Yes' : 'No'}
+              Has Pass: {ranked.current_ranked_draw.player_has_pass ? 'Yes' : 'No'}
             </Typography>
             {ranked.first_unclaimed_ranked_draw && (
               <Typography variant="body2" color="warning.main">

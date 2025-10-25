@@ -54,9 +54,7 @@ export const useDailyProgress = (): UseDailyProgressReturn => {
         );
 
         if (authenticatedUsers.length === 0) {
-          setError(
-            'No authenticated users found. Please log in to view daily progress.'
-          );
+          setError('Not authenticated, please log in to show daily progress');
           setLoading(false);
           return;
         }
@@ -73,17 +71,14 @@ export const useDailyProgress = (): UseDailyProgressReturn => {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(
-            errorData.error ||
-              `Failed to fetch daily progress: ${response.status}`
-          );
+          throw new Error(errorData.error || `Failed to fetch daily progress: ${response.status}`);
         }
 
         const responseData: DailyProgressResponse = await response.json();
+        console.log('Fetched daily progress data:', responseData);
         setData(responseData);
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Unknown error occurred';
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
         console.error('Daily progress fetch error:', err);
         setError(errorMessage);
         setData(null);

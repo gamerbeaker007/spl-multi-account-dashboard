@@ -26,9 +26,7 @@ const getAllowedOrigins = (): string[] => {
       // Ensure we have full URLs for comparison
       if (!origin.startsWith('http://') && !origin.startsWith('https://')) {
         // For production domains, assume https
-        return origin.includes('localhost')
-          ? `http://${origin}`
-          : `https://${origin}`;
+        return origin.includes('localhost') ? `http://${origin}` : `https://${origin}`;
       }
       return origin;
     });
@@ -57,10 +55,7 @@ export const isValidOrigin = (request: NextRequest): boolean => {
       if (host) {
         const hostWithHttps = `https://${host}`;
         const hostWithHttp = `http://${host}`;
-        if (
-          allowedOrigins.includes(hostWithHttps) ||
-          allowedOrigins.includes(hostWithHttp)
-        ) {
+        if (allowedOrigins.includes(hostWithHttps) || allowedOrigins.includes(hostWithHttp)) {
           return true;
         }
       }

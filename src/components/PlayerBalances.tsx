@@ -22,9 +22,7 @@ export default function PlayerBalances({
   cardDataError,
 }: Props) {
   return (
-    <Box
-      sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 1 }}
-    >
+    <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 1 }}>
       <TopBalances balances={balances} />
 
       <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>

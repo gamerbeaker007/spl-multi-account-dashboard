@@ -7,10 +7,7 @@
  * Simple base64 encoding for development
  * In production, you should use proper encryption
  */
-export async function encryptToken(
-  token: string,
-  secretKey: string
-): Promise<string> {
+export async function encryptToken(token: string, secretKey: string): Promise<string> {
   try {
     // For development, we'll use simple base64 encoding with a prefix
     // In production, implement proper AES encryption
@@ -28,10 +25,7 @@ export async function encryptToken(
  * Simple base64 decoding for development
  * In production, you should use proper decryption
  */
-export async function decryptToken(
-  encryptedToken: string,
-  secretKey: string
-): Promise<string> {
+export async function decryptToken(encryptedToken: string, secretKey: string): Promise<string> {
   try {
     // Check if it's our development format
     if (!encryptedToken.startsWith('dev_')) {

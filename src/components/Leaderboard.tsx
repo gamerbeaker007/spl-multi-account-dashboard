@@ -24,9 +24,8 @@ export default function Leaderboard({ leaderboards }: Props) {
     return ratingB - ratingA;
   });
 
-  const firstValidSeason = leaderboardsArray.find(
-    ([, leaderboard]) => leaderboard?.season
-  )?.[1]?.season;
+  const firstValidSeason = leaderboardsArray.find(([, leaderboard]) => leaderboard?.season)?.[1]
+    ?.season;
 
   return (
     <Box sx={{ mt: 2 }}>
@@ -34,9 +33,7 @@ export default function Leaderboard({ leaderboards }: Props) {
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
         Season #{firstValidSeason}
       </Typography>
-      <Box
-        sx={{ display: 'flex', flexDirection: 'row', gap: 1, width: '100%' }}
-      >
+      <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, width: '100%' }}>
         {leaderboardsArray.map(([format, leaderboard]) => {
           if ((leaderboard?.battles ?? 0) <= 0) return null;
 
@@ -44,10 +41,7 @@ export default function Leaderboard({ leaderboards }: Props) {
 
           return (
             <Card key={format} variant="outlined" sx={{ flex: 1, p: 1 }}>
-              <Typography
-                variant="subtitle2"
-                sx={{ textTransform: 'capitalize' }}
-              >
+              <Typography variant="subtitle2" sx={{ textTransform: 'capitalize' }}>
                 {format}
               </Typography>
               {leaderboard ? (
@@ -59,24 +53,14 @@ export default function Leaderboard({ leaderboards }: Props) {
                       sx={{ width: leagueLogoSize, height: leagueLogoSize }}
                     />
                   )}
-                  <Typography variant="body2">
-                    Rank: #{leaderboard.rank}
-                  </Typography>
-                  <Typography variant="body2">
-                    Rating: {leaderboard.rating}
-                  </Typography>
-                  <Typography variant="body2">
-                    League: {leaderboard.league}
-                  </Typography>
+                  <Typography variant="body2">Rank: #{leaderboard.rank}</Typography>
+                  <Typography variant="body2">Rating: {leaderboard.rating}</Typography>
+                  <Typography variant="body2">League: {leaderboard.league}</Typography>
                   <Typography variant="body2">
                     Battles: {leaderboard.wins}/{leaderboard.battles}
                   </Typography>
                   <Typography variant="body2">
-                    Ratio:{' '}
-                    {((leaderboard.wins / leaderboard.battles) * 100).toFixed(
-                      1
-                    )}
-                    %
+                    Ratio: {((leaderboard.wins / leaderboard.battles) * 100).toFixed(1)}%
                   </Typography>
                 </Box>
               ) : (

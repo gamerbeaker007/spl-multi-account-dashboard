@@ -11,6 +11,7 @@ interface Props {
     wild: SplLeaderboardPlayer | null;
     modern: SplLeaderboardPlayer | null;
   };
+  onAuthChange?: () => void;
 }
 
 const avatarSize = 25;
@@ -34,14 +35,13 @@ function getHighestLeaderboard(leaderboards: Props['leaderboards']): {
     format: SplFormat;
   } | null>((highest, current) => {
     return !highest ||
-      (current.leaderboard &&
-        current.leaderboard.rating > (highest.leaderboard?.rating || 0))
+      (current.leaderboard && current.leaderboard.rating > (highest.leaderboard?.rating || 0))
       ? current
       : highest;
   }, null);
 }
 
-export default function PlayerInfo({ username, leaderboards }: Props) {
+export default function PlayerInfo({ username, leaderboards, onAuthChange }: Props) {
   const result = getHighestLeaderboard(leaderboards);
   const leaderboard = result?.leaderboard || null;
   const format = result?.format || null;
@@ -66,7 +66,7 @@ export default function PlayerInfo({ username, leaderboards }: Props) {
     >
       {/* Authentication Status */}
       <Box sx={{ mb: 1 }}>
-        <AuthenticationStatus username={username} />
+        <AuthenticationStatus username={username} onAuthChange={onAuthChange} />
       </Box>
 
       <Box

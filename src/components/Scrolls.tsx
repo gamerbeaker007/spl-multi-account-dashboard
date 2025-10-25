@@ -15,14 +15,10 @@ interface Props {
 
 export default function Scrolls({ balances }: Props) {
   // Extract balance values
-  const common_unbind =
-    balances.find(b => b.token === 'UNBIND_CA_C')?.balance || 0;
-  const rare_unbind =
-    balances.find(b => b.token === 'UNBIND_CA_R')?.balance || 0;
-  const epic_unbind =
-    balances.find(b => b.token === 'UNBIND_CA_E')?.balance || 0;
-  const legendary_unbind =
-    balances.find(b => b.token === 'UNBIND_CA_L')?.balance || 0;
+  const common_unbind = balances.find(b => b.token === 'UNBIND_CA_C')?.balance || 0;
+  const rare_unbind = balances.find(b => b.token === 'UNBIND_CA_R')?.balance || 0;
+  const epic_unbind = balances.find(b => b.token === 'UNBIND_CA_E')?.balance || 0;
+  const legendary_unbind = balances.find(b => b.token === 'UNBIND_CA_L')?.balance || 0;
 
   return (
     <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>

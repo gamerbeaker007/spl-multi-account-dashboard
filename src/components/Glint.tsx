@@ -18,11 +18,7 @@ export default function Glint({ balances }: Props) {
         <Typography variant="h6" sx={{ width: '100%' }}>
           Glint
         </Typography>
-        <BalanceItem
-          iconUrl={glint_icon_url}
-          title="Glint"
-          value={largeNumberFormat(glint)}
-        />
+        <BalanceItem iconUrl={glint_icon_url} title="Glint" value={largeNumberFormat(glint)} />
       </Stack>
     </Box>
   );

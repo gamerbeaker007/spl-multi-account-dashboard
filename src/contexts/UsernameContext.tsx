@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 interface UsernameContextType {
   usernames: string[];
@@ -15,18 +9,14 @@ interface UsernameContextType {
   isInitialized: boolean;
 }
 
-const UsernameContext = createContext<UsernameContextType | undefined>(
-  undefined
-);
+const UsernameContext = createContext<UsernameContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'spl-dashboard-usernames';
 
 export const useUsernameContext = () => {
   const context = useContext(UsernameContext);
   if (!context) {
-    throw new Error(
-      'useUsernameContext must be used within a UsernameProvider'
-    );
+    throw new Error('useUsernameContext must be used within a UsernameProvider');
   }
   return context;
 };
@@ -35,9 +25,7 @@ interface UsernameProviderProps {
   children: ReactNode;
 }
 
-export const UsernameProvider: React.FC<UsernameProviderProps> = ({
-  children,
-}) => {
+export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) => {
   const [usernames, setUsernamesState] = useState<string[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -94,9 +82,5 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({
     isInitialized,
   };
 
-  return (
-    <UsernameContext.Provider value={value}>
-      {children}
-    </UsernameContext.Provider>
-  );
+  return <UsernameContext.Provider value={value}>{children}</UsernameContext.Provider>;
 };

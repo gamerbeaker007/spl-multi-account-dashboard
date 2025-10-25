@@ -1,10 +1,6 @@
 import { PlayerCardCollectionData } from '@/hooks/usePlayerCardCollection';
 import { Edition, EditionValues } from '@/lib/collectionUtils';
-import {
-  EDITION_ICON_MAPPING,
-  EDITION_MAPPING,
-  hammer_icon_url,
-} from '@/lib/statics_icon_urls';
+import { EDITION_ICON_MAPPING, EDITION_MAPPING, hammer_icon_url } from '@/lib/statics_icon_urls';
 import { largeNumberFormat } from '@/lib/utils';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
@@ -25,11 +21,7 @@ import { TbCards } from 'react-icons/tb';
 import { BalanceItem } from './BalanceItem';
 
 // Component to render edition breakdown tooltip content
-const EditionTooltipContent = ({
-  editionValues,
-}: {
-  editionValues: EditionValues;
-}) => {
+const EditionTooltipContent = ({ editionValues }: { editionValues: EditionValues }) => {
   return (
     <Box>
       <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
@@ -41,39 +33,21 @@ const EditionTooltipContent = ({
           .sort(([a], [b]) => Number(a) - Number(b)) // Sort by edition number
           .map(([editionId, values]) => {
             const editionNum = Number(editionId) as Edition;
-            const editionName =
-              EDITION_MAPPING[editionNum] || `Edition ${editionId}`;
+            const editionName = EDITION_MAPPING[editionNum] || `Edition ${editionId}`;
             const iconUrl = EDITION_ICON_MAPPING[editionNum];
 
             return (
-              <Box
-                key={editionId}
-                sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-              >
-                {iconUrl && (
-                  <Image
-                    src={iconUrl}
-                    alt={editionName}
-                    width={20}
-                    height={20}
-                  />
-                )}
+              <Box key={editionId} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {iconUrl && <Image src={iconUrl} alt={editionName} width={20} height={20} />}
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography variant="body2" sx={{ fontWeight: 500 }}>
                     {editionName}
                   </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ display: 'block', opacity: 0.9 }}
-                  >
+                  <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
                     {largeNumberFormat(values.numberOfCards)} cards •{' '}
-                    {largeNumberFormat(values.numberOfSellableCards)} sellable
-                    cards
+                    {largeNumberFormat(values.numberOfSellableCards)} sellable cards
                   </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ display: 'block', opacity: 0.9 }}
-                  >
+                  <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
                     List: ${largeNumberFormat(values.listValue)} • Market: $
                     {largeNumberFormat(values.marketValue)}
                   </Typography>
@@ -92,11 +66,7 @@ interface Props {
   cardDataError?: string | null;
 }
 
-export default function CardCollection({
-  cardData,
-  cardDataLoading,
-  cardDataError,
-}: Props) {
+export default function CardCollection({ cardData, cardDataLoading, cardDataError }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleOpenDialog = () => setDialogOpen(true);
@@ -123,13 +93,10 @@ export default function CardCollection({
     return null;
   }
   const collectionPower = cardData?.collectionPower || 0;
-  const totalMarketValue =
-    cardData?.playerCollectionValue.totalMarketValue || 0;
+  const totalMarketValue = cardData?.playerCollectionValue.totalMarketValue || 0;
   const totalListValue = cardData?.playerCollectionValue.totalListValue || 0;
-  const totalNumberOfCards =
-    cardData?.playerCollectionValue.totalNumberOfCards || 0;
-  const totalNumberOfSellableCards =
-    cardData?.playerCollectionValue.totalSellableCards || 0;
+  const totalNumberOfCards = cardData?.playerCollectionValue.totalNumberOfCards || 0;
+  const totalNumberOfSellableCards = cardData?.playerCollectionValue.totalSellableCards || 0;
 
   return (
     <>
@@ -139,11 +106,7 @@ export default function CardCollection({
             <Typography variant="h6" sx={{ width: '100%' }}>
               Card Collection
             </Typography>
-            <IconButton
-              size="small"
-              onClick={handleOpenDialog}
-              sx={{ color: 'primary.main' }}
-            >
+            <IconButton size="small" onClick={handleOpenDialog} sx={{ color: 'primary.main' }}>
               <InfoIcon fontSize="small" />
             </IconButton>
           </Box>
@@ -198,12 +161,7 @@ export default function CardCollection({
         </Stack>
       </Box>
 
-      <Dialog
-        open={dialogOpen}
-        onClose={handleCloseDialog}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>
           <Box
             sx={{
@@ -219,9 +177,7 @@ export default function CardCollection({
           </Box>
         </DialogTitle>
         <DialogContent>
-          <EditionTooltipContent
-            editionValues={cardData.playerCollectionValue.editionValues}
-          />
+          <EditionTooltipContent editionValues={cardData.playerCollectionValue.editionValues} />
         </DialogContent>
       </Dialog>
     </>
