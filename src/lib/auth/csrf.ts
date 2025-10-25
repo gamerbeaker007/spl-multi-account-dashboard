@@ -21,7 +21,17 @@ const getAllowedOrigins = (): string[] => {
   return origins
     .split(',')
     .map(origin => origin.trim())
-    .map(origin => (origin.endsWith('/') ? origin.slice(0, -1) : origin)); // Remove trailing slashes
+    .map(origin => (origin.endsWith('/') ? origin.slice(0, -1) : origin)) // Remove trailing slashes
+    .map(origin => {
+      // Ensure we have full URLs for comparison
+      if (!origin.startsWith('http://') && !origin.startsWith('https://')) {
+        // For production domains, assume https
+        return origin.includes('localhost')
+          ? `http://${origin}`
+          : `https://${origin}`;
+      }
+      return origin;
+    });
 };
 
 // Validate origin
@@ -45,12 +55,29 @@ export const isValidOrigin = (request: NextRequest): boolean => {
     if (!origin && !referer) {
       // Allow if host matches any allowed origin
       if (host) {
-        const hostWithProtocol = `https://${host}`;
-        if (allowedOrigins.includes(hostWithProtocol)) {
+        const hostWithHttps = `https://${host}`;
+        const hostWithHttp = `http://${host}`;
+        if (
+          allowedOrigins.includes(hostWithHttps) ||
+          allowedOrigins.includes(hostWithHttp)
+        ) {
           return true;
         }
       }
-      return true; // Allow for development
+      return false; // Don't allow if we can't verify
+    }
+
+    // For same-origin requests where we have referer but no origin
+    if (!origin && referer) {
+      try {
+        const refererUrl = new URL(referer);
+        const refererOrigin = refererUrl.origin;
+        if (allowedOrigins.includes(refererOrigin)) {
+          return true;
+        }
+      } catch (error) {
+        console.error('Error parsing referer URL:', error);
+      }
     }
 
     // Check origin header
