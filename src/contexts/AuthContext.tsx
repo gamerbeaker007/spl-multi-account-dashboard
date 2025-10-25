@@ -65,16 +65,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Save authenticated users to localStorage
-  const saveAuthenticatedUsers = (users: AuthenticatedUser[]) => {
-    setAuthenticatedUsers(users);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
-    } catch (error) {
-      console.error('Error saving authenticated users to localStorage:', error);
-    }
-  };
-
   // Sign message with Keychain
   const signWithKeychain = async (
     username: string,
@@ -179,11 +169,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: true,
       };
 
-      const updatedUsers = authenticatedUsers.filter(
-        u => u.username !== username.toLowerCase()
-      );
-      updatedUsers.push(newUser);
-      saveAuthenticatedUsers(updatedUsers);
+      // Use functional update to ensure we have the latest state
+      setAuthenticatedUsers(currentUsers => {
+        const updatedUsers = currentUsers.filter(
+          u => u.username !== username.toLowerCase()
+        );
+        updatedUsers.push(newUser);
+        
+        // Also update localStorage
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUsers));
+        } catch (error) {
+          console.error('Error saving authenticated users to localStorage:', error);
+        }
+        
+        return updatedUsers;
+      });
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -200,10 +201,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logoutUser = async (username: string) => {
     try {
       setError(null);
-      const updatedUsers = authenticatedUsers.filter(
-        u => u.username !== username.toLowerCase()
-      );
-      saveAuthenticatedUsers(updatedUsers);
+      
+      // Use functional update to ensure we have the latest state
+      setAuthenticatedUsers(currentUsers => {
+        const updatedUsers = currentUsers.filter(
+          u => u.username !== username.toLowerCase()
+        );
+        
+        // Also update localStorage
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUsers));
+        } catch (error) {
+          console.error('Error saving authenticated users to localStorage:', error);
+        }
+        
+        return updatedUsers;
+      });
     } catch (error) {
       const errorMsg = 'Logout error';
       console.error(errorMsg, error);
@@ -215,7 +228,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logoutAll = async () => {
     try {
       setError(null);
-      saveAuthenticatedUsers([]);
+      
+      // Clear all authenticated users
+      setAuthenticatedUsers([]);
+      
+      // Also clear localStorage
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+      } catch (error) {
+        console.error('Error clearing authenticated users from localStorage:', error);
+      }
     } catch (error) {
       const errorMsg = 'Logout all error';
       console.error(errorMsg, error);
