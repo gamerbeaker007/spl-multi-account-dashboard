@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Users array is required' }, { status: 400 });
     }
 
-    logger.info(`Multi-account status API route called for ${users.length} users`);
+    logger.info(`Fetching collection information for users: ${users}`);
 
     const listPricing = await fetchListingPrices();
     const marketPricing = await fetchMarketPrices();
@@ -23,8 +23,6 @@ export async function POST(request: NextRequest) {
 
     for (const user of users) {
       try {
-        logger.info(`Fetching data for user: ${user}`);
-
         const playerCollection = await fetchCardCollection(user);
 
         const totalCollectionPower = playerCollection.cards.reduce(
@@ -45,17 +43,17 @@ export async function POST(request: NextRequest) {
         });
       } catch (userError) {
         logger.error(
-          `Failed to fetch data for user ${user}: ${userError instanceof Error ? userError.message : 'Unknown error'}`
+          `Failed to fetch data for user ${user.username} - ${userError instanceof Error ? userError.message : 'Unknown error'}`
         );
         // Continue processing other users even if one fails
         playerData.push({
-          username: user,
+          username: user.username,
           error: userError instanceof Error ? userError.message : 'Failed to fetch user data',
         });
       }
     }
 
-    logger.info(`Multi-account status API route completed: ${playerData.length} users processed`);
+    logger.info(`Successfully fetched collection data for all users ${users.length}`);
     return NextResponse.json({
       players: playerData,
       timestamp: new Date().toISOString(),

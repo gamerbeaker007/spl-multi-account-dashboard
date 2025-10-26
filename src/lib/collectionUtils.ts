@@ -73,7 +73,7 @@ export async function getPlayerCollectionValue(
 ): Promise<PlayerCollectionValue> {
   const account = playerCollection.player;
   const playerCards = playerCollection.cards;
-  logger.info(`Getting card values for account: ${account}`);
+  logger.debug(`Getting card values for account: ${account}`);
 
   const totalNumberOfCards = playerCards.length;
   const totalBcx = playerCards.reduce((total, card) => total + card.bcx, 0);

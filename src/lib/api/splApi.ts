@@ -41,7 +41,7 @@ splBaseClient.defaults.raxConfig = {
  */
 export async function fetchPlayerBalances(username: string): Promise<SplBalance[]> {
   const url = '/players/balances';
-  logger.info('Fetching player balances from Splinterlands API');
+  logger.debug('Fetching player balances from Splinterlands API');
 
   const params = {
     username: username,
@@ -55,8 +55,6 @@ export async function fetchPlayerBalances(username: string): Promise<SplBalance[
     if (!data || !Array.isArray(data)) {
       throw new Error('Invalid response from Splinterlands API: expected array');
     }
-
-    logger.info(`Fetched ${data.length} player balances`);
 
     return data as SplBalance[];
   } catch (error) {
@@ -73,7 +71,7 @@ export async function fetchPlayerBalances(username: string): Promise<SplBalance[
  */
 export async function fetchRankedDraws(username: string): Promise<SplRankedDrawStatus> {
   const url = '/ranked_draws/status';
-  logger.info('Fetching ranked draws from Splinterlands API');
+  logger.debug('Fetching ranked draws from Splinterlands API');
 
   const params = {
     username: username,
@@ -103,7 +101,7 @@ export async function fetchRankedDraws(username: string): Promise<SplRankedDrawS
  */
 export async function fetchFrontierDraws(username: string): Promise<SplFrontierDrawStatus> {
   const url = '/frontier_draws/status';
-  logger.info('Fetching frontier draws from Splinterlands API');
+  logger.debug('Fetching frontier draws from Splinterlands API');
 
   const params = {
     username: username,
@@ -133,7 +131,7 @@ export async function fetchLeaderboardWithPlayer(
   format: SplFormat
 ): Promise<SplLeaderboardResponse> {
   const url = '/players/leaderboard_with_player';
-  logger.info('Fetching leaderboard with player from Splinterlands API');
+  logger.debug('Fetching leaderboard with player from Splinterlands API');
 
   const params = {
     username: username,
@@ -161,7 +159,7 @@ export async function fetchLeaderboardWithPlayer(
 //   'https://api.splinterlands.com/market/for_sale_grouped' \
 export async function fetchListingPrices(): Promise<SplCardListingPriceEntry[]> {
   const url = '/market/for_sale_grouped';
-  logger.info('Fetching market for sale grouped from Splinterlands API');
+  logger.debug('Fetching market for sale grouped from Splinterlands API');
 
   try {
     const res = await splBaseClient.get(url);
@@ -184,7 +182,7 @@ export async function fetchListingPrices(): Promise<SplCardListingPriceEntry[]> 
 //   'https://api.splinterlands.com/cards/collection/beaker007' \
 export async function fetchCardCollection(username: string): Promise<SplCardCollection> {
   const url = '/cards/collection/' + encodeURIComponent(username);
-  logger.info('Fetching card collection from Splinterlands API');
+  logger.debug('Fetching card collection from Splinterlands API');
 
   try {
     const res = await splBaseClient.get(url);
@@ -216,7 +214,7 @@ export async function getAuthorizationHeader(
     const headers: Record<string, string> = {};
     if (authToken && authToken.valid && authToken.username === player) {
       headers.Authorization = `Bearer ${decryptedToken}`;
-      logger.info(`Using Bearer token for authenticated request`);
+      logger.debug(`Using Bearer token for authenticated request`);
     }
 
     return headers ? headers : undefined;
@@ -233,7 +231,7 @@ export async function fetchDailyProgress(
   format: SplFormat
 ): Promise<SplDailyProgress> {
   const url = '/dailies/progress';
-  logger.info('Fetching daily progress from Splinterlands API');
+  logger.debug('Fetching daily progress from Splinterlands API');
 
   const params = {
     format: format,
@@ -241,10 +239,6 @@ export async function fetchDailyProgress(
   const headers = await getAuthorizationHeader(player, decryptedToken);
 
   try {
-    logger.info(
-      `Making request to: ${splBaseClient.defaults.baseURL}${url}?${new URLSearchParams(params).toString()}`
-    );
-    logger.info(`Headers: ${JSON.stringify(headers)}`);
     const res = await splBaseClient.get(url, { params, headers });
     const data = res.data;
 

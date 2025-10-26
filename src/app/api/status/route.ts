@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import logger from '@/lib/log/logger.server';
 import {
   fetchFrontierDraws,
   fetchLeaderboardWithPlayer,
   fetchPlayerBalances,
   fetchRankedDraws,
 } from '@/lib/api/splApi';
+import logger from '@/lib/log/logger.server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,14 +17,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Users array is required' }, { status: 400 });
     }
 
-    logger.info(`Multi-account status API route called for ${users.length} users`);
+    logger.info(`Fetching complete status for users: ${users}`);
 
     const playerData = [];
 
     for (const user of users) {
       try {
-        logger.info(`Fetching data for user: ${user}`);
-
         const [
           balances,
           frontierDraws,
@@ -59,17 +57,17 @@ export async function POST(request: NextRequest) {
         playerData.push(userData);
       } catch (userError) {
         logger.error(
-          `Failed to fetch data for user ${user}: ${userError instanceof Error ? userError.message : 'Unknown error'}`
+          `Failed to fetch data for user ${user.username} - ${userError instanceof Error ? userError.message : 'Unknown error'}`
         );
         // Continue processing other users even if one fails
         playerData.push({
-          username: user,
+          username: user.username,
           error: userError instanceof Error ? userError.message : 'Failed to fetch user data',
         });
       }
     }
 
-    logger.info(`Multi-account status API route completed: ${playerData.length} users processed`);
+    logger.info(`Successfully fetched complete status data for all users ${users.length}`);
     return NextResponse.json({
       players: playerData,
       timestamp: new Date().toISOString(),

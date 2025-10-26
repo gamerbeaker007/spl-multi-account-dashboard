@@ -30,7 +30,7 @@ pkmClient.defaults.raxConfig = {
 //   'https://peakmonsters.com/api/market/cards/prices' \
 export async function fetchMarketPrices(): Promise<PeakmonstersMarketPriceEntry[]> {
   const url = '/market/cards/prices';
-  logger.info('Fetching market prices from Peakmonsters API');
+  logger.debug('Fetching market prices from Peakmonsters API');
 
   try {
     const res = await pkmClient.get(url);

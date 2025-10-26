@@ -27,6 +27,10 @@ export async function encryptToken(token: string, secretKey: string): Promise<st
  */
 export async function decryptToken(encryptedToken: string, secretKey: string): Promise<string> {
   try {
+    if (!encryptedToken) {
+      throw new Error('Not Authenticated');
+    }
+
     // Check if it's our development format
     if (!encryptedToken.startsWith('dev_')) {
       throw new Error('Invalid token format');
