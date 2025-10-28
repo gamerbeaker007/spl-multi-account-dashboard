@@ -58,7 +58,7 @@ export default function PlayerDraws({ balances, frontier, ranked, leaderboards }
   const frontierEnergy = frontierEcr
     ? calculateEnergy(
         frontierEcr.balance,
-        String(frontierEcr.last_reward_block) // API returns timestamp in block field
+        frontierEcr.last_reward_time 
       )
     : 0;
 
