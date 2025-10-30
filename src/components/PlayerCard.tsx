@@ -9,7 +9,7 @@ import Leaderboard from './Leaderboard';
 import PlayerBalances from './PlayerBalances';
 import PlayerDailies from './PlayerDailies';
 import PlayerDraws from './PlayerDraws';
-import { PlayerHistoryButton } from './PlayerHistoryButton';
+import { PlayerHistoryButton } from './reward-history/PlayerHistoryButton';
 import PlayerInfo from './PlayerInfo';
 
 interface Props {

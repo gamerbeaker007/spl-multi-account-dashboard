@@ -1,18 +1,11 @@
-import { SplHistory } from '@/types/spl/history';
+import { PlayerRewardHistory } from '@/types/spl/history';
 import { useCallback, useState } from 'react';
+
 
 interface UsePlayerHistoryState {
   isLoading: boolean;
   error: string | null;
-  rewardHistory: {
-    entries: SplHistory[];
-    totalEntries: number;
-    dateRange: {
-      start: string;
-      end: string;
-    };
-    seasonId?: number;
-  } | null;
+  rewardHistory: PlayerRewardHistory | null;
 }
 
 interface UsePlayerHistoryReturn extends UsePlayerHistoryState {
