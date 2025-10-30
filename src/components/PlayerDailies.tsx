@@ -1,5 +1,5 @@
 import { SplDailyProgress } from '@/types/spl/dailies';
-import { SplLeaderboardPlayer } from '@/types/spl/leaderboard';
+import { SplPlayerDetails } from '@/types/spl/details';
 import { Timer as TimerIcon, EmojiEvents as TrophyIcon } from '@mui/icons-material';
 import {
   Alert,
@@ -14,11 +14,7 @@ import {
 import { useEffect, useState } from 'react';
 
 interface Props {
-  leaderboards?: {
-    foundation?: SplLeaderboardPlayer | null;
-    wild?: SplLeaderboardPlayer | null;
-    modern?: SplLeaderboardPlayer | null;
-  };
+  playerDetails?: SplPlayerDetails;
   dailyProgress?: {
     foundation?: SplDailyProgress;
     wild?: SplDailyProgress;
@@ -128,7 +124,7 @@ const DailyProgressCard = ({
 };
 
 export default function PlayerDailies({
-  leaderboards,
+  playerDetails,
   dailyProgress,
   dailyProgressLoading,
   dailyProgressError,
@@ -160,9 +156,9 @@ export default function PlayerDailies({
     );
   }
 
-  const hasWildMatches = (leaderboards?.wild?.battles ?? 0) > 0;
-  const hasModernMatches = (leaderboards?.modern?.battles ?? 0) > 0;
-  const hasFrontierMatches = (leaderboards?.foundation?.battles ?? 0) > 0;
+  const hasWildMatches = (playerDetails?.season_details?.wild?.battles ?? 0) > 0;
+  const hasModernMatches = (playerDetails?.season_details?.modern?.battles ?? 0) > 0;
+  const hasFrontierMatches = (playerDetails?.season_details?.foundation?.battles ?? 0) > 0;
 
   return (
     <Box width={'100%'}>

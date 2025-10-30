@@ -2,9 +2,9 @@ import { LoginResponse } from '@/types/spl/auth';
 import { SplBalance } from '@/types/spl/balances';
 import { SplCardCollection } from '@/types/spl/card';
 import { SplDailyProgress } from '@/types/spl/dailies';
+import { SplPlayerDetails } from '@/types/spl/details';
 import { SplFrontierDrawStatus, SplRankedDrawStatus } from '@/types/spl/draws';
 import { SplFormat } from '@/types/spl/format';
-import { SplLeaderboardResponse } from '@/types/spl/leaderboard';
 import { SplCardListingPriceEntry } from '@/types/spl/market';
 import axios from 'axios';
 import * as rax from 'retry-axios';
@@ -125,36 +125,6 @@ export async function fetchFrontierDraws(username: string): Promise<SplFrontierD
   }
 }
 
-//   'https://api.splinterlands.com/players/leaderboard_with_player?&format=fountdation&username=beaker007' \
-export async function fetchLeaderboardWithPlayer(
-  username: string,
-  format: SplFormat
-): Promise<SplLeaderboardResponse> {
-  const url = '/players/leaderboard_with_player';
-  logger.debug('Fetching leaderboard with player from Splinterlands API');
-
-  const params = {
-    username: username,
-    format: format,
-  };
-
-  try {
-    const res = await splBaseClient.get(url, { params });
-    const data = res.data;
-
-    // Handle API-level error even if HTTP status is 200
-    if (!data) {
-      throw new Error('Invalid response from Splinterlands API: expected array');
-    }
-
-    return data as SplLeaderboardResponse;
-  } catch (error) {
-    logger.error(
-      `Failed to fetch frontier draws: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
-    throw error;
-  }
-}
 
 //   'https://api.splinterlands.com/market/for_sale_grouped' \
 export async function fetchListingPrices(): Promise<SplCardListingPriceEntry[]> {
@@ -255,6 +225,34 @@ export async function fetchDailyProgress(
     throw error;
   }
 }
+
+//https://api.splinterlands.com/players/details?name=beaker007&season_details=true&format=all
+export async function fetchPlayerDetails(
+  player: string,
+): Promise<SplPlayerDetails> {
+  const url = '/players/details';
+  logger.debug('Fetching player details from Splinterlands API');
+  const params = {
+    name: player,
+    season_details: true,
+    format: 'all',
+  };
+  try {
+    const res = await splBaseClient.get(url, { params });
+    const data = res.data;
+    // Handle API-level error even if HTTP status is 200
+    if (!data) {
+      throw new Error('Invalid response from Splinterlands API: expected array');
+    }
+    return data as SplPlayerDetails;
+  } catch (error) {
+    logger.error(
+      `Failed to fetch player details: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
 
 export async function splLogin(
   username: string,

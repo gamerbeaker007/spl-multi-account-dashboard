@@ -1,8 +1,8 @@
 import {
   fetchFrontierDraws,
-  fetchLeaderboardWithPlayer,
   fetchPlayerBalances,
-  fetchRankedDraws,
+  fetchPlayerDetails,
+  fetchRankedDraws
 } from '@/lib/api/splApi';
 import logger from '@/lib/log/logger.server';
 import { NextRequest, NextResponse } from 'next/server';
@@ -27,16 +27,12 @@ export async function POST(request: NextRequest) {
           balances,
           frontierDraws,
           rankedDraws,
-          leaderboardWild,
-          leaderboardFoundation,
-          leaderboardModern,
+          playerDetails,
         ] = await Promise.all([
           fetchPlayerBalances(user),
           fetchFrontierDraws(user),
           fetchRankedDraws(user),
-          fetchLeaderboardWithPlayer(user, 'wild'),
-          fetchLeaderboardWithPlayer(user, 'foundation'),
-          fetchLeaderboardWithPlayer(user, 'modern'),
+          fetchPlayerDetails(user),
         ]);
 
         // Compile into a nice JSON response
@@ -47,11 +43,7 @@ export async function POST(request: NextRequest) {
             frontier: frontierDraws,
             ranked: rankedDraws,
           },
-          leaderboards: {
-            wild: leaderboardWild?.player || null,
-            foundation: leaderboardFoundation?.player || null,
-            modern: leaderboardModern?.player || null,
-          },
+          playerDetails,
         };
 
         playerData.push(userData);

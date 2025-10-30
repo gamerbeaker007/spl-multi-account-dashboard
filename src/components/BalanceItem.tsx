@@ -7,10 +7,12 @@ export const BalanceItem = ({
   iconUrl,
   title,
   value,
+  backgroundColor,
 }: {
   iconUrl: string | ReactElement;
   title: string;
   value: string;
+  backgroundColor?: string;
 }) => {
   const renderIcon = () => {
     if (typeof iconUrl === 'string') {
@@ -40,7 +42,18 @@ export const BalanceItem = ({
 
   return (
     <Tooltip title={title} arrow>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          ...(backgroundColor && {
+            backgroundColor: `${backgroundColor}`,
+            borderRadius: 2,
+            pl: 0.5,
+          }),
+        }}
+      >
         {renderIcon()}
         <Typography variant="body1" sx={{ fontWeight: 600 }}>
           {value}
