@@ -3,7 +3,7 @@ import {
   unbind_ca_e_icon_url,
   unbind_ca_l_icon_url,
   unbind_ca_r_icon_url,
-} from '@/lib/statics_icon_urls';
+} from '@/lib/staticsIconUrls';
 import { largeNumberFormat } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
 import { Box, Stack, Typography } from '@mui/material';

@@ -478,13 +478,14 @@ export async function fetchPlayerHistoryByDateRange(
   }
 
   // Sort by created_date descending (newest first) and remove failed entries
-  allEntries
-    .filter(entry => !entry.success)
+
+  const successfulEntries = allEntries
+    .filter(entry => Boolean(entry.success))
     .sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime());
 
   logger.info(
-    `Completed history fetch for ${player}: ${allEntries.length} entries in ${iterationCount} iterations`
+    `Completed history fetch for ${player}: ${successfulEntries.length} / ${allEntries.length} entries in ${iterationCount} iterations`
   );
 
-  return allEntries;
+  return successfulEntries;
 }

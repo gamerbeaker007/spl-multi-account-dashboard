@@ -1,4 +1,4 @@
-import { avatar_icon_url, findLeagueLogoUrl } from '@/lib/statics_icon_urls';
+import { avatar_icon_url, findLeagueLogoUrl } from '@/lib/staticsIconUrls';
 import { SplLeagueInfo as SplFormatInfo, SplPlayerDetails } from '@/types/spl/details';
 import { SplFormat } from '@/types/spl/format';
 import { Avatar, Box, Typography } from '@mui/material';
@@ -17,7 +17,6 @@ function getHighestRatingFormat(playerDetails: SplPlayerDetails): {
   playerHighestFormatInfo: SplFormatInfo;
   format: SplFormat;
 } | null {
-
   const highest = Object.entries(playerDetails.season_details).reduce<{
     formatInfo: SplFormatInfo;
     format: SplFormat;

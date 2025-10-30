@@ -1,6 +1,6 @@
 import { PlayerCardCollectionData } from '@/hooks/usePlayerCardCollection';
 import { Edition, EditionValues } from '@/lib/collectionUtils';
-import { EDITION_ICON_MAPPING, EDITION_MAPPING, hammer_icon_url } from '@/lib/statics_icon_urls';
+import { EDITION_ICON_MAPPING, EDITION_MAPPING, hammer_icon_url } from '@/lib/staticsIconUrls';
 import { largeNumberFormat } from '@/lib/utils';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';

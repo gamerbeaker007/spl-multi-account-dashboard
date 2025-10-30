@@ -1,4 +1,4 @@
-import { gold_icon_url, legendary_icon_url, midnight_icon_url } from '@/lib/statics_icon_urls';
+import { gold_icon_url, legendary_icon_url, midnight_icon_url } from '@/lib/staticsIconUrls';
 import { largeNumberFormat } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
 import { Box, Stack, Typography } from '@mui/material';

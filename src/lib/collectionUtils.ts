@@ -6,7 +6,7 @@ import {
   SplPlayerCard,
 } from '@/types/spl/card';
 import { SplCardListingPriceEntry } from '@/types/spl/market';
-import { EDITION_MAPPING } from './statics_icon_urls';
+import { EDITION_MAPPING } from './staticsIconUrls';
 
 export interface PlayerCollectionValue {
   date: string;

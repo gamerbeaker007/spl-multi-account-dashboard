@@ -1,11 +1,11 @@
 import { Avatar, Box, Card, Typography } from '@mui/material';
 
-import { findLeagueLogoUrl } from '@/lib/statics_icon_urls';
+import { findLeagueLogoUrl } from '@/lib/staticsIconUrls';
 import { SplLeagueInfo, SplPlayerDetails } from '@/types/spl/details';
 import { SplFormat } from '@/types/spl/format';
 
 interface Props {
-  playerDetails?: SplPlayerDetails
+  playerDetails?: SplPlayerDetails;
 }
 
 const leagueLogoSize = 64;
