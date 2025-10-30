@@ -9,6 +9,7 @@ import Leaderboard from './Leaderboard';
 import PlayerBalances from './PlayerBalances';
 import PlayerDailies from './PlayerDailies';
 import PlayerDraws from './PlayerDraws';
+import { PlayerHistoryButton } from './PlayerHistoryButton';
 import PlayerInfo from './PlayerInfo';
 
 interface Props {
@@ -62,6 +63,11 @@ export const PlayerCard = ({
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
         zIndex: isDragging ? 1000 : 'auto',
       }
+    : undefined;
+
+  const seasonId = player.playerDetails?.season_details
+    ? Object.values(player.playerDetails.season_details)
+        .find(seasonInfo => seasonInfo?.season && seasonInfo.season > 0)?.season
     : undefined;
 
   return (
@@ -119,6 +125,10 @@ export const PlayerCard = ({
             playerDetails={player.playerDetails}
             onAuthChange={onAuthChange}
           />
+
+          {/* History Button - Shows only when authorized */}
+          {seasonId && <PlayerHistoryButton username={player.username} seasonId={seasonId || 0} />}
+
           <Box>
             {/* Balances Section */}
             {player.balances && player.balances.length > 0 && (
@@ -142,6 +152,7 @@ export const PlayerCard = ({
               />
             )}
           </Box>
+
           <Box width={'100%'}>
             {/* Daily Progress Section */}
             <PlayerDailies

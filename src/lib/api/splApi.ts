@@ -5,7 +5,9 @@ import { SplDailyProgress } from '@/types/spl/dailies';
 import { SplPlayerDetails } from '@/types/spl/details';
 import { SplFrontierDrawStatus, SplRankedDrawStatus } from '@/types/spl/draws';
 import { SplFormat } from '@/types/spl/format';
+import { SplHistory } from '@/types/spl/history';
 import { SplCardListingPriceEntry } from '@/types/spl/market';
+import { SplSeasonInfo } from '@/types/spl/season';
 import axios from 'axios';
 import * as rax from 'retry-axios';
 import { validateSplJwt } from '../auth/jwt/splJwtValidation';
@@ -125,7 +127,6 @@ export async function fetchFrontierDraws(username: string): Promise<SplFrontierD
   }
 }
 
-
 //   'https://api.splinterlands.com/market/for_sale_grouped' \
 export async function fetchListingPrices(): Promise<SplCardListingPriceEntry[]> {
   const url = '/market/for_sale_grouped';
@@ -227,9 +228,7 @@ export async function fetchDailyProgress(
 }
 
 //https://api.splinterlands.com/players/details?name=beaker007&season_details=true&format=all
-export async function fetchPlayerDetails(
-  player: string,
-): Promise<SplPlayerDetails> {
+export async function fetchPlayerDetails(player: string): Promise<SplPlayerDetails> {
   const url = '/players/details';
   logger.debug('Fetching player details from Splinterlands API');
   const params = {
@@ -252,7 +251,6 @@ export async function fetchPlayerDetails(
     throw error;
   }
 }
-
 
 export async function splLogin(
   username: string,
@@ -293,4 +291,200 @@ export async function splLogin(
     }
     throw error;
   }
+}
+
+/**
+ * Get season date range by fetching current and previous season info
+ */
+export async function getSeasonDateRange(seasonId: number): Promise<{
+  startDate: Date;
+  endDate: Date;
+}> {
+  logger.info(`Getting date range for season ${seasonId}`);
+
+  try {
+    // Fetch current season
+    const currentSeason = await fetchSeasonInfo(seasonId);
+    const previousSeason = await fetchSeasonInfo(seasonId - 1);
+    return { startDate: new Date(previousSeason.ends), endDate: new Date(currentSeason.ends) };
+  } catch (error) {
+    logger.error(
+      `Failed to get season date range for ${seasonId}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+// https://api.splinterlands.com/season
+/**
+ * Fetch season information including start and end dates
+ */
+export async function fetchSeasonInfo(seasonId: number): Promise<SplSeasonInfo> {
+  const url = '/season';
+  logger.info(`Fetching season info for season: ${seasonId}`);
+
+  try {
+    const response = await splBaseClient.get(url, {
+      params: { id: seasonId },
+    });
+
+    if (response.status === 200 && response.data) {
+      // Handle API-level error even if HTTP status is 200
+      if (!response.data) {
+        throw new Error('Invalid response from Splinterlands API: no season data');
+      }
+
+      logger.info(`Successfully fetched season ${seasonId} info`);
+      return response.data as SplSeasonInfo;
+    } else {
+      throw new Error('Season info request failed');
+    }
+  } catch (error) {
+    logger.error(
+      `Failed to fetch season info for ${seasonId}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+// https://api.splinterlands.com/players/history
+/**
+ * Fetch single page of player history from Splinterlands API
+ */
+export async function fetchPlayerHistory(
+  player: string,
+  decryptedToken: string,
+  types: string, // comma-separated list of types
+  beforeBlock?: number
+): Promise<SplHistory[]> {
+  const url = '/players/history';
+  logger.info(`Fetching player history for player: ${player}`);
+
+  // Build query parameters
+  const params: Record<string, string | number> = {
+    username: player,
+    types,
+    limit: DEFAULT_LIMIT,
+  };
+
+  if (beforeBlock) {
+    params.before_block = beforeBlock;
+  }
+
+  try {
+    // Get authorization header
+    const authHeaders = await getAuthorizationHeader(player, decryptedToken);
+
+    const response = await splBaseClient.get(url, {
+      params,
+      headers: authHeaders,
+    });
+
+    if (response.status === 200 && response.data) {
+      // Handle API-level error even if HTTP status is 200
+      if (!response.data || !Array.isArray(response.data)) {
+        throw new Error('Invalid response from Splinterlands API: expected array');
+      }
+
+      logger.info(
+        `Successfully fetched ${response.data.length} history entries for player: ${player}`
+      );
+      return response.data as SplHistory[];
+    } else {
+      throw new Error('History request failed');
+    }
+  } catch (error) {
+    logger.error(
+      `Failed to fetch player history for ${player}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+const DEFAULT_DELAY_MS = 150;
+const DEFAULT_LIMIT = 500;
+/**
+ * Recursively fetch player history between two dates
+ * Uses before_block parameter to paginate through results
+ */
+export async function fetchPlayerHistoryByDateRange(
+  player: string,
+  decryptedToken: string,
+  types: string,
+  startDate: Date,
+  endDate: Date
+): Promise<SplHistory[]> {
+  logger.info(
+    `Fetching player history for ${player} between ${startDate.toISOString()} and ${endDate.toISOString()}`
+  );
+
+  const allEntries: SplHistory[] = [];
+  let lastBlockNum: number | undefined;
+  let hasMoreData = true;
+  let iterationCount = 0;
+  const maxIterations = 100; // Safety limit
+
+  // Convert end date to approximate block number for starting point
+  while (hasMoreData && iterationCount < maxIterations) {
+    iterationCount++;
+
+    try {
+      // Add delay between requests (except first request)
+      if (iterationCount > 1) {
+        await new Promise(resolve => setTimeout(resolve, DEFAULT_DELAY_MS));
+      }
+
+      logger.info(
+        `History fetch iteration ${iterationCount} for ${player}, before_block: ${lastBlockNum}`
+      );
+
+      const batch = await fetchPlayerHistory(player, decryptedToken, types, lastBlockNum);
+
+      if (batch.length === 0) {
+        hasMoreData = false;
+        break;
+      }
+
+      // Filter entries by date range
+      const filteredBatch = batch.filter(entry => {
+        const entryDate = new Date(entry.created_date);
+        return entryDate >= startDate && entryDate <= endDate;
+      });
+
+      allEntries.push(...filteredBatch);
+
+      // Check if we've gone past our start date
+      const oldestEntry = batch[batch.length - 1];
+      const oldestDate = new Date(oldestEntry.created_date);
+
+      if (oldestDate < startDate) {
+        hasMoreData = false;
+        break;
+      }
+
+      // Set up for next iteration
+      lastBlockNum = oldestEntry.block_num - 1;
+
+      // If we got less than the limit, we've reached the end
+      if (batch.length < DEFAULT_LIMIT) {
+        hasMoreData = false;
+      }
+    } catch (error) {
+      logger.error(
+        `Error in history fetch iteration ${iterationCount} for ${player}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+      hasMoreData = false;
+    }
+  }
+
+  // Sort by created_date descending (newest first) and remove failed entries
+  allEntries
+    .filter(entry => !entry.success)
+    .sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime());
+
+  logger.info(
+    `Completed history fetch for ${player}: ${allEntries.length} entries in ${iterationCount} iterations`
+  );
+
+  return allEntries;
 }
