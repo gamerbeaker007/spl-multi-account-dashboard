@@ -84,6 +84,28 @@ export function Cards({ totalCards, cardDetails }: Props) {
                     {cardData.gold}
                   </Typography>
                 </Box>
+                <Box
+                  position="absolute"
+                  bottom={20}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  width={'100%'}
+                  zIndex={1}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: '0.625rem',
+                      textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+                    }}
+                  >
+                    {cardName}
+                  </Typography>
+                </Box>
+
                 <Image
                   src={imageUrl}
                   alt={cardName}
@@ -128,6 +150,27 @@ export function Cards({ totalCards, cardDetails }: Props) {
                     }}
                   >
                     {cardData.regular}
+                  </Typography>
+                </Box>
+                <Box
+                  position="absolute"
+                  bottom={20}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  width={'100%'}
+                  zIndex={1}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: '0.625rem',
+                      textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+                    }}
+                  >
+                    {cardName}
                   </Typography>
                 </Box>
                 <Image
