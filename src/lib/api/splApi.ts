@@ -12,6 +12,7 @@ import axios from 'axios';
 import * as rax from 'retry-axios';
 import { validateSplJwt } from '../auth/jwt/splJwtValidation';
 import logger from '../log/logger.server';
+import { SplCardDetail } from '@/types/spl/cardDetails';
 
 const splBaseClient = axios.create({
   baseURL: 'https://api.splinterlands.com',
@@ -300,7 +301,7 @@ export async function getSeasonDateRange(seasonId: number): Promise<{
   startDate: Date;
   endDate: Date;
 }> {
-  logger.info(`Getting date range for season ${seasonId}`);
+  logger.debug(`Getting date range for season ${seasonId}`);
 
   try {
     // Fetch current season
@@ -321,7 +322,7 @@ export async function getSeasonDateRange(seasonId: number): Promise<{
  */
 export async function fetchSeasonInfo(seasonId: number): Promise<SplSeasonInfo> {
   const url = '/season';
-  logger.info(`Fetching season info for season: ${seasonId}`);
+  logger.debug(`Fetching season info for season: ${seasonId}`);
 
   try {
     const response = await splBaseClient.get(url, {
@@ -334,7 +335,6 @@ export async function fetchSeasonInfo(seasonId: number): Promise<SplSeasonInfo> 
         throw new Error('Invalid response from Splinterlands API: no season data');
       }
 
-      logger.info(`Successfully fetched season ${seasonId} info`);
       return response.data as SplSeasonInfo;
     } else {
       throw new Error('Season info request failed');
@@ -342,6 +342,31 @@ export async function fetchSeasonInfo(seasonId: number): Promise<SplSeasonInfo> 
   } catch (error) {
     logger.error(
       `Failed to fetch season info for ${seasonId}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+/**
+ * Fetch card details from Splinterlands API
+ */
+export async function fetchCardDetails(): Promise<SplCardDetail[]> {
+  const url = '/cards/get_details';
+  logger.debug('Fetching card details from Splinterlands API');
+
+  try {
+    const res = await splBaseClient.get(url);
+    const data = res.data;
+
+    // Handle API-level error even if HTTP status is 200
+    if (!data || !Array.isArray(data)) {
+      throw new Error('Invalid response from Splinterlands API: expected array');
+    }
+
+    return data as SplCardDetail[];
+  } catch (error) {
+    logger.error(
+      `Failed to fetch card details: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
     throw error;
   }
@@ -358,7 +383,7 @@ export async function fetchPlayerHistory(
   beforeBlock?: number
 ): Promise<SplHistory[]> {
   const url = '/players/history';
-  logger.info(`Fetching player history for player: ${player}`);
+  logger.debug(`Fetching player history for player: ${player}`);
 
   // Build query parameters
   const params: Record<string, string | number> = {
@@ -386,9 +411,6 @@ export async function fetchPlayerHistory(
         throw new Error('Invalid response from Splinterlands API: expected array');
       }
 
-      logger.info(
-        `Successfully fetched ${response.data.length} history entries for player: ${player}`
-      );
       return response.data as SplHistory[];
     } else {
       throw new Error('History request failed');
@@ -414,7 +436,7 @@ export async function fetchPlayerHistoryByDateRange(
   startDate: Date,
   endDate: Date
 ): Promise<SplHistory[]> {
-  logger.info(
+  logger.debug(
     `Fetching player history for ${player} between ${startDate.toISOString()} and ${endDate.toISOString()}`
   );
 
@@ -434,7 +456,7 @@ export async function fetchPlayerHistoryByDateRange(
         await new Promise(resolve => setTimeout(resolve, DEFAULT_DELAY_MS));
       }
 
-      logger.info(
+      logger.debug(
         `History fetch iteration ${iterationCount} for ${player}, before_block: ${lastBlockNum}`
       );
 
@@ -483,7 +505,7 @@ export async function fetchPlayerHistoryByDateRange(
     .filter(entry => Boolean(entry.success))
     .sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime());
 
-  logger.info(
+  logger.debug(
     `Completed history fetch for ${player}: ${successfulEntries.length} / ${allEntries.length} entries in ${iterationCount} iterations`
   );
 

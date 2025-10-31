@@ -10,7 +10,7 @@ export interface PlayerStatusData {
     frontier: SplFrontierDrawStatus;
     ranked: SplRankedDrawStatus;
   };
-  playerDetails?: SplPlayerDetails
+  playerDetails?: SplPlayerDetails;
   error?: string;
 }
 

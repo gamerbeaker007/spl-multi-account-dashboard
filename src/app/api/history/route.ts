@@ -30,9 +30,7 @@ export async function GET(request: NextRequest) {
 
     // Check if this is a date range request
     if (seasonId) {
-      logger.info(
-        `API route: Getting season date range for season ${seasonId} for player ${player}`
-      );
+      logger.info(`API route: Getting season rewards for player ${player} for season ${seasonId}`);
       const seasonRange = await getSeasonDateRange(parseInt(seasonId));
       if (!seasonRange) {
         return NextResponse.json({ error: `Invalid seasonId: ${seasonId}` }, { status: 400 });
@@ -75,7 +73,6 @@ export async function GET(request: NextRequest) {
         aggregation,
       };
 
-      console.log('API History Result:', aggregation);
       return NextResponse.json(result);
     }
   } catch (error) {

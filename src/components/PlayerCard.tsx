@@ -66,8 +66,9 @@ export const PlayerCard = ({
     : undefined;
 
   const seasonId = player.playerDetails?.season_details
-    ? Object.values(player.playerDetails.season_details)
-        .find(seasonInfo => seasonInfo?.season && seasonInfo.season > 0)?.season
+    ? Object.values(player.playerDetails.season_details).find(
+        seasonInfo => seasonInfo?.season && seasonInfo.season > 0
+      )?.season
     : undefined;
 
   return (

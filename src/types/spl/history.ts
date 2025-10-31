@@ -16,13 +16,3 @@ export interface SplHistory {
   sbd_price: number | null;
   is_owner: boolean;
 }
-
-export interface PlayerRewardHistory {
-  entries: SplHistory[];
-  totalEntries: number;
-  dateRange: {
-    start: string;
-    end: string;
-  };
-  seasonId?: number;
-}

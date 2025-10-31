@@ -2,7 +2,7 @@ import {
   fetchFrontierDraws,
   fetchPlayerBalances,
   fetchPlayerDetails,
-  fetchRankedDraws
+  fetchRankedDraws,
 } from '@/lib/api/splApi';
 import logger from '@/lib/log/logger.server';
 import { NextRequest, NextResponse } from 'next/server';
@@ -23,12 +23,7 @@ export async function POST(request: NextRequest) {
 
     for (const user of users) {
       try {
-        const [
-          balances,
-          frontierDraws,
-          rankedDraws,
-          playerDetails,
-        ] = await Promise.all([
+        const [balances, frontierDraws, rankedDraws, playerDetails] = await Promise.all([
           fetchPlayerBalances(user),
           fetchFrontierDraws(user),
           fetchRankedDraws(user),

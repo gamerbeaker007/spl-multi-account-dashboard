@@ -1,7 +1,7 @@
 // Simple reward aggregation function for the API response format
 import { ParsedHistoryEntry, ParsedReward } from '@/types/spl/parsedHistory';
 
-interface RewardSummary {
+export interface RewardSummary {
   totalPacks: { [edition: number]: number };
   totalFrontierEntries: number;
   totalRankedEntries: number;

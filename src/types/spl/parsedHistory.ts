@@ -42,8 +42,25 @@ export interface ParsedHistoryEntry {
   rawData?: string; // Fallback for unparseable data
 }
 
+export interface RewardSummary {
+  totalPacks: { [edition: number]: number };
+  totalFrontierEntries: number;
+  totalRankedEntries: number;
+  totalCards: {
+    [cardId: number]: { edition: number; quantity: number; gold: number; regular: number };
+  };
+  totalPotions: { [potionType: string]: number };
+  totalMerits: number;
+  totalEnergy: number;
+  totalScrolls: { [scrollType: string]: number };
+  totalDraws: { minor: number; major: number; ultimate: number };
+  leagueAdvancements: { foundation: number[]; wild: number[]; modern: number[] };
+  questTypeBreakdown: { [questType: string]: number };
+}
+
 export interface ParsedPlayerRewardHistory {
   entries: ParsedHistoryEntry[];
+  aggregation: RewardSummary;
   totalEntries: number;
   seasonId?: number;
   dateRange?: {

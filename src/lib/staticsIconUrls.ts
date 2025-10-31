@@ -17,13 +17,20 @@ export const unbind_ca_e_icon_url = `${WEB_URL}website/icons/unbind_epic.webp`;
 export const unbind_ca_l_icon_url = `${WEB_URL}website/icons/unbind_legendary.webp`;
 export const license_icon_url = `${WEB_URL}website/ui_elements/shop/nodes/power_node_activated.png`;
 export const sps_icon_url = `${WEB_URL}website/land/resources/sps.png`;
-export const energy_icon_url = `${WEB_URL}website/icons/icon_resource_glint.png`;
+export const energy_icon_url = `${WEB_URL}website/battle/battle_page/Icon_lightning_frontier.svg`;
 export const hammer_icon_url = `${WEB_URL}website/land/deedOverview/hammer.svg`;
 
 export const wild_league_icon_url = `${WEB_URL}website/icons/leagues/wild_150/league_0.png`;
 export const modern_league_icon_url = `${WEB_URL}website/icons/leagues/modern_150/league_0.png`;
 export const avatar_icon_url = `${WEB_URL}website/icons/avatars/avatar_0.png`;
 export const foundation_league_icon_url = `${WEB_URL}website/icons/leagues/wild_150/league_0.png`;
+
+export const foundation_entries_icon_url = `${WEB_URL}website/icons/icon_fp.svg`;
+export const ranked_entries_icon_url = `${WEB_URL}website/icons/img_fortune-entry_ca.svg`;
+
+export const reward_draw_minor_icon_url = `${WEB_URL}website/ui_elements/shop/ranked/draws/img_chest-minor_250.webp`;
+export const reward_draw_major_icon_url = `${WEB_URL}website/ui_elements/shop/ranked/draws/img_chest-major_250.webp`;
+export const reward_draw_ultimate_icon_url = `${WEB_URL}website/ui_elements/shop/ranked/draws/img_chest-ultimate_250.webp`;
 
 export const edition_alpha_icon_url = `${WEB_URL}website/icons/icon-edition-alpha.svg`;
 export const edition_beta_icon_url = `${WEB_URL}website/icons/icon-edition-beta.svg`;

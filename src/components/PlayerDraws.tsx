@@ -52,15 +52,13 @@ export default function PlayerDraws({ balances, frontier, ranked, playerDetails 
   // Calculate frontier energy from FECR balance
   const frontierEcr = balances.find(bal => bal.token === 'FECR');
   const frontierEnergy = frontierEcr
-    ? calculateEnergy(
-        frontierEcr.balance,
-        frontierEcr.last_reward_time
-      )
+    ? calculateEnergy(frontierEcr.balance, frontierEcr.last_reward_time)
     : 0;
 
   const hasFrontierMatches = (playerDetails?.season_details?.foundation?.battles ?? 0) > 0;
   const hasRankedMatches =
-    ((playerDetails?.season_details?.wild?.battles ?? 0) || (playerDetails?.season_details?.modern?.battles ?? 0)) > 0;
+    ((playerDetails?.season_details?.wild?.battles ?? 0) ||
+      (playerDetails?.season_details?.modern?.battles ?? 0)) > 0;
 
   return (
     <Box mb={2} width={'100%'}>

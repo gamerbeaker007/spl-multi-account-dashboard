@@ -11,7 +11,7 @@ export const BalanceItem = ({
 }: {
   iconUrl: string | ReactElement;
   title: string;
-  value: string;
+  value: string | number;
   backgroundColor?: string;
 }) => {
   const renderIcon = () => {

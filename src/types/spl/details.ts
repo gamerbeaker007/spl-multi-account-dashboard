@@ -23,14 +23,14 @@ export interface SplLeagueInfo {
 }
 
 export interface SplGuildInfo {
-    id: string;
-    name: string;
-    brawl_status: number;
-    brawl_level: number;
-    tournament_id: string;
-    join_date: string;
-    tournament_status: number;
-  }
+  id: string;
+  name: string;
+  brawl_status: number;
+  brawl_level: number;
+  tournament_id: string;
+  join_date: string;
+  tournament_status: number;
+}
 
 export interface SplPlayerDetails {
   name: string;
@@ -43,7 +43,7 @@ export interface SplPlayerDetails {
   max_rating: number;
   max_rank: number;
   champion_points: number;
-  guild: SplGuildInfo | null
+  guild: SplGuildInfo | null;
   avatar_id: number;
   display_name: string | null;
   title_pre: string;
@@ -83,5 +83,5 @@ export interface SplPlayerDetails {
     foundation: SplLeagueInfo | null;
     wild: SplLeagueInfo | null;
     modern: SplLeagueInfo | null;
-  }
+  };
 }

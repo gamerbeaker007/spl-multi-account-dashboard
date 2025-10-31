@@ -71,7 +71,7 @@ export function parseHistoryEntry(entry: SplHistory): ParsedHistoryEntry {
       }
     } else if (entry.type === 'claim_reward') {
       const parsed = parseClaimRewardResult(entry.result);
-        const parsedData = JSON.parse(entry.data) as ParsedData;
+      const parsedData = JSON.parse(entry.data) as ParsedData;
       if (parsed && parsedData) {
         baseEntry.metaData = {
           season: parsedData.season,

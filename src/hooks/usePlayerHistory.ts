@@ -1,11 +1,10 @@
-import { PlayerRewardHistory } from '@/types/spl/history';
+import { ParsedPlayerRewardHistory } from '@/types/spl/parsedHistory';
 import { useCallback, useState } from 'react';
-
 
 interface UsePlayerHistoryState {
   isLoading: boolean;
   error: string | null;
-  rewardHistory: PlayerRewardHistory | null;
+  rewardHistory: ParsedPlayerRewardHistory | null;
 }
 
 interface UsePlayerHistoryReturn extends UsePlayerHistoryState {

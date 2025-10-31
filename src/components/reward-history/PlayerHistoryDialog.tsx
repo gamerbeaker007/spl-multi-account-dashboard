@@ -1,9 +1,7 @@
 'use client';
 
 import { usePlayerHistory } from '@/hooks/usePlayerHistory';
-import {
-  EmojiEvents as RewardIcon
-} from '@mui/icons-material';
+import { EmojiEvents as RewardIcon } from '@mui/icons-material';
 import {
   Alert,
   Box,
@@ -15,7 +13,7 @@ import {
   DialogTitle,
   Paper,
   Stack,
-  Typography
+  Typography,
 } from '@mui/material';
 import { useState } from 'react';
 import { RewardHistorySummary } from './RewardHistorySummary';
@@ -36,14 +34,8 @@ export function PlayerHistoryDialog({
 }: PlayerHistoryDialogProps) {
   const [currentSeasonId] = useState(seasonId);
 
-  const {
-    isLoading,
-    error,
-    rewardHistory,
-    fetchHistory,
-    clearHistory,
-    clearError,
-  } = usePlayerHistory();
+  const { isLoading, error, rewardHistory, fetchHistory, clearHistory, clearError } =
+    usePlayerHistory();
 
   const handleFetchCurrentSeason = async () => {
     await fetchHistory(player, token, currentSeasonId);
@@ -52,8 +44,6 @@ export function PlayerHistoryDialog({
   const handleFetchPreviousSeason = async () => {
     await fetchHistory(player, token, currentSeasonId - 1);
   };
-
-
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -107,19 +97,22 @@ export function PlayerHistoryDialog({
                 </Typography>
                 <Typography variant="body2">
                   <strong>Date Range:</strong>{' '}
-                  {new Date(rewardHistory.dateRange.start).toLocaleDateString()} -{' '}
-                  {new Date(rewardHistory.dateRange.end).toLocaleDateString()}
+                  {rewardHistory?.dateRange?.start
+                    ? new Date(rewardHistory.dateRange.start).toLocaleDateString()
+                    : 'N/A'}{' '}
+                  -{' '}
+                  {rewardHistory?.dateRange?.end
+                    ? new Date(rewardHistory.dateRange.end).toLocaleDateString()
+                    : 'N/A'}
                 </Typography>
               </Box>
             </Stack>
           </Paper>
         )}
 
-
         {rewardHistory && rewardHistory?.entries.length > 0 && (
           <RewardHistorySummary rewardHistory={rewardHistory} />
         )}
-
 
         {/* Loading State */}
         {isLoading && (
