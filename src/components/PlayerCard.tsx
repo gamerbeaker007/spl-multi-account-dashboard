@@ -9,8 +9,8 @@ import Leaderboard from './Leaderboard';
 import PlayerBalances from './PlayerBalances';
 import PlayerDailies from './PlayerDailies';
 import PlayerDraws from './PlayerDraws';
-import { PlayerHistoryButton } from './reward-history/PlayerHistoryButton';
 import PlayerInfo from './PlayerInfo';
+import { PlayerHistoryButton } from './reward-history/PlayerHistoryButton';
 
 interface Props {
   player: PlayerStatusData;
@@ -69,10 +69,6 @@ export const PlayerCard = ({
     ? Object.values(player.playerDetails.season_details).find(
         seasonInfo => seasonInfo?.season && seasonInfo.season > 0
       )?.season
-    : undefined;
-
-  const SPSP = player.balances
-    ? Object.values(player.balances).find(balance => balance.token === 'SPSP')?.balance
     : undefined;
 
   return (
@@ -161,7 +157,7 @@ export const PlayerCard = ({
           <Box width={'100%'}>
             {/* Daily Progress Section */}
             <PlayerDailies
-              spspBalance={SPSP}
+              balances={player.balances}
               playerDetails={player.playerDetails}
               dailyProgress={dailyProgress}
               dailyProgressLoading={dailyProgressLoading}

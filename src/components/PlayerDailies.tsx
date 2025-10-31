@@ -1,3 +1,5 @@
+import { largeNumberFormat } from '@/lib/utils';
+import { SplBalance } from '@/types/spl/balances';
 import { SplDailyProgress } from '@/types/spl/dailies';
 import { SplPlayerDetails } from '@/types/spl/details';
 import { Timer as TimerIcon, EmojiEvents as TrophyIcon } from '@mui/icons-material';
@@ -17,7 +19,7 @@ import { useEffect, useState } from 'react';
 
 interface Props {
   playerDetails?: SplPlayerDetails;
-  spspBalance?: number | undefined;
+  balances?: SplBalance[];
   dailyProgress?: {
     foundation?: SplDailyProgress;
     wild?: SplDailyProgress;
@@ -52,12 +54,12 @@ const DailyProgressCard = ({
   title,
   progress,
   color,
-  spsp,
+  balances,
 }: {
   title: string;
   progress: SplDailyProgress;
   color: 'primary' | 'secondary' | 'success';
-  spsp?: number;
+  balances?: SplBalance[];
 }) => {
   const [currentTime, setCurrentTime] = useState(() => Date.now());
 
@@ -72,6 +74,18 @@ const DailyProgressCard = ({
   const endDate = new Date(progress.end_date);
   const timeRemaining = endDate.getTime() - currentTime;
   const hoursRemaining = Math.max(0, Math.floor(timeRemaining / (1000 * 60 * 60)));
+
+  const spspIn = balances
+    ? (Object.values(balances).find(balance => balance.token === 'SPSP-IN')?.balance ?? 0)
+    : 0;
+  const spspOut = balances
+    ? (Object.values(balances).find(balance => balance.token === 'SPSP-OUT')?.balance ?? 0)
+    : 0;
+  const spsp = balances
+    ? (Object.values(balances).find(balance => balance.token === 'SPSP')?.balance ?? 0)
+    : 0;
+
+  const totalSPSP = spsp + spspIn - spspOut;
 
   return (
     <Card variant="outlined" sx={{ mb: 1, flex: 1 }}>
@@ -150,6 +164,14 @@ const DailyProgressCard = ({
                     <Typography variant="caption">
                       Max Ranked Entries based on staked SPS: {spsp ? getSpspEntries(spsp) : 0}
                     </Typography>
+                    <Typography variant="caption">
+                      Total SPS: {largeNumberFormat(totalSPSP)}
+                    </Typography>
+                    <Typography variant="caption">SPSP: {largeNumberFormat(spsp)}</Typography>
+                    <Typography variant="caption">SPSP In: {largeNumberFormat(spspIn)}</Typography>
+                    <Typography variant="caption">
+                      SPSP Out: {largeNumberFormat(spspOut)}
+                    </Typography>
                   </Box>
                 }
                 arrow
@@ -174,7 +196,7 @@ const DailyProgressCard = ({
 };
 
 export default function PlayerDailies({
-  spspBalance,
+  balances,
   playerDetails,
   dailyProgress,
   dailyProgressLoading,
@@ -231,7 +253,7 @@ export default function PlayerDailies({
             title="Wild"
             progress={dailyProgress.wild}
             color="secondary"
-            spsp={spspBalance}
+            balances={balances}
           />
         )}
 
@@ -240,7 +262,7 @@ export default function PlayerDailies({
             title="Modern"
             progress={dailyProgress.modern}
             color="success"
-            spsp={spspBalance}
+            balances={balances}
           />
         )}
       </Box>
