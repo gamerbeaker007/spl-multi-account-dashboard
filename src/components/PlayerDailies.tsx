@@ -1,6 +1,7 @@
 import { SplDailyProgress } from '@/types/spl/dailies';
 import { SplPlayerDetails } from '@/types/spl/details';
 import { Timer as TimerIcon, EmojiEvents as TrophyIcon } from '@mui/icons-material';
+import InfoIcon from '@mui/icons-material/Info';
 import {
   Alert,
   Box,
@@ -9,12 +10,14 @@ import {
   CircularProgress,
   LinearProgress,
   Stack,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 interface Props {
   playerDetails?: SplPlayerDetails;
+  spspBalance?: number | undefined;
   dailyProgress?: {
     foundation?: SplDailyProgress;
     wild?: SplDailyProgress;
@@ -26,14 +29,35 @@ interface Props {
 
 const maxEntriesPerDay = 15;
 
+function getSpspEntries(spsp: number): number {
+  const thresholds = [
+    { min: 5_000_000, entries: 30 },
+    { min: 2_500_000, entries: 25 },
+    { min: 1_000_000, entries: 20 },
+    { min: 500_000, entries: 16 },
+    { min: 250_000, entries: 12 },
+    { min: 100_000, entries: 8 },
+    { min: 50_000, entries: 6 },
+    { min: 25_000, entries: 4 },
+    { min: 10_000, entries: 2 },
+    { min: 2_500, entries: 1 },
+  ];
+  for (const { min, entries } of thresholds) {
+    if (spsp >= min) return entries;
+  }
+  return 0;
+}
+
 const DailyProgressCard = ({
   title,
   progress,
   color,
+  spsp,
 }: {
   title: string;
   progress: SplDailyProgress;
   color: 'primary' | 'secondary' | 'success';
+  spsp?: number;
 }) => {
   const [currentTime, setCurrentTime] = useState(() => Date.now());
 
@@ -114,9 +138,35 @@ const DailyProgressCard = ({
 
         {/* Max Ranked Entries */}
         {progress.current_rewards?.max_ranked_entries && (
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-            Max Ranked Entries: {progress.current_rewards.max_ranked_entries}
-          </Typography>
+          <>
+            <Box display="flex" sx={{ mt: 1 }} gap={1} alignItems="center">
+              <Tooltip
+                title={
+                  <Box display="flex" flexDirection="column" gap={0}>
+                    <Typography variant="caption">
+                      Max Ranked Entries based on league:
+                      {progress.current_rewards.max_ranked_entries}
+                    </Typography>
+                    <Typography variant="caption">
+                      Max Ranked Entries based on staked SPS: {spsp ? getSpspEntries(spsp) : 0}
+                    </Typography>
+                  </Box>
+                }
+                arrow
+              >
+                <Box display="flex" alignItems="center" gap={1}>
+                  <InfoIcon fontSize="inherit" />
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                    Max Entries:{' '}
+                    {Math.min(
+                      progress.current_rewards.max_ranked_entries,
+                      spsp ? getSpspEntries(spsp) : 0
+                    )}
+                  </Typography>
+                </Box>
+              </Tooltip>
+            </Box>
+          </>
         )}
       </CardContent>
     </Card>
@@ -124,6 +174,7 @@ const DailyProgressCard = ({
 };
 
 export default function PlayerDailies({
+  spspBalance,
   playerDetails,
   dailyProgress,
   dailyProgressLoading,
@@ -176,11 +227,21 @@ export default function PlayerDailies({
           />
         )}
         {dailyProgress.wild && hasWildMatches && (
-          <DailyProgressCard title="Wild" progress={dailyProgress.wild} color="secondary" />
+          <DailyProgressCard
+            title="Wild"
+            progress={dailyProgress.wild}
+            color="secondary"
+            spsp={spspBalance}
+          />
         )}
 
         {dailyProgress.modern && hasModernMatches && (
-          <DailyProgressCard title="Modern" progress={dailyProgress.modern} color="success" />
+          <DailyProgressCard
+            title="Modern"
+            progress={dailyProgress.modern}
+            color="success"
+            spsp={spspBalance}
+          />
         )}
       </Box>
     </Box>

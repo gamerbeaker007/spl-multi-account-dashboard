@@ -71,6 +71,10 @@ export const PlayerCard = ({
       )?.season
     : undefined;
 
+  const SPSP = player.balances
+    ? Object.values(player.balances).find(balance => balance.token === 'SPSP')?.balance
+    : undefined;
+
   return (
     <Box
       ref={setNodeRef}
@@ -156,7 +160,8 @@ export const PlayerCard = ({
 
           <Box width={'100%'}>
             {/* Daily Progress Section */}
-            <PlayerDailies
+              <PlayerDailies
+                spspBalance={SPSP}
               playerDetails={player.playerDetails}
               dailyProgress={dailyProgress}
               dailyProgressLoading={dailyProgressLoading}
