@@ -10,9 +10,11 @@ import PlayerBalances from './PlayerBalances';
 import PlayerDailies from './PlayerDailies';
 import PlayerDraws from './PlayerDraws';
 import PlayerInfo from './PlayerInfo';
+import { PlayerHistoryButton } from './reward-history/PlayerHistoryButton';
 
 interface Props {
   player: PlayerStatusData;
+  seasonId: number;
   balances?: SplBalance[];
   cardData?: PlayerCardCollectionData;
   cardDataLoading?: boolean;
@@ -29,6 +31,7 @@ interface Props {
 
 export const PlayerCard = ({
   player,
+  seasonId,
   cardData,
   cardDataLoading,
   cardDataError,
@@ -116,9 +119,13 @@ export const PlayerCard = ({
         <>
           <PlayerInfo
             username={player.username}
-            leaderboards={player.leaderboards}
+            playerDetails={player.playerDetails}
             onAuthChange={onAuthChange}
           />
+
+          {/* History Button - Shows only when authorized */}
+          {seasonId && <PlayerHistoryButton username={player.username} seasonId={seasonId || 0} />}
+
           <Box>
             {/* Balances Section */}
             {player.balances && player.balances.length > 0 && (
@@ -138,14 +145,16 @@ export const PlayerCard = ({
                 balances={player.balances}
                 frontier={player.draws.frontier}
                 ranked={player.draws.ranked}
-                leaderboards={player.leaderboards}
+                playerDetails={player.playerDetails}
               />
             )}
           </Box>
+
           <Box width={'100%'}>
             {/* Daily Progress Section */}
             <PlayerDailies
-              leaderboards={player.leaderboards}
+              balances={player.balances}
+              playerDetails={player.playerDetails}
               dailyProgress={dailyProgress}
               dailyProgressLoading={dailyProgressLoading}
               dailyProgressError={dailyProgressError ?? undefined}
@@ -153,7 +162,7 @@ export const PlayerCard = ({
           </Box>
           <Box width={'100%'}>
             {/* Leaderboards Section */}
-            {player.leaderboards && <Leaderboard leaderboards={player.leaderboards} />}
+            {player.playerDetails && <Leaderboard playerDetails={player.playerDetails} />}
           </Box>
         </>
       )}

@@ -1,6 +1,6 @@
 import { SplBalance } from '@/types/spl/balances';
+import { SplPlayerDetails } from '@/types/spl/details';
 import { SplFrontierDrawStatus, SplRankedDrawStatus } from '@/types/spl/draws';
-import { SplLeaderboardPlayer } from '@/types/spl/leaderboard';
 import { useCallback, useState } from 'react';
 
 export interface PlayerStatusData {
@@ -10,17 +10,14 @@ export interface PlayerStatusData {
     frontier: SplFrontierDrawStatus;
     ranked: SplRankedDrawStatus;
   };
-  leaderboards?: {
-    foundation: SplLeaderboardPlayer | null;
-    wild: SplLeaderboardPlayer | null;
-    modern: SplLeaderboardPlayer | null;
-  };
+  playerDetails?: SplPlayerDetails;
   error?: string;
 }
 
 export interface PlayerStatusResponse {
   players: PlayerStatusData[];
   timestamp: string;
+  seasonId: number;
 }
 
 export interface UsePlayerStatusReturn {

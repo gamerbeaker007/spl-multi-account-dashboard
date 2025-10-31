@@ -1,22 +1,18 @@
 import { Avatar, Box, Card, Typography } from '@mui/material';
 
-import { findLeagueLogoUrl } from '@/lib/statics_icon_urls';
+import { findLeagueLogoUrl } from '@/lib/staticsIconUrls';
+import { SplLeagueInfo, SplPlayerDetails } from '@/types/spl/details';
 import { SplFormat } from '@/types/spl/format';
-import { SplLeaderboardPlayer } from '@/types/spl/leaderboard';
 
 interface Props {
-  leaderboards: {
-    foundation: SplLeaderboardPlayer | null;
-    wild: SplLeaderboardPlayer | null;
-    modern: SplLeaderboardPlayer | null;
-  };
+  playerDetails?: SplPlayerDetails;
 }
 
 const leagueLogoSize = 64;
 
-export default function Leaderboard({ leaderboards }: Props) {
+export default function Leaderboard({ playerDetails }: Props) {
   const leaderboardsArray = (
-    Object.entries(leaderboards) as [SplFormat, SplLeaderboardPlayer | null][]
+    Object.entries(playerDetails?.season_details ?? {}) as [SplFormat, SplLeagueInfo][]
   ).sort((a, b) => {
     // Sort by rating descending
     const ratingA = a[1]?.rating || 0;

@@ -1,6 +1,9 @@
+import { largeNumberFormat } from '@/lib/utils';
+import { SplBalance } from '@/types/spl/balances';
 import { SplDailyProgress } from '@/types/spl/dailies';
-import { SplLeaderboardPlayer } from '@/types/spl/leaderboard';
+import { SplPlayerDetails } from '@/types/spl/details';
 import { Timer as TimerIcon, EmojiEvents as TrophyIcon } from '@mui/icons-material';
+import InfoIcon from '@mui/icons-material/Info';
 import {
   Alert,
   Box,
@@ -9,16 +12,14 @@ import {
   CircularProgress,
   LinearProgress,
   Stack,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 interface Props {
-  leaderboards?: {
-    foundation?: SplLeaderboardPlayer | null;
-    wild?: SplLeaderboardPlayer | null;
-    modern?: SplLeaderboardPlayer | null;
-  };
+  playerDetails?: SplPlayerDetails;
+  balances?: SplBalance[];
   dailyProgress?: {
     foundation?: SplDailyProgress;
     wild?: SplDailyProgress;
@@ -30,14 +31,35 @@ interface Props {
 
 const maxEntriesPerDay = 15;
 
+function getSpspEntries(spsp: number): number {
+  const thresholds = [
+    { min: 5_000_000, entries: 30 },
+    { min: 2_500_000, entries: 25 },
+    { min: 1_000_000, entries: 20 },
+    { min: 500_000, entries: 16 },
+    { min: 250_000, entries: 12 },
+    { min: 100_000, entries: 8 },
+    { min: 50_000, entries: 6 },
+    { min: 25_000, entries: 4 },
+    { min: 10_000, entries: 2 },
+    { min: 2_500, entries: 1 },
+  ];
+  for (const { min, entries } of thresholds) {
+    if (spsp >= min) return entries;
+  }
+  return 0;
+}
+
 const DailyProgressCard = ({
   title,
   progress,
   color,
+  balances,
 }: {
   title: string;
   progress: SplDailyProgress;
   color: 'primary' | 'secondary' | 'success';
+  balances?: SplBalance[];
 }) => {
   const [currentTime, setCurrentTime] = useState(() => Date.now());
 
@@ -52,6 +74,18 @@ const DailyProgressCard = ({
   const endDate = new Date(progress.end_date);
   const timeRemaining = endDate.getTime() - currentTime;
   const hoursRemaining = Math.max(0, Math.floor(timeRemaining / (1000 * 60 * 60)));
+
+  const spspIn = balances
+    ? (Object.values(balances).find(balance => balance.token === 'SPSP-IN')?.balance ?? 0)
+    : 0;
+  const spspOut = balances
+    ? (Object.values(balances).find(balance => balance.token === 'SPSP-OUT')?.balance ?? 0)
+    : 0;
+  const spsp = balances
+    ? (Object.values(balances).find(balance => balance.token === 'SPSP')?.balance ?? 0)
+    : 0;
+
+  const totalSPSP = spsp + spspIn - spspOut;
 
   return (
     <Card variant="outlined" sx={{ mb: 1, flex: 1 }}>
@@ -118,9 +152,43 @@ const DailyProgressCard = ({
 
         {/* Max Ranked Entries */}
         {progress.current_rewards?.max_ranked_entries && (
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-            Max Ranked Entries: {progress.current_rewards.max_ranked_entries}
-          </Typography>
+          <>
+            <Box display="flex" sx={{ mt: 1 }} gap={1} alignItems="center">
+              <Tooltip
+                title={
+                  <Box display="flex" flexDirection="column" gap={0}>
+                    <Typography variant="caption">
+                      Max Ranked Entries based on league:
+                      {progress.current_rewards.max_ranked_entries}
+                    </Typography>
+                    <Typography variant="caption">
+                      Max Ranked Entries based on staked SPS: {spsp ? getSpspEntries(spsp) : 0}
+                    </Typography>
+                    <Typography variant="caption">
+                      Total SPS: {largeNumberFormat(totalSPSP)}
+                    </Typography>
+                    <Typography variant="caption">SPSP: {largeNumberFormat(spsp)}</Typography>
+                    <Typography variant="caption">SPSP In: {largeNumberFormat(spspIn)}</Typography>
+                    <Typography variant="caption">
+                      SPSP Out: {largeNumberFormat(spspOut)}
+                    </Typography>
+                  </Box>
+                }
+                arrow
+              >
+                <Box display="flex" alignItems="center" gap={1}>
+                  <InfoIcon fontSize="inherit" />
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                    Max Entries:{' '}
+                    {Math.min(
+                      progress.current_rewards.max_ranked_entries,
+                      spsp ? getSpspEntries(spsp) : 0
+                    )}
+                  </Typography>
+                </Box>
+              </Tooltip>
+            </Box>
+          </>
         )}
       </CardContent>
     </Card>
@@ -128,7 +196,8 @@ const DailyProgressCard = ({
 };
 
 export default function PlayerDailies({
-  leaderboards,
+  balances,
+  playerDetails,
   dailyProgress,
   dailyProgressLoading,
   dailyProgressError,
@@ -160,9 +229,9 @@ export default function PlayerDailies({
     );
   }
 
-  const hasWildMatches = (leaderboards?.wild?.battles ?? 0) > 0;
-  const hasModernMatches = (leaderboards?.modern?.battles ?? 0) > 0;
-  const hasFrontierMatches = (leaderboards?.foundation?.battles ?? 0) > 0;
+  const hasWildMatches = (playerDetails?.season_details?.wild?.battles ?? 0) > 0;
+  const hasModernMatches = (playerDetails?.season_details?.modern?.battles ?? 0) > 0;
+  const hasFrontierMatches = (playerDetails?.season_details?.foundation?.battles ?? 0) > 0;
 
   return (
     <Box width={'100%'}>
@@ -180,11 +249,21 @@ export default function PlayerDailies({
           />
         )}
         {dailyProgress.wild && hasWildMatches && (
-          <DailyProgressCard title="Wild" progress={dailyProgress.wild} color="secondary" />
+          <DailyProgressCard
+            title="Wild"
+            progress={dailyProgress.wild}
+            color="secondary"
+            balances={balances}
+          />
         )}
 
         {dailyProgress.modern && hasModernMatches && (
-          <DailyProgressCard title="Modern" progress={dailyProgress.modern} color="success" />
+          <DailyProgressCard
+            title="Modern"
+            progress={dailyProgress.modern}
+            color="success"
+            balances={balances}
+          />
         )}
       </Box>
     </Box>

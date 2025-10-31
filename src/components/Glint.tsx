@@ -1,4 +1,4 @@
-import { glint_icon_url } from '@/lib/statics_icon_urls';
+import { glint_icon_url } from '@/lib/staticsIconUrls';
 import { largeNumberFormat } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
 import { Box, Stack, Typography } from '@mui/material';

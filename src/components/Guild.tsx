@@ -1,4 +1,4 @@
-import { gp_icon_url, merits_icon_url } from '@/lib/statics_icon_urls';
+import { gp_icon_url, merits_icon_url } from '@/lib/staticsIconUrls';
 import { largeNumberFormat } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
 import { Box, Stack, Typography } from '@mui/material';

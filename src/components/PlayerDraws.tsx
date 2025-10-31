@@ -1,18 +1,14 @@
 import { calculateEnergy } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
+import { SplPlayerDetails } from '@/types/spl/details';
 import { SplFrontierDrawStatus, SplRankedDrawStatus } from '@/types/spl/draws';
-import { SplLeaderboardPlayer } from '@/types/spl/leaderboard';
 import { Box, Card, Typography } from '@mui/material';
 
 interface Props {
   balances: SplBalance[];
   frontier: SplFrontierDrawStatus | null;
   ranked: SplRankedDrawStatus | null;
-  leaderboards?: {
-    foundation: SplLeaderboardPlayer | null;
-    wild: SplLeaderboardPlayer | null;
-    modern: SplLeaderboardPlayer | null;
-  };
+  playerDetails?: SplPlayerDetails;
 }
 
 const MyProgressBar = ({ value, max }: { value: number; max: number }) => {
@@ -46,7 +42,7 @@ const MyProgressBar = ({ value, max }: { value: number; max: number }) => {
   );
 };
 
-export default function PlayerDraws({ balances, frontier, ranked, leaderboards }: Props) {
+export default function PlayerDraws({ balances, frontier, ranked, playerDetails }: Props) {
   // Calculate ranked energy from ECR balance
   const rankedEcr = balances.find(bal => bal.token === 'ECR');
   const rankedEnergy = rankedEcr
@@ -56,15 +52,13 @@ export default function PlayerDraws({ balances, frontier, ranked, leaderboards }
   // Calculate frontier energy from FECR balance
   const frontierEcr = balances.find(bal => bal.token === 'FECR');
   const frontierEnergy = frontierEcr
-    ? calculateEnergy(
-        frontierEcr.balance,
-        frontierEcr.last_reward_time 
-      )
+    ? calculateEnergy(frontierEcr.balance, frontierEcr.last_reward_time)
     : 0;
 
-  const hasFrontierMatches = (leaderboards?.foundation?.battles ?? 0) > 0;
+  const hasFrontierMatches = (playerDetails?.season_details?.foundation?.battles ?? 0) > 0;
   const hasRankedMatches =
-    ((leaderboards?.wild?.battles ?? 0) || (leaderboards?.modern?.battles ?? 0)) > 0;
+    ((playerDetails?.season_details?.wild?.battles ?? 0) ||
+      (playerDetails?.season_details?.modern?.battles ?? 0)) > 0;
 
   return (
     <Box mb={2} width={'100%'}>

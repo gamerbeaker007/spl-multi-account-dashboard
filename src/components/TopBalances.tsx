@@ -1,4 +1,4 @@
-import { credits_icon_url, dec_icon_url, sps_icon_url } from '@/lib/statics_icon_urls';
+import { credits_icon_url, dec_icon_url, sps_icon_url } from '@/lib/staticsIconUrls';
 import { largeNumberFormat } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
 import { Avatar, Box, Card, Tooltip, Typography } from '@mui/material';

@@ -1,7 +1,8 @@
 import {
+  fetchCurrentSeasonId,
   fetchFrontierDraws,
-  fetchLeaderboardWithPlayer,
   fetchPlayerBalances,
+  fetchPlayerDetails,
   fetchRankedDraws,
 } from '@/lib/api/splApi';
 import logger from '@/lib/log/logger.server';
@@ -20,23 +21,15 @@ export async function POST(request: NextRequest) {
     logger.info(`Fetching complete status for users: ${users}`);
 
     const playerData = [];
+    const seasonId = await fetchCurrentSeasonId(users[0]);
 
     for (const user of users) {
       try {
-        const [
-          balances,
-          frontierDraws,
-          rankedDraws,
-          leaderboardWild,
-          leaderboardFoundation,
-          leaderboardModern,
-        ] = await Promise.all([
+        const [balances, frontierDraws, rankedDraws, playerDetails] = await Promise.all([
           fetchPlayerBalances(user),
           fetchFrontierDraws(user),
           fetchRankedDraws(user),
-          fetchLeaderboardWithPlayer(user, 'wild'),
-          fetchLeaderboardWithPlayer(user, 'foundation'),
-          fetchLeaderboardWithPlayer(user, 'modern'),
+          fetchPlayerDetails(user),
         ]);
 
         // Compile into a nice JSON response
@@ -47,11 +40,7 @@ export async function POST(request: NextRequest) {
             frontier: frontierDraws,
             ranked: rankedDraws,
           },
-          leaderboards: {
-            wild: leaderboardWild?.player || null,
-            foundation: leaderboardFoundation?.player || null,
-            modern: leaderboardModern?.player || null,
-          },
+          playerDetails,
         };
 
         playerData.push(userData);
@@ -68,9 +57,11 @@ export async function POST(request: NextRequest) {
     }
 
     logger.info(`Successfully fetched complete status data for all users ${users.length}`);
+    logger.info(`Current season ID: ${seasonId}`);
     return NextResponse.json({
       players: playerData,
       timestamp: new Date().toISOString(),
+      seasonId: seasonId,
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
