@@ -22,7 +22,7 @@ export const cardEditionUrlMap: Record<number, string> = {
   18: 'cards_v2.2',
 };
 
-const iconSize = 150;
+const iconSize = 140;
 
 const getCardNameById = (cardId: number, cardDetails?: SplCardDetail[]): string => {
   const card = cardDetails?.find(detail => detail.id === Number(cardId));
@@ -86,7 +86,7 @@ export function Cards({ totalCards, cardDetails }: Props) {
                 </Box>
                 <Box
                   position="absolute"
-                  bottom={20}
+                  bottom={30}
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
@@ -98,7 +98,7 @@ export function Cards({ totalCards, cardDetails }: Props) {
                     sx={{
                       color: 'white',
                       fontWeight: 'bold',
-                      fontSize: '0.625rem',
+                      fontSize: '0.8rem',
                       textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
                     }}
                   >
@@ -111,7 +111,7 @@ export function Cards({ totalCards, cardDetails }: Props) {
                   alt={cardName}
                   width={iconSize}
                   height={iconSize}
-                  style={{ width: iconSize, height: 'auto' }}
+                  style={{ width: 'auto', height: 'auto' }}
                 />
               </Box>
             );
@@ -154,7 +154,7 @@ export function Cards({ totalCards, cardDetails }: Props) {
                 </Box>
                 <Box
                   position="absolute"
-                  bottom={20}
+                  bottom={30}
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
@@ -166,7 +166,7 @@ export function Cards({ totalCards, cardDetails }: Props) {
                     sx={{
                       color: 'white',
                       fontWeight: 'bold',
-                      fontSize: '0.625rem',
+                      fontSize: '0.8rem',
                       textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
                     }}
                   >
@@ -178,7 +178,7 @@ export function Cards({ totalCards, cardDetails }: Props) {
                   alt={cardName}
                   width={iconSize}
                   height={iconSize}
-                  style={{ width: iconSize, height: 'auto' }}
+                  style={{ width: 'auto', height: 'auto' }}
                 />
               </Box>
             );
