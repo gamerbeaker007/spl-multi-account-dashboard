@@ -160,8 +160,8 @@ export const PlayerCard = ({
 
           <Box width={'100%'}>
             {/* Daily Progress Section */}
-              <PlayerDailies
-                spspBalance={SPSP}
+            <PlayerDailies
+              spspBalance={SPSP}
               playerDetails={player.playerDetails}
               dailyProgress={dailyProgress}
               dailyProgressLoading={dailyProgressLoading}
