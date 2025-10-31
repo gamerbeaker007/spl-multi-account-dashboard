@@ -11,6 +11,9 @@ interface Props {
 const iconSize = 75;
 
 export function Entries({ totalFrontierEntries, totalRankedEntries }: Props) {
+  const isEmpty = totalFrontierEntries === 0 && totalRankedEntries === 0;
+  if (isEmpty) return null;
+
   return (
     <Box border={'1px solid'} borderRadius={2} p={2} width={'220px'}>
       <Typography variant="h6">Fortune Draw Entries</Typography>

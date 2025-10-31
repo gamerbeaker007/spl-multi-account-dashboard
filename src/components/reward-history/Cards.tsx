@@ -48,6 +48,9 @@ export function getCardImageUrl(cardName: string, edition: number, foil: number 
 }
 
 export function Cards({ totalCards, cardDetails }: Props) {
+  const isEmpty = Object.keys(totalCards).length === 0;
+  if (isEmpty) return null;
+
   return (
     <Box border={'1px solid'} borderRadius={2} p={2}>
       <Typography variant="h6">Chests</Typography>

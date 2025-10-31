@@ -1,6 +1,7 @@
 import { LoginResponse } from '@/types/spl/auth';
 import { SplBalance } from '@/types/spl/balances';
 import { SplCardCollection } from '@/types/spl/card';
+import { SplCardDetail } from '@/types/spl/cardDetails';
 import { SplDailyProgress } from '@/types/spl/dailies';
 import { SplPlayerDetails } from '@/types/spl/details';
 import { SplFrontierDrawStatus, SplRankedDrawStatus } from '@/types/spl/draws';
@@ -12,7 +13,6 @@ import axios from 'axios';
 import * as rax from 'retry-axios';
 import { validateSplJwt } from '../auth/jwt/splJwtValidation';
 import logger from '../log/logger.server';
-import { SplCardDetail } from '@/types/spl/cardDetails';
 
 const splBaseClient = axios.create({
   baseURL: 'https://api.splinterlands.com',
@@ -248,6 +248,31 @@ export async function fetchPlayerDetails(player: string): Promise<SplPlayerDetai
   } catch (error) {
     logger.error(
       `Failed to fetch player details: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+//https://api2.splinterlands.com/players/current_rewards?username=beaker007
+export async function fetchCurrentSeasonId(username: string): Promise<number> {
+  const url = '/players/current_rewards';
+  logger.debug(`Fetching current rewards for user: ${username}`);
+
+  try {
+    const res = await splBaseClient.get(url, {
+      params: { username },
+    });
+    const data = res.data;
+
+    // Handle API-level error even if HTTP status is 200
+    if (!data) {
+      throw new Error('Invalid response from Splinterlands API: expected array');
+    }
+
+    return data.season_reward_info.season as number;
+  } catch (error) {
+    logger.error(
+      `Failed to fetch current rewards: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
     throw error;
   }

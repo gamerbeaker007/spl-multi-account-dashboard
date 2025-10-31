@@ -14,6 +14,7 @@ import { PlayerHistoryButton } from './reward-history/PlayerHistoryButton';
 
 interface Props {
   player: PlayerStatusData;
+  seasonId: number;
   balances?: SplBalance[];
   cardData?: PlayerCardCollectionData;
   cardDataLoading?: boolean;
@@ -30,6 +31,7 @@ interface Props {
 
 export const PlayerCard = ({
   player,
+  seasonId,
   cardData,
   cardDataLoading,
   cardDataError,
@@ -63,12 +65,6 @@ export const PlayerCard = ({
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
         zIndex: isDragging ? 1000 : 'auto',
       }
-    : undefined;
-
-  const seasonId = player.playerDetails?.season_details
-    ? Object.values(player.playerDetails.season_details).find(
-        seasonInfo => seasonInfo?.season && seasonInfo.season > 0
-      )?.season
     : undefined;
 
   return (

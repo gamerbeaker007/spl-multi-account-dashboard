@@ -17,6 +17,7 @@ export interface PlayerStatusData {
 export interface PlayerStatusResponse {
   players: PlayerStatusData[];
   timestamp: string;
+  seasonId: number;
 }
 
 export interface UsePlayerStatusReturn {

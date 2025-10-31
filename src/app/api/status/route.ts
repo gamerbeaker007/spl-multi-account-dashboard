@@ -1,4 +1,5 @@
 import {
+  fetchCurrentSeasonId,
   fetchFrontierDraws,
   fetchPlayerBalances,
   fetchPlayerDetails,
@@ -20,6 +21,7 @@ export async function POST(request: NextRequest) {
     logger.info(`Fetching complete status for users: ${users}`);
 
     const playerData = [];
+    const seasonId = await fetchCurrentSeasonId(users[0]);
 
     for (const user of users) {
       try {
@@ -55,9 +57,11 @@ export async function POST(request: NextRequest) {
     }
 
     logger.info(`Successfully fetched complete status data for all users ${users.length}`);
+    logger.info(`Current season ID: ${seasonId}`);
     return NextResponse.json({
       players: playerData,
       timestamp: new Date().toISOString(),
+      seasonId: seasonId,
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

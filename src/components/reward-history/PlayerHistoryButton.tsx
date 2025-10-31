@@ -22,7 +22,6 @@ export function PlayerHistoryButton({ username, seasonId }: PlayerHistoryButtonP
   }
 
   const userToken = getUserToken(username);
-
   if (!userToken) {
     return null; // Don't show if no token available
   }

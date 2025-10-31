@@ -29,6 +29,8 @@ const findPackIconUrl = (edition: string): string => {
 };
 
 export function Packs({ packs }: Props) {
+  const isEmpty = Object.keys(packs).length === 0;
+  if (isEmpty) return null;
   return (
     <Box border={'1px solid'} borderRadius={2} p={2} width={'135px'}>
       <Typography variant="h6">Packs</Typography>

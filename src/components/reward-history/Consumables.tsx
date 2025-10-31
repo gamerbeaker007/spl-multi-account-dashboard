@@ -40,6 +40,13 @@ const scrolColor: { [key: string]: string } = {
 };
 
 export function Consumables({ totalPotions, totalMerits, totalEnergy, totalScrolls }: Props) {
+  const isEmpty =
+    Object.keys(totalPotions).length === 0 &&
+    totalMerits === 0 &&
+    totalEnergy === 0 &&
+    Object.keys(totalScrolls).length === 0;
+  if (isEmpty) return null;
+
   return (
     <Box border={'1px solid'} borderRadius={2} p={2} width={'135px'}>
       <Typography variant="h6">Consumables</Typography>

@@ -104,6 +104,7 @@ export default function PlayerStatusDashboard() {
                     <PlayerCard
                       key={player.username}
                       player={player}
+                      seasonId={data.seasonId}
                       onAuthChange={handleAuthChange}
                       cardData={cardData?.players?.find(p => p.username === player.username)}
                       cardDataLoading={cardDataLoading}

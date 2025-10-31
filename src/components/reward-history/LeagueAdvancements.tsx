@@ -30,6 +30,11 @@ const leagueNames = [
 const iconSize = 75;
 
 export function LeagueAdvancements({ leagueAdvancements }: Props) {
+  const isEmpty = !(['foundation', 'wild', 'modern'] as const).some(
+    format => leagueAdvancements[format]?.length
+  );
+  if (isEmpty) return null;
+
   return (
     <Box border={'1px solid'} borderRadius={2} p={2}>
       {(['foundation', 'wild', 'modern'] as const).map(format => {
