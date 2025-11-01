@@ -1,5 +1,10 @@
 import { SplHistory } from '@/types/spl/history';
-import { ParsedData, ParsedHistoryEntry, ParsedReward } from '@/types/spl/parsedHistory';
+import {
+  ParsedData,
+  ParsedHistoryEntry,
+  ParsedPurchaseEntry,
+  ParsedReward,
+} from '@/types/spl/parsedHistory';
 
 /**
  * Parse daily quest result JSON
@@ -28,41 +33,11 @@ function parseDailyQuestResult(
 }
 
 /**
- * Parse claim reward result JSON
- * This are the league advancement rewards
- */
-function parseClaimRewardResult(resultString: string): { rewards: ParsedReward } | null {
-  try {
-    const parsed = JSON.parse(resultString);
-    const rewards = parsed.rewards || [];
-    return { rewards };
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Parse claim reward result JSON
- * This are the shop purchases
- */
-function parsePurchaseResult(resultString: string): { rewards: ParsedReward } | null {
-  try {
-    const parsed = JSON.parse(resultString);
-    console.log('Parsed purchase result:', parsed);
-    const rewards = parsed.rewards || [];
-    return { rewards };
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Parse single history entry to typed format
  * This function should be used in the API route to parse data before sending to client
  */
 export function parseHistoryEntry(entry: SplHistory): ParsedHistoryEntry {
   const baseEntry: ParsedHistoryEntry = {
-    id: entry.id,
     type: entry.type,
     blockNum: entry.block_num,
     createdDate: entry.created_date,
@@ -86,28 +61,25 @@ export function parseHistoryEntry(entry: SplHistory): ParsedHistoryEntry {
         baseEntry.rawData = entry.result;
       }
     } else if (entry.type === 'claim_reward') {
-      const parsed = parseClaimRewardResult(entry.result);
       const parsedData = JSON.parse(entry.data) as ParsedData;
-      if (parsed && parsedData) {
+      const parsedResult = JSON.parse(entry.result);
+      if (parsedData && parsedResult) {
+        if (parsedData.type === 'league') {
+          baseEntry.rewards = (parsedResult.rewards as ParsedReward[]) || [];
+        } else if (parsedData.type === 'league_season') {
+          baseEntry.rewards = (parsedResult as ParsedReward[]) || [];
+        }
+
         baseEntry.metaData = {
+          type: parsedData.type,
           season: parsedData.season,
           format: parsedData.format,
           tier: parsedData.tier,
+          rewards: parsedResult.rewards, // Total glint for league_season
+          affiliate_rewards: parsedResult.affiliate_rewards, // Affiliate rewards for league_season
         };
-        baseEntry.rewards = parsed.rewards;
       } else {
         console.error('Failed to parse claim reward result:', entry.result);
-        baseEntry.hasParsingError = true;
-        baseEntry.rawData = entry.result;
-      }
-    } else if (entry.type === 'purchase') {
-      // Purchases can be parsed similarly if needed
-      // For now, just mark as unparsed
-      const parsed = parsePurchaseResult(entry.result);
-      if (parsed) {
-        baseEntry.rewards = parsed.rewards;
-      } else {
-        console.error('Failed to parse purchase result:', entry.result);
         baseEntry.hasParsingError = true;
         baseEntry.rawData = entry.result;
       }
@@ -120,6 +92,66 @@ export function parseHistoryEntry(entry: SplHistory): ParsedHistoryEntry {
   } catch {
     baseEntry.hasParsingError = true;
     baseEntry.rawData = entry.result;
+  }
+
+  return baseEntry;
+}
+
+/**
+ * Parse purchase entry from SplHistory format (when type is 'purchase')
+ */
+export function parsePurchaseEntry(historyEntry: SplHistory): ParsedPurchaseEntry | undefined {
+  // Parse the data field which contains the purchase details
+  let purchaseData: {
+    type?: string;
+    qty?: number;
+    currency?: string;
+    data?: string; // JSON string with additional purchase data
+    result?: string; // JSON string with the result of the purchase
+  } = {};
+
+  try {
+    if (historyEntry.data) {
+      purchaseData = JSON.parse(historyEntry.data);
+    }
+  } catch (error) {
+    console.error('Failed to parse purchase data:', error);
+  }
+
+  //Only process glint shop purchases
+  if (!['reward_draw', 'ranked_draw_entry', 'ranked_draw'].includes(purchaseData.type as string))
+    return undefined;
+
+  const baseEntry: ParsedPurchaseEntry = {
+    type: purchaseData.type || historyEntry.type,
+    createdDate: historyEntry.created_date,
+    success: historyEntry.success,
+  };
+
+  if (historyEntry.result) {
+    try {
+      const baseResult = JSON.parse(historyEntry.result);
+      baseEntry.subType = baseResult.sub_type;
+      baseEntry.paymentAmount = parseFloat(baseResult.payment_amount);
+      baseEntry.paymentCurrency = baseResult.payment_currency;
+      baseEntry.quantity = baseResult.quantity;
+      baseEntry.bonusQuantity = baseResult.bonus_quantity;
+      if (purchaseData.type === 'reward_draw') {
+        const data = JSON.parse(baseResult.data);
+        baseEntry.potions = data.result.potions;
+        baseEntry.rewards = data.result.rewards as ParsedReward[];
+      } else if (purchaseData.type === 'ranked_draw_entry') {
+        const data = JSON.parse(baseResult.data);
+        baseEntry.rewards = data.result.rewards as ParsedReward[];
+      } else {
+        console.warn('Unhandled purchase type in result parsing:', purchaseData.type);
+        baseEntry.hasParsingError = true;
+        baseEntry.rawData = historyEntry.result;
+      }
+    } catch {
+      baseEntry.hasParsingError = true;
+      baseEntry.rawData = historyEntry.result;
+    }
   }
 
   return baseEntry;

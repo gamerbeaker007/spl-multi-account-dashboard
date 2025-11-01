@@ -1,15 +1,15 @@
-import {
-  fetchPlayerHistory,
-  fetchPlayerHistoryByDateRange,
-  getSeasonDateRange,
-} from '@/lib/api/splApi';
+import { fetchPlayerHistoryByDateRange, getSeasonDateRange } from '@/lib/api/splApi';
 import { decryptToken } from '@/lib/auth/encryption';
-import { parsePlayerHistory } from '@/lib/historyParser';
+import { parseHistoryEntry, parsePurchaseEntry } from '@/lib/historyParser';
 import logger from '@/lib/log/logger.server';
-import { aggregateRewards } from '@/lib/rewardAggregator';
+import {
+  aggregatePurchaseRewards,
+  aggregateRewards,
+  mergeRewardSummaries,
+} from '@/lib/rewardAggregator';
 import { NextRequest, NextResponse } from 'next/server';
 
-const REWARD_CLAIM_TYPES = 'claim_reward,claim_daily,purchase';
+const ALL_HISTORY_TYPES = 'claim_reward,claim_daily,purchase';
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,23 +36,46 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: `Invalid seasonId: ${seasonId}` }, { status: 400 });
       }
 
-      const history = await fetchPlayerHistoryByDateRange(
+      // Fetch all history types in a single call
+      const allHistory = await fetchPlayerHistoryByDateRange(
         player,
         decryptedToken,
-        REWARD_CLAIM_TYPES,
+        ALL_HISTORY_TYPES,
         seasonRange.startDate,
         seasonRange.endDate
       );
 
-      // Parse the history entries to typed format
-      const parsedEntries = parsePlayerHistory(history);
-      const aggregation = aggregateRewards(parsedEntries);
+      // Separate entries by type and parse accordingly
+      const dailyEntries = allHistory.filter(e => e.type === 'claim_daily').map(parseHistoryEntry);
+
+      const leagueEntries = allHistory
+        .filter(e => e.type === 'claim_reward')
+        .map(parseHistoryEntry);
+
+      const purchaseEntries = allHistory
+        .filter(e => e.type === 'purchase')
+        .map(parsePurchaseEntry)
+        .filter(entry => entry !== undefined);
+
+      // Aggregate each category
+      const dailyAggregation = aggregateRewards(dailyEntries);
+      const leagueAggregation = aggregateRewards(leagueEntries);
+      const purchaseAggregation = aggregatePurchaseRewards(purchaseEntries);
+
+      // Merge all aggregations
+      const totalAggregation = mergeRewardSummaries(
+        dailyAggregation,
+        leagueAggregation,
+        purchaseAggregation
+      );
 
       const result = {
-        entries: parsedEntries,
-        totalEntries: parsedEntries.length,
+        dailyEntries,
+        leagueEntries,
+        purchaseEntries,
+        totalEntries: dailyEntries.length + leagueEntries.length + purchaseEntries.length,
         seasonId: seasonId,
-        aggregation,
+        aggregation: totalAggregation,
         dateRange: {
           start: seasonRange.startDate.toISOString(),
           end: seasonRange.endDate.toISOString(),
@@ -60,20 +83,13 @@ export async function GET(request: NextRequest) {
       };
       return NextResponse.json(result);
     } else {
-      logger.info(`API route: Fetching single page history for ${player}`);
-      const history = await fetchPlayerHistory(player, decryptedToken, REWARD_CLAIM_TYPES);
-
-      // Parse the history entries to typed format
-      const parsedEntries = parsePlayerHistory(history);
-      const aggregation = aggregateRewards(parsedEntries);
-
-      const result = {
-        entries: parsedEntries,
-        totalEntries: parsedEntries.length,
-        aggregation,
-      };
-
-      return NextResponse.json(result);
+      logger.info(
+        `API route: Single page fetch not supported for new structure - use seasonId parameter`
+      );
+      return NextResponse.json(
+        { error: 'Please provide seasonId parameter for fetching history' },
+        { status: 400 }
+      );
     }
   } catch (error) {
     logger.error(

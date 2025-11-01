@@ -1,5 +1,5 @@
 // Simple reward aggregation function for the API response format
-import { ParsedHistoryEntry, ParsedReward } from '@/types/spl/parsedHistory';
+import { ParsedHistoryEntry, ParsedPurchaseEntry, ParsedReward } from '@/types/spl/parsedHistory';
 import logger from './log/logger.server';
 
 export interface RewardSummary {
@@ -74,12 +74,10 @@ export function aggregateRewards(entries: ParsedHistoryEntry[]): RewardSummary {
           if (tierResult?.potions) {
             Object.entries(tierResult.potions).forEach(([potionType, potionData]) => {
               summary.totalPotionsUsed[potionType] =
-                (summary.totalPotionsUsed[potionType] || 0) +
-                (potionData.charges_used || 0);
+                (summary.totalPotionsUsed[potionType] || 0) + (potionData.charges_used || 0);
             });
           }
         });
-
 
         //process meta data
         entry.metaData = entry.metaData || {};
@@ -171,84 +169,139 @@ function processRewardArray(rewards: ParsedReward[], summary: RewardSummary): vo
   });
 }
 
-export function formatRewardSummary(summary: RewardSummary): string {
-  let output = '=== REWARD SUMMARY ===\n\n';
+/**
+ * Aggregate rewards from purchase entries
+ */
+export function aggregatePurchaseRewards(entries: ParsedPurchaseEntry[]): RewardSummary {
+  const summary: RewardSummary = {
+    totalPacks: {},
+    totalFrontierEntries: 0,
+    totalRankedEntries: 0,
+    totalCards: {},
+    totalPotions: {},
+    totalPotionsUsed: {},
+    totalMerits: 0,
+    totalEnergy: 0,
+    totalScrolls: {},
+    totalDraws: { minor: 0, major: 0, ultimate: 0 },
+    leagueAdvancements: { foundation: [], wild: [], modern: [] },
+    questTypeBreakdown: {},
+  };
 
-  // Quest breakdown
-  output += 'Quest Type Breakdown:\n';
-  Object.entries(summary.questTypeBreakdown).forEach(([questType, count]) => {
-    output += `  ${questType}: ${count} claims\n`;
+  entries.forEach(entry => {
+    // Process rewards from draw purchases
+    if (entry.rewards && Array.isArray(entry.rewards)) {
+      processRewardArray(entry.rewards, summary);
+    }
+
+    // Track draw purchases by sub-type
+    if (entry.type === 'reward_draw' && entry.subType) {
+      switch (entry.subType) {
+        case 'minor_draw':
+          summary.totalDraws.minor += entry.quantity || 0;
+          break;
+        case 'major_draw':
+          summary.totalDraws.major += entry.quantity || 0;
+          break;
+        case 'ultimate_draw':
+        case 'legendary_draw':
+          summary.totalDraws.ultimate += entry.quantity || 0;
+          break;
+      }
+    }
+
+    // Track merit purchases
+    if (entry.type === 'reward_merits') {
+      summary.totalMerits += entry.quantity || 0;
+    }
+
+    // Track draw entry purchases
+    if (entry.type === 'ranked_draw_entry') {
+      summary.totalRankedEntries += entry.quantity || 0;
+    }
+    if (entry.type === 'frontier_draw_entry') {
+      summary.totalFrontierEntries += entry.quantity || 0;
+    }
   });
 
-  // Packs
-  if (Object.keys(summary.totalPacks).length > 0) {
-    output += 'Packs:\n';
+  return summary;
+}
+
+/**
+ * Merge multiple reward summaries into one
+ */
+export function mergeRewardSummaries(...summaries: RewardSummary[]): RewardSummary {
+  const merged: RewardSummary = {
+    totalPacks: {},
+    totalFrontierEntries: 0,
+    totalRankedEntries: 0,
+    totalCards: {},
+    totalPotions: {},
+    totalPotionsUsed: {},
+    totalMerits: 0,
+    totalEnergy: 0,
+    totalScrolls: {},
+    totalDraws: { minor: 0, major: 0, ultimate: 0 },
+    leagueAdvancements: { foundation: [], wild: [], modern: [] },
+    questTypeBreakdown: {},
+  };
+
+  summaries.forEach(summary => {
+    // Merge packs
     Object.entries(summary.totalPacks).forEach(([edition, count]) => {
-      output += `  Edition ${edition}: ${count} packs\n`;
+      merged.totalPacks[Number(edition)] = (merged.totalPacks[Number(edition)] || 0) + count;
     });
-    output += '\n';
-  }
 
-  // Entries
-  if (summary.totalFrontierEntries > 0 || summary.totalRankedEntries > 0) {
-    output += 'Entries:\n';
-    if (summary.totalFrontierEntries > 0) {
-      output += `  Frontier Entries: ${summary.totalFrontierEntries}\n`;
-    }
-    if (summary.totalRankedEntries > 0) {
-      output += `  Ranked Entries: ${summary.totalRankedEntries}\n`;
-    }
-    output += '\n';
-  }
+    // Merge entries
+    merged.totalFrontierEntries += summary.totalFrontierEntries;
+    merged.totalRankedEntries += summary.totalRankedEntries;
 
-  // Cards (top 10)
-  if (Object.keys(summary.totalCards).length > 0) {
-    output += 'Top Cards:\n';
-    const sortedCards = Object.entries(summary.totalCards)
-      .sort(([, a], [, b]) => b.quantity - a.quantity)
-      .slice(0, 10);
-
-    sortedCards.forEach(([cardId, data]) => {
-      output += `  Card ${cardId}: ${data.quantity} total (${data.gold} gold, ${data.regular} regular)\n`;
+    // Merge cards
+    Object.entries(summary.totalCards).forEach(([cardId, data]) => {
+      const id = Number(cardId);
+      if (!merged.totalCards[id]) {
+        merged.totalCards[id] = { ...data };
+      } else {
+        merged.totalCards[id].quantity += data.quantity;
+        merged.totalCards[id].gold += data.gold;
+        merged.totalCards[id].regular += data.regular;
+      }
     });
-    output += '\n';
-  }
 
-  // Potions
-  if (Object.keys(summary.totalPotions).length > 0) {
-    output += 'Potions:\n';
+    // Merge potions
     Object.entries(summary.totalPotions).forEach(([type, count]) => {
-      output += `  ${type}: ${count}\n`;
+      merged.totalPotions[type] = (merged.totalPotions[type] || 0) + count;
     });
-    output += '\n';
-  }
 
-  // Other resources
-  if (summary.totalMerits > 0) {
-    output += `Merits: ${summary.totalMerits}\n`;
-  }
-  if (summary.totalEnergy > 0) {
-    output += `Energy: ${summary.totalEnergy}\n`;
-  }
+    // Merge potions used
+    Object.entries(summary.totalPotionsUsed).forEach(([type, count]) => {
+      merged.totalPotionsUsed[type] = (merged.totalPotionsUsed[type] || 0) + count;
+    });
 
-  // Scrolls
-  if (Object.keys(summary.totalScrolls).length > 0) {
-    output += 'Scrolls:\n';
+    // Merge simple counters
+    merged.totalMerits += summary.totalMerits;
+    merged.totalEnergy += summary.totalEnergy;
+
+    // Merge scrolls
     Object.entries(summary.totalScrolls).forEach(([type, count]) => {
-      output += `  ${type.replace('_', ' ')}: ${count}\n`;
+      merged.totalScrolls[type] = (merged.totalScrolls[type] || 0) + count;
     });
-    output += '\n';
-  }
 
-  // Draw totals
-  const totalDraws =
-    summary.totalDraws.minor + summary.totalDraws.major + summary.totalDraws.ultimate;
-  if (totalDraws > 0) {
-    output += 'Draw Totals:\n';
-    output += `  Minor Draws: ${summary.totalDraws.minor}\n`;
-    output += `  Major Draws: ${summary.totalDraws.major}\n`;
-    output += `  Ultimate Draws: ${summary.totalDraws.ultimate}\n`;
-  }
+    // Merge draws
+    merged.totalDraws.minor += summary.totalDraws.minor;
+    merged.totalDraws.major += summary.totalDraws.major;
+    merged.totalDraws.ultimate += summary.totalDraws.ultimate;
 
-  return output;
+    // Merge league advancements
+    merged.leagueAdvancements.foundation.push(...summary.leagueAdvancements.foundation);
+    merged.leagueAdvancements.wild.push(...summary.leagueAdvancements.wild);
+    merged.leagueAdvancements.modern.push(...summary.leagueAdvancements.modern);
+
+    // Merge quest type breakdown
+    Object.entries(summary.questTypeBreakdown).forEach(([type, count]) => {
+      merged.questTypeBreakdown[type] = (merged.questTypeBreakdown[type] || 0) + count;
+    });
+  });
+
+  return merged;
 }

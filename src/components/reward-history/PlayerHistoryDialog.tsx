@@ -16,7 +16,8 @@ import {
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import { RewardHistorySummary } from './RewardHistorySummary';
+import { RewardSection } from './reward-section/RewardSection';
+
 interface PlayerHistoryDialogProps {
   open: boolean;
   onClose: () => void;
@@ -33,7 +34,6 @@ export function PlayerHistoryDialog({
   seasonId,
 }: PlayerHistoryDialogProps) {
   const [currentSeasonId] = useState(seasonId);
-
   const { isLoading, error, rewardHistory, fetchHistory, clearHistory, clearError } =
     usePlayerHistory();
 
@@ -96,6 +96,11 @@ export function PlayerHistoryDialog({
                   <strong>Total Entries:</strong> {rewardHistory.totalEntries}
                 </Typography>
                 <Typography variant="body2">
+                  <strong>Daily:</strong> {rewardHistory.dailyEntries.length} |{' '}
+                  <strong>League:</strong> {rewardHistory.leagueEntries.length} |{' '}
+                  <strong>Purchases:</strong> {rewardHistory.purchaseEntries.length}
+                </Typography>
+                <Typography variant="body2">
                   <strong>Date Range:</strong>{' '}
                   {rewardHistory?.dateRange?.start
                     ? new Date(rewardHistory.dateRange.start).toLocaleDateString()
@@ -110,8 +115,8 @@ export function PlayerHistoryDialog({
           </Paper>
         )}
 
-        {rewardHistory && rewardHistory?.entries.length > 0 && (
-          <RewardHistorySummary rewardHistory={rewardHistory} />
+        {rewardHistory && rewardHistory.totalEntries > 0 && (
+          <RewardSection rewardHistory={rewardHistory} />
         )}
 
         {/* Loading State */}
@@ -122,7 +127,7 @@ export function PlayerHistoryDialog({
         )}
 
         {/* Empty State */}
-        {!isLoading && history.length === 0 && !error && (
+        {!isLoading && rewardHistory && rewardHistory.totalEntries === 0 && !error && (
           <Box textAlign="center" py={4}>
             <Typography color="text.secondary">
               No history data available. Select a date range and click &ldquo;Fetch History&rdquo;
@@ -133,7 +138,7 @@ export function PlayerHistoryDialog({
       </DialogContent>
 
       <DialogActions>
-        {history.length > 0 && (
+        {rewardHistory && rewardHistory.totalEntries > 0 && (
           <Button onClick={clearHistory} color="secondary">
             Clear History
           </Button>
