@@ -1,5 +1,13 @@
-// Typed reward interfaces after parsing from API
-export interface ParsedReward {
+export interface PotionsUsed {
+  legendary: {
+    charges_used: number;
+  };
+  gold: {
+    charges_used: number;
+  };
+}
+
+export interface RewardEntry {
   type: string;
   quantity: number;
   edition?: number;
@@ -9,18 +17,23 @@ export interface ParsedReward {
     edition: number;
     gold: boolean;
   };
+}
+
+export interface ChestEntry {
+  result: {
+    rewards: RewardEntry[]
+    potions?: PotionsUsed
+  };
+}
+
+// Typed reward interfaces after parsing from API
+export interface ParsedReward extends RewardEntry {
   minor_draw?: number;
-  minor?: {
-    result: { rewards: ParsedReward[] };
-  };
   major_draw?: number;
-  major: {
-    result: { rewards: ParsedReward[] };
-  };
   ultimate_draw?: number;
-  ultimate?: {
-    result: { rewards: ParsedReward[] };
-  };
+  minor?: ChestEntry;
+  major?: ChestEntry;
+  ultimate?: ChestEntry;
 }
 
 export interface ParsedData {
@@ -50,6 +63,7 @@ export interface RewardSummary {
     [cardId: number]: { edition: number; quantity: number; gold: number; regular: number };
   };
   totalPotions: { [potionType: string]: number };
+  totalPotionsUsed: { [potionType: string]: number };
   totalMerits: number;
   totalEnergy: number;
   totalScrolls: { [scrollType: string]: number };

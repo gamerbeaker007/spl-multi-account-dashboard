@@ -9,7 +9,7 @@ import logger from '@/lib/log/logger.server';
 import { aggregateRewards } from '@/lib/rewardAggregator';
 import { NextRequest, NextResponse } from 'next/server';
 
-const REWARD_CLAIM_TYPES = 'claim_reward,claim_daily';
+const REWARD_CLAIM_TYPES = 'claim_reward,claim_daily,purchase';
 
 export async function GET(request: NextRequest) {
   try {

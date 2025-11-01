@@ -1,5 +1,6 @@
 // Simple reward aggregation function for the API response format
 import { ParsedHistoryEntry, ParsedReward } from '@/types/spl/parsedHistory';
+import logger from './log/logger.server';
 
 export interface RewardSummary {
   totalPacks: { [edition: number]: number };
@@ -9,6 +10,7 @@ export interface RewardSummary {
     [cardId: number]: { edition: number; quantity: number; gold: number; regular: number };
   };
   totalPotions: { [potionType: string]: number };
+  totalPotionsUsed: { [potionType: string]: number };
   totalMerits: number;
   totalEnergy: number;
   totalScrolls: { [scrollType: string]: number };
@@ -24,6 +26,7 @@ export function aggregateRewards(entries: ParsedHistoryEntry[]): RewardSummary {
     totalRankedEntries: 0,
     totalCards: {},
     totalPotions: {},
+    totalPotionsUsed: {},
     totalMerits: 0,
     totalEnergy: 0,
     totalScrolls: {},
@@ -63,6 +66,20 @@ export function aggregateRewards(entries: ParsedHistoryEntry[]): RewardSummary {
         if (rewards.ultimate?.result?.rewards) {
           processRewardArray(rewards.ultimate.result.rewards, summary);
         }
+
+        // Process potions used
+        // Process potions used for each draw tier
+        ['minor', 'major', 'ultimate'].forEach((tier: string) => {
+          const tierResult = rewards[tier as 'minor' | 'major' | 'ultimate']?.result;
+          if (tierResult?.potions) {
+            Object.entries(tierResult.potions).forEach(([potionType, potionData]) => {
+              summary.totalPotionsUsed[potionType] =
+                (summary.totalPotionsUsed[potionType] || 0) +
+                (potionData.charges_used || 0);
+            });
+          }
+        });
+
 
         //process meta data
         entry.metaData = entry.metaData || {};
@@ -146,6 +163,9 @@ function processRewardArray(rewards: ParsedReward[], summary: RewardSummary): vo
       case 'legendary_scroll':
         summary.totalScrolls[reward.type] =
           (summary.totalScrolls[reward.type] || 0) + reward.quantity;
+        break;
+      default:
+        logger.warn(`Unknown reward type encountered during aggregation: ${reward.type}`);
         break;
     }
   });

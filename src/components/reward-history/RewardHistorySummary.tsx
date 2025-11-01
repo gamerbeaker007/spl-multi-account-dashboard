@@ -30,6 +30,7 @@ export function RewardHistorySummary({ rewardHistory }: PlayerHistoryButtonProps
       <Box display={'flex'} flexDirection="row" gap={2}>
         <LeagueAdvancements leagueAdvancements={rewardHistory.aggregation.leagueAdvancements} />
         <Consumables
+          title="Consumables"
           totalPotions={rewardHistory.aggregation.totalPotions}
           totalMerits={rewardHistory.aggregation.totalMerits}
           totalEnergy={rewardHistory.aggregation.totalEnergy}
@@ -42,7 +43,13 @@ export function RewardHistorySummary({ rewardHistory }: PlayerHistoryButtonProps
         />
       </Box>
 
-      <Chests totalDraws={rewardHistory.aggregation.totalDraws} />
+      <Box display={'flex'} flexDirection="row" gap={2}>
+        <Chests totalDraws={rewardHistory.aggregation.totalDraws} />
+        <Consumables
+          title="Potions Used"
+          totalPotions={rewardHistory.aggregation.totalPotionsUsed}
+        />
+      </Box>
       <Cards totalCards={rewardHistory.aggregation.totalCards} cardDetails={cardDetails} />
     </Box>
   );

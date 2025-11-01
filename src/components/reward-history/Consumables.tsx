@@ -10,14 +10,15 @@ import {
   unbind_ca_l_icon_url,
   unbind_ca_r_icon_url,
 } from '@/lib/staticsIconUrls';
-import { Box, Typography } from '@mui/material';
+import { Box, capitalize, Typography } from '@mui/material';
 import { BalanceItem } from '../BalanceItem';
 
 interface Props {
-  totalPotions: { [potionType: string]: number };
-  totalMerits: number;
-  totalEnergy: number;
-  totalScrolls: { [scrollType: string]: number };
+  title?: string;
+  totalPotions?: { [potionType: string]: number };
+  totalMerits?: number;
+  totalEnergy?: number;
+  totalScrolls?: { [scrollType: string]: number };
 }
 
 const logoMap: { [key: string]: string } = {
@@ -39,22 +40,33 @@ const scrolColor: { [key: string]: string } = {
   legendary_scroll: `rgba(215, 190, 55, ${opacity})`,
 };
 
-export function Consumables({ totalPotions, totalMerits, totalEnergy, totalScrolls }: Props) {
+export function Consumables({
+  title,
+  totalPotions,
+  totalMerits,
+  totalEnergy,
+  totalScrolls,
+}: Props) {
   const isEmpty =
-    Object.keys(totalPotions).length === 0 &&
+    Object.keys(totalPotions ?? []).length === 0 &&
     totalMerits === 0 &&
     totalEnergy === 0 &&
-    Object.keys(totalScrolls).length === 0;
+    Object.keys(totalScrolls ?? []).length === 0;
   if (isEmpty) return null;
 
   return (
-    <Box border={'1px solid'} borderRadius={2} p={2} width={'135px'}>
-      <Typography variant="h6">Consumables</Typography>
-      {Object.entries(totalPotions).length > 0 && (
+    <Box border={'1px solid'} borderRadius={2} p={2}>
+      <Typography variant="h6">{title}</Typography>
+      {totalPotions && Object.entries(totalPotions).length > 0 && (
         <Box>
           <Typography variant="subtitle1">Potions</Typography>
           {Object.entries(totalPotions).map(([type, amount]) => (
-            <BalanceItem key={type} title={type} iconUrl={logoMap[type]} value={amount} />
+            <BalanceItem
+              key={type}
+              title={type === 'gold' ? 'Alchemy' : capitalize(type)}
+              iconUrl={logoMap[type]}
+              value={amount}
+            />
           ))}
         </Box>
       )}
@@ -70,7 +82,7 @@ export function Consumables({ totalPotions, totalMerits, totalEnergy, totalScrol
           <BalanceItem title="Energy" iconUrl={logoMap.energy} value={totalEnergy} />
         </Box>
       )}
-      {Object.entries(totalScrolls).length > 0 && (
+      {totalScrolls && Object.entries(totalScrolls).length > 0 && (
         <Box>
           <Typography variant="subtitle1">Scrolls</Typography>
           {['common_scroll', 'rare_scroll', 'epic_scroll', 'legendary_scroll'].map(type => (

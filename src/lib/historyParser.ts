@@ -29,10 +29,26 @@ function parseDailyQuestResult(
 
 /**
  * Parse claim reward result JSON
+ * This are the league advancement rewards
  */
 function parseClaimRewardResult(resultString: string): { rewards: ParsedReward } | null {
   try {
     const parsed = JSON.parse(resultString);
+    const rewards = parsed.rewards || [];
+    return { rewards };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Parse claim reward result JSON
+ * This are the shop purchases
+ */
+function parsePurchaseResult(resultString: string): { rewards: ParsedReward } | null {
+  try {
+    const parsed = JSON.parse(resultString);
+    console.log('Parsed purchase result:', parsed);
     const rewards = parsed.rewards || [];
     return { rewards };
   } catch {
@@ -81,6 +97,17 @@ export function parseHistoryEntry(entry: SplHistory): ParsedHistoryEntry {
         baseEntry.rewards = parsed.rewards;
       } else {
         console.error('Failed to parse claim reward result:', entry.result);
+        baseEntry.hasParsingError = true;
+        baseEntry.rawData = entry.result;
+      }
+    } else if (entry.type === 'purchase') {
+      // Purchases can be parsed similarly if needed
+      // For now, just mark as unparsed
+      const parsed = parsePurchaseResult(entry.result);
+      if (parsed) {
+        baseEntry.rewards = parsed.rewards;
+      } else {
+        console.error('Failed to parse purchase result:', entry.result);
         baseEntry.hasParsingError = true;
         baseEntry.rawData = entry.result;
       }
