@@ -9,6 +9,7 @@ import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
 
 interface Props {
+  title: string;
   totalDraws: { minor: number; major: number; ultimate: number };
 }
 
@@ -20,10 +21,10 @@ const chestIconMap: { [key: string]: string } = {
 
 const iconSize = 75;
 
-export function Chests({ totalDraws }: Props) {
+export function Chests({ title, totalDraws }: Props) {
   return (
     <Box border={'1px solid'} borderRadius={2} p={2}>
-      <Typography variant="h6">Chests</Typography>
+      <Typography variant="h6">{title}</Typography>
       {Object.entries(totalDraws).length > 0 && (
         <Box>
           {Object.entries(totalDraws).map(([type, amount]) => (

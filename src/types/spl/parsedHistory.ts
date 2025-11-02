@@ -92,6 +92,8 @@ export interface RewardSummary {
   totalEnergy: number;
   totalScrolls: { [scrollType: string]: number };
   totalDraws: { minor: number; major: number; ultimate: number };
+  totalShopDraws: { minor: number; major: number; ultimate: number };
+  totalRarityDraws: { common: number; rare: number; epic: number; legendary: number };
   leagueAdvancements: { foundation: number[]; wild: number[]; modern: number[] };
   questTypeBreakdown: { [questType: string]: number };
 }

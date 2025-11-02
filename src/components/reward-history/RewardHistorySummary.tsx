@@ -44,11 +44,12 @@ export function RewardHistorySummary({ rewardHistory }: PlayerHistoryButtonProps
       </Box>
 
       <Box display={'flex'} flexDirection="row" gap={2}>
-        <Chests totalDraws={rewardHistory.aggregation.totalDraws} />
+        <Chests title="Chests" totalDraws={rewardHistory.aggregation.totalDraws} />
         <Consumables
           title="Potions Used"
           totalPotions={rewardHistory.aggregation.totalPotionsUsed}
         />
+        <Chests title="Chests Shop" totalDraws={rewardHistory.aggregation.totalShopDraws} />
       </Box>
       <Cards totalCards={rewardHistory.aggregation.totalCards} cardDetails={cardDetails} />
     </Box>

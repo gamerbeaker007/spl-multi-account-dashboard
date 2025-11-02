@@ -1,23 +1,11 @@
 // Simple reward aggregation function for the API response format
-import { ParsedHistoryEntry, ParsedPurchaseEntry, ParsedReward } from '@/types/spl/parsedHistory';
+import {
+  ParsedHistoryEntry,
+  ParsedPurchaseEntry,
+  ParsedReward,
+  RewardSummary,
+} from '@/types/spl/parsedHistory';
 import logger from './log/logger.server';
-
-export interface RewardSummary {
-  totalPacks: { [edition: number]: number };
-  totalFrontierEntries: number;
-  totalRankedEntries: number;
-  totalCards: {
-    [cardId: number]: { edition: number; quantity: number; gold: number; regular: number };
-  };
-  totalPotions: { [potionType: string]: number };
-  totalPotionsUsed: { [potionType: string]: number };
-  totalMerits: number;
-  totalEnergy: number;
-  totalScrolls: { [scrollType: string]: number };
-  totalDraws: { minor: number; major: number; ultimate: number };
-  leagueAdvancements: { foundation: number[]; wild: number[]; modern: number[] };
-  questTypeBreakdown: { [questType: string]: number };
-}
 
 export function aggregateRewards(entries: ParsedHistoryEntry[]): RewardSummary {
   const summary: RewardSummary = {
@@ -31,6 +19,8 @@ export function aggregateRewards(entries: ParsedHistoryEntry[]): RewardSummary {
     totalEnergy: 0,
     totalScrolls: {},
     totalDraws: { minor: 0, major: 0, ultimate: 0 },
+    totalShopDraws: { minor: 0, major: 0, ultimate: 0 },
+    totalRarityDraws: { common: 0, rare: 0, epic: 0, legendary: 0 },
     leagueAdvancements: { foundation: [], wild: [], modern: [] },
     questTypeBreakdown: {},
   };
@@ -185,6 +175,8 @@ export function aggregatePurchaseRewards(entries: ParsedPurchaseEntry[]): Reward
     totalEnergy: 0,
     totalScrolls: {},
     totalDraws: { minor: 0, major: 0, ultimate: 0 },
+    totalShopDraws: { minor: 0, major: 0, ultimate: 0 },
+    totalRarityDraws: { common: 0, rare: 0, epic: 0, legendary: 0 },
     leagueAdvancements: { foundation: [], wild: [], modern: [] },
     questTypeBreakdown: {},
   };
@@ -196,35 +188,32 @@ export function aggregatePurchaseRewards(entries: ParsedPurchaseEntry[]): Reward
     }
 
     // Track draw purchases by sub-type
-    if (entry.type === 'reward_draw' && entry.subType) {
-      switch (entry.subType) {
-        case 'minor_draw':
-          summary.totalDraws.minor += entry.quantity || 0;
-          break;
-        case 'major_draw':
-          summary.totalDraws.major += entry.quantity || 0;
-          break;
-        case 'ultimate_draw':
-        case 'legendary_draw':
-          summary.totalDraws.ultimate += entry.quantity || 0;
-          break;
-      }
-    }
-
-    // Track merit purchases
-    if (entry.type === 'reward_merits') {
-      summary.totalMerits += entry.quantity || 0;
-    }
-
-    // Track draw entry purchases
-    if (entry.type === 'ranked_draw_entry') {
-      summary.totalRankedEntries += entry.quantity || 0;
-    }
-    if (entry.type === 'frontier_draw_entry') {
-      summary.totalFrontierEntries += entry.quantity || 0;
+    switch (entry.subType) {
+      case 'minor_draw':
+        summary.totalShopDraws.minor += entry.quantity || 0;
+        break;
+      case 'major_draw':
+        summary.totalShopDraws.major += entry.quantity || 0;
+        break;
+      case 'ultimate_draw':
+        summary.totalShopDraws.ultimate += entry.quantity || 0;
+        break;
+      case 'common_draw':
+        summary.totalRarityDraws.common += entry.quantity || 0;
+        break;
+      case 'rare_draw':
+        summary.totalRarityDraws.rare += entry.quantity || 0;
+        break;
+      case 'epic_draw':
+        summary.totalRarityDraws.epic += entry.quantity || 0;
+        break;
+      case 'legendary_draw':
+        summary.totalRarityDraws.legendary += entry.quantity || 0;
+        break;
+      default:
+        break;
     }
   });
-
   return summary;
 }
 
@@ -243,6 +232,8 @@ export function mergeRewardSummaries(...summaries: RewardSummary[]): RewardSumma
     totalEnergy: 0,
     totalScrolls: {},
     totalDraws: { minor: 0, major: 0, ultimate: 0 },
+    totalShopDraws: { minor: 0, major: 0, ultimate: 0 },
+    totalRarityDraws: { common: 0, rare: 0, epic: 0, legendary: 0 },
     leagueAdvancements: { foundation: [], wild: [], modern: [] },
     questTypeBreakdown: {},
   };
@@ -293,6 +284,11 @@ export function mergeRewardSummaries(...summaries: RewardSummary[]): RewardSumma
     merged.totalDraws.major += summary.totalDraws.major;
     merged.totalDraws.ultimate += summary.totalDraws.ultimate;
 
+    // Merge Shop draws
+    merged.totalShopDraws.minor += summary.totalShopDraws.minor;
+    merged.totalShopDraws.major += summary.totalShopDraws.major;
+    merged.totalShopDraws.ultimate += summary.totalShopDraws.ultimate;
+
     // Merge league advancements
     merged.leagueAdvancements.foundation.push(...summary.leagueAdvancements.foundation);
     merged.leagueAdvancements.wild.push(...summary.leagueAdvancements.wild);
@@ -302,6 +298,12 @@ export function mergeRewardSummaries(...summaries: RewardSummary[]): RewardSumma
     Object.entries(summary.questTypeBreakdown).forEach(([type, count]) => {
       merged.questTypeBreakdown[type] = (merged.questTypeBreakdown[type] || 0) + count;
     });
+
+    // Merge rarity draws
+    merged.totalRarityDraws.common += summary.totalRarityDraws.common;
+    merged.totalRarityDraws.rare += summary.totalRarityDraws.rare;
+    merged.totalRarityDraws.epic += summary.totalRarityDraws.epic;
+    merged.totalRarityDraws.legendary += summary.totalRarityDraws.legendary;
   });
 
   return merged;

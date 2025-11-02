@@ -1,6 +1,6 @@
 'use client';
 
-import { editionNames, findPackIconUrl } from '@/lib/utils';
+import { findPackIconUrl } from '@/lib/utils';
 import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
 
@@ -9,6 +9,13 @@ interface Props {
 }
 
 const iconSize = 75;
+
+export const editionNames: { [key: string]: string } = {
+  1: 'Beta',
+  7: 'Chaos Legion',
+  8: 'Riftwatchers',
+  15: 'Foundations',
+};
 
 export function Packs({ packs }: Props) {
   const isEmpty = Object.keys(packs).length === 0;

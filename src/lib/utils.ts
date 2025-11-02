@@ -1,15 +1,4 @@
-import {
-  energy_icon_url,
-  gold_icon_url,
-  legendary_icon_url,
-  merits_icon_url,
-  reward_draw_major_icon_url,
-  unbind_ca_c_icon_url,
-  unbind_ca_e_icon_url,
-  unbind_ca_l_icon_url,
-  unbind_ca_r_icon_url,
-  WEB_URL,
-} from './staticsIconUrls';
+import { WEB_URL } from './staticsIconUrls';
 
 export const largeNumberFormat = (balance: string | number) => {
   const numValue = typeof balance === 'string' ? parseFloat(balance) : balance;
@@ -68,23 +57,4 @@ const packIconMap: { [key: string]: string } = {
 export const findPackIconUrl = (edition: string): string => {
   const editionName = packIconMap[edition];
   return `${WEB_URL}website/icons/${editionName}`;
-};
-
-export const editionNames: { [key: string]: string } = {
-  1: 'Beta',
-  7: 'Chaos Legion',
-  8: 'Riftwatchers',
-  15: 'Foundations',
-};
-
-export const logoMap: { [key: string]: string } = {
-  gold: gold_icon_url,
-  legendary: legendary_icon_url,
-  merits: merits_icon_url,
-  energy: energy_icon_url,
-  common_scroll: unbind_ca_c_icon_url,
-  rare_scroll: unbind_ca_r_icon_url,
-  epic_scroll: unbind_ca_e_icon_url,
-  legendary_scroll: unbind_ca_l_icon_url,
-  card: reward_draw_major_icon_url,
 };
