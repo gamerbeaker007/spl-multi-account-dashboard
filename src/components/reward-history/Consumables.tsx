@@ -1,15 +1,6 @@
 'use client';
 
-import {
-  energy_icon_url,
-  gold_icon_url,
-  legendary_icon_url,
-  merits_icon_url,
-  unbind_ca_c_icon_url,
-  unbind_ca_e_icon_url,
-  unbind_ca_l_icon_url,
-  unbind_ca_r_icon_url,
-} from '@/lib/staticsIconUrls';
+import { logoMap } from '@/lib/utils';
 import { Box, capitalize, Typography } from '@mui/material';
 import { BalanceItem } from '../BalanceItem';
 
@@ -20,17 +11,6 @@ interface Props {
   totalEnergy?: number;
   totalScrolls?: { [scrollType: string]: number };
 }
-
-const logoMap: { [key: string]: string } = {
-  gold: gold_icon_url,
-  legendary: legendary_icon_url,
-  merits: merits_icon_url,
-  energy: energy_icon_url,
-  common_scroll: unbind_ca_c_icon_url,
-  rare_scroll: unbind_ca_r_icon_url,
-  epic_scroll: unbind_ca_e_icon_url,
-  legendary_scroll: unbind_ca_l_icon_url,
-};
 
 const opacity = 0.5;
 const scrolColor: { [key: string]: string } = {

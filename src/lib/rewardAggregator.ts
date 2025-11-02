@@ -148,6 +148,7 @@ function processRewardArray(rewards: ParsedReward[], summary: RewardSummary): vo
         break;
 
       case 'merits':
+      case 'reward_merits':
         summary.totalMerits += reward.quantity;
         break;
 

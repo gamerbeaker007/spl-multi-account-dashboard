@@ -1,6 +1,6 @@
 'use client';
 
-import { WEB_URL } from '@/lib/staticsIconUrls';
+import { editionNames, findPackIconUrl } from '@/lib/utils';
 import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
 
@@ -8,25 +8,7 @@ interface Props {
   packs: { [edition: number]: number };
 }
 
-const packIconMap: { [key: string]: string } = {
-  1: 'icon_pack_beta.png',
-  7: 'img_pack_chaos-legion_200.png',
-  8: 'img_pack_riftwatchers_opt.png',
-  15: 'img_pack_foundations_250.png',
-};
-
-const editionNames: { [key: string]: string } = {
-  1: 'Beta',
-  7: 'Chaos Legion',
-  8: 'Riftwatchers',
-  15: 'Foundations',
-};
 const iconSize = 75;
-
-const findPackIconUrl = (edition: string): string => {
-  const editionName = packIconMap[edition];
-  return `${WEB_URL}website/icons/${editionName}`;
-};
 
 export function Packs({ packs }: Props) {
   const isEmpty = Object.keys(packs).length === 0;

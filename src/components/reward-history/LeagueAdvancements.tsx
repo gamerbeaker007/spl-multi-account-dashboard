@@ -1,31 +1,13 @@
 'use client';
 
 import { findLeagueLogoUrl } from '@/lib/staticsIconUrls';
+import { leagueNames } from '@/lib/utils';
 import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
 
 interface Props {
   leagueAdvancements: { foundation: number[]; wild: number[]; modern: number[] };
 }
-
-const leagueNames = [
-  'Novice',
-  'Bronze III',
-  'Bronze II',
-  'Bronze I',
-  'Silver III',
-  'Silver II',
-  'Silver I',
-  'Gold III',
-  'Gold II',
-  'Gold I',
-  'Diamond III',
-  'Diamond II',
-  'Diamond I',
-  'Champion III',
-  'Champion II',
-  'Champion I',
-];
 
 const iconSize = 75;
 

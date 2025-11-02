@@ -119,7 +119,11 @@ export function parsePurchaseEntry(historyEntry: SplHistory): ParsedPurchaseEntr
   }
 
   //Only process glint shop purchases
-  if (!['reward_draw', 'ranked_draw_entry', 'ranked_draw'].includes(purchaseData.type as string))
+  if (
+    !['reward_draw', 'ranked_draw_entry', 'ranked_draw', 'reward_merits', 'reward_energy'].includes(
+      purchaseData.type as string
+    )
+  )
     return undefined;
 
   const baseEntry: ParsedPurchaseEntry = {
@@ -135,7 +139,7 @@ export function parsePurchaseEntry(historyEntry: SplHistory): ParsedPurchaseEntr
       baseEntry.subType = baseResult.sub_type;
       baseEntry.paymentAmount = parseFloat(baseResult.payment_amount);
       baseEntry.paymentCurrency = baseResult.payment_currency;
-      baseEntry.quantity = baseResult.quantity;
+      baseEntry.quantity = purchaseData.qty || 0;
       baseEntry.bonusQuantity = baseResult.bonus_quantity;
       if (purchaseData.type === 'reward_draw') {
         const data = JSON.parse(baseResult.data);
@@ -144,6 +148,14 @@ export function parsePurchaseEntry(historyEntry: SplHistory): ParsedPurchaseEntr
       } else if (purchaseData.type === 'ranked_draw_entry') {
         const data = JSON.parse(baseResult.data);
         baseEntry.rewards = data.result.rewards as ParsedReward[];
+      } else if (purchaseData.type === 'reward_merits' || purchaseData.type === 'reward_energy') {
+        const data = JSON.parse(baseResult.data);
+        const reward: ParsedReward = {
+          type: purchaseData.type,
+          quantity: data.amount,
+          sub_type: data.token,
+        };
+        baseEntry.rewards = [reward];
       } else {
         console.warn('Unhandled purchase type in result parsing:', purchaseData.type);
         baseEntry.hasParsingError = true;

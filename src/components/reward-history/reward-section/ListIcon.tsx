@@ -1,4 +1,19 @@
-import { findLeagueLogoUrl } from '@/lib/staticsIconUrls';
+'use client';
+
+import {
+  energy_icon_url,
+  findLeagueLogoUrl,
+  foundation_entries_icon_url,
+  glint_icon_url,
+  merits_icon_url,
+  ranked_entries_icon_url,
+  reward_draw_common_icon_url,
+  reward_draw_epic_icon_url,
+  reward_draw_legendary_icon_url,
+  reward_draw_major_icon_url,
+  reward_draw_minor_icon_url,
+  reward_draw_rare_icon_url,
+} from '@/lib/staticsIconUrls';
 import { SplFormat } from '@/types/spl/format';
 import { ParsedHistoryEntry, ParsedPurchaseEntry } from '@/types/spl/parsedHistory';
 import { Avatar } from '@mui/material';
@@ -7,46 +22,55 @@ interface Props {
   entry: ParsedHistoryEntry | ParsedPurchaseEntry;
 }
 
-function getPurchaseIcon(buyType: string): string {
-  console.log(buyType);
-  switch (buyType) {
-    case 'merits':
-      return 'Merits Icon';
-    case 'coins':
-      return 'Coins Icon';
-    default:
-      return 'Default Purchase Icon';
-  }
-}
-function getDailyQuestIcon(questName: string): string {
-  console.log(questName);
-  // You can customize icons based on quest names if needed
-  return 'Daily Quest Icon';
-}
+const iconTypeMap: Record<string, string> = {
+  minor_draw: reward_draw_minor_icon_url,
+  major_draw: reward_draw_major_icon_url,
+  ultimate_draw: reward_draw_legendary_icon_url,
+  common_draw: reward_draw_common_icon_url,
+  rare_draw: reward_draw_rare_icon_url,
+  epic_draw: reward_draw_epic_icon_url,
+  legendary_draw: reward_draw_legendary_icon_url,
+  ranked_draw_entry: ranked_entries_icon_url,
+  reward_merits: merits_icon_url,
+  reward_energy: energy_icon_url,
+};
+
+const iconQuestMap: Record<string, string> = {
+  wild: ranked_entries_icon_url,
+  modern: ranked_entries_icon_url,
+  foundation: foundation_entries_icon_url,
+};
 
 export const ListIcon = ({ entry }: Props) => {
-  const getIcon = (entry: ParsedHistoryEntry | ParsedPurchaseEntry) => {
-    switch (entry.type) {
-      case 'purchase':
-        const purchaseEntry = entry as ParsedPurchaseEntry;
-        return getPurchaseIcon(purchaseEntry.buyType);
-      case 'claim_daily':
-        const dailyEntry = entry as ParsedHistoryEntry;
-        return getDailyQuestIcon(dailyEntry.questName ?? 'unknown');
-      case 'claim_reward':
-        const claimRewardEntry = entry as ParsedHistoryEntry;
-        return findLeagueLogoUrl(
-          (claimRewardEntry.metaData?.format as SplFormat) || 'wild',
-          claimRewardEntry.metaData?.tier || 0
-        );
-      default:
-        return null;
-    }
-  };
+  let url = 'Unknown Icon';
+
+  switch (entry.type) {
+    case 'purchase':
+      const purchaseEntry = entry as ParsedPurchaseEntry;
+      url = iconTypeMap[purchaseEntry.subType ?? 'unknown'] || 'Default Purchase Icon';
+      break;
+    case 'claim_daily':
+      const dailyEntry = entry as ParsedHistoryEntry;
+
+      url = iconQuestMap[dailyEntry.questName ?? 'unknown'] || 'Default Daily Quest Icon';
+      break;
+    case 'claim_reward':
+      const claimRewardEntry = entry as ParsedHistoryEntry;
+      if (claimRewardEntry.metaData?.type === 'league_season') {
+        url = glint_icon_url;
+      } else {
+        url =
+          findLeagueLogoUrl(
+            (claimRewardEntry.metaData?.format as SplFormat) || 'wild',
+            claimRewardEntry.metaData?.tier || 0
+          ) || 'Default Reward Icon';
+      }
+      break;
+  }
 
   return (
     <Avatar
-      src={getIcon(entry)}
+      src={url}
       sx={{
         width: 48,
         height: 48,
