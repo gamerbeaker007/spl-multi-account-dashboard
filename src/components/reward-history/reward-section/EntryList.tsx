@@ -12,6 +12,7 @@ import {
 } from '@/lib/staticsIconUrls';
 import { ParsedHistoryEntry, ParsedPurchaseEntry, ParsedReward } from '@/types/spl/parsedHistory';
 import { Avatar, Box, Card, CardContent, Chip, Stack, Typography, alpha } from '@mui/material';
+import { ListIcon } from './ListIcon';
 
 interface EntryListItemProps {
   entry: ParsedHistoryEntry | ParsedPurchaseEntry;
@@ -47,13 +48,13 @@ function formatReward(reward: ParsedReward): string {
 function isPurchaseEntry(
   entry: ParsedHistoryEntry | ParsedPurchaseEntry
 ): entry is ParsedPurchaseEntry {
-  return 'paymentAmount' in entry;
+  return entry.type === 'purchase';
 }
 
 function isHistoryEntry(
   entry: ParsedHistoryEntry | ParsedPurchaseEntry
 ): entry is ParsedHistoryEntry {
-  return 'blockNum' in entry;
+  return entry.type === 'claim_daily' || entry.type === 'claim_reward';
 }
 
 export function EntryListItem({ entry }: EntryListItemProps) {
@@ -67,12 +68,15 @@ export function EntryListItem({ entry }: EntryListItemProps) {
   if (isPurchase) {
     typeLabel = 'Purchase';
     typeColor = 'success';
+    //todo getIcon
   } else if (entry.type === 'claim_daily') {
     typeLabel = 'Daily Quest';
     typeColor = 'primary';
+    //todo getIcon
   } else if (entry.type === 'claim_reward') {
     typeLabel = 'League Reward';
     typeColor = 'secondary';
+    //todo getIcon
   }
 
   // Get rewards array
@@ -101,6 +105,7 @@ export function EntryListItem({ entry }: EntryListItemProps) {
     >
       <CardContent>
         <Stack direction="row" spacing={2} alignItems="flex-start">
+          <ListIcon event={event} isPurchase={isPurchase} />
           {/* Icon */}
           {iconUrl && (
             <Avatar

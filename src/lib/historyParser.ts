@@ -123,7 +123,8 @@ export function parsePurchaseEntry(historyEntry: SplHistory): ParsedPurchaseEntr
     return undefined;
 
   const baseEntry: ParsedPurchaseEntry = {
-    type: purchaseData.type || historyEntry.type,
+    type: historyEntry.type,
+    buyType: purchaseData.type || 'unknown',
     createdDate: historyEntry.created_date,
     success: historyEntry.success,
   };

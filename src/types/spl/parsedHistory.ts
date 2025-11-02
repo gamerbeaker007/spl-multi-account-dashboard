@@ -49,7 +49,7 @@ export interface ParsedData {
 }
 
 export interface ParsedHistoryEntry {
-  type: 'claim_daily' | 'claim_reward' | 'purchase' | string;
+  type: 'claim_daily' | 'claim_reward' | string;
   blockNum?: number; // Optional for purchases
   createdDate: string;
   questName?: string; // For daily quests
@@ -62,7 +62,8 @@ export interface ParsedHistoryEntry {
 
 // Purchase-specific entry
 export interface ParsedPurchaseEntry {
-  type: string; // Purchase type (e.g., 'wild_pass', 'conclave_pack_standard', 'reward_draw')
+  type: 'purchase' | string; // Purchase type (e.g., 'purchase')
+  buyType: string; // Purchase type (e.g., 'wild_pass', 'conclave_pack_standard', 'reward_draw')
   subType?: string; // Purchase sub-type (e.g., 'common_draw', 'minor_draw')
   createdDate: string;
   paymentAmount?: number;
