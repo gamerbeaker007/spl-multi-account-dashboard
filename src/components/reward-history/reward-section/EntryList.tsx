@@ -2,17 +2,20 @@
 
 import { ParsedHistory } from '@/types/parsedHistory';
 import { Box, Card, CardContent, Stack, Typography, alpha } from '@mui/material';
+import { ListCards } from './ListCards';
 import { ListContentSummary } from './ListContentSummary';
 import { ListIcon } from './ListIcon';
 import { ListPotionsUsed } from './ListPotionsUsed';
 import { ListRewardChips } from './ListRewardChips';
+import { SplCardDetail } from '@/types/spl/cardDetails';
 
 interface EntryListItemProps {
   entry: ParsedHistory;
   index: number;
+  cardDetails?: SplCardDetail[];
 }
 
-export function EntryListItem({ entry }: EntryListItemProps) {
+export function EntryListItem({ entry, cardDetails }: EntryListItemProps) {
   return (
     <Card
       sx={{
@@ -40,10 +43,7 @@ export function EntryListItem({ entry }: EntryListItemProps) {
             </Box>
           </Stack>
         </Box>
-
-        {/* TODO potion used for chest and draws */}
-
-        {/* TODO detail cards */}
+        <ListCards entry={entry} cardDetails={cardDetails} />
       </CardContent>
     </Card>
   );
@@ -51,9 +51,10 @@ export function EntryListItem({ entry }: EntryListItemProps) {
 
 interface EntryListProps {
   entries: ParsedHistory[];
+  cardDetails?: SplCardDetail[];
 }
 
-export function EntryList({ entries }: EntryListProps) {
+export function EntryList({ entries, cardDetails }: EntryListProps) {
   if (entries.length === 0) {
     return (
       <Box textAlign="center" py={4}>
@@ -65,7 +66,7 @@ export function EntryList({ entries }: EntryListProps) {
   return (
     <Box>
       {entries.map((entry, index) => (
-        <EntryListItem key={`${entry.type}-${index}`} entry={entry} index={index} />
+        <EntryListItem key={`${entry.type}-${index}`} entry={entry} index={index} cardDetails={cardDetails} />
       ))}
     </Box>
   );

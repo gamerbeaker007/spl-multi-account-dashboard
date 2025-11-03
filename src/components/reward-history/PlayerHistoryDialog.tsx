@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import { RewardSection } from './reward-section/RewardSection';
+import { SplCardDetail } from '@/types/spl/cardDetails';
 
 interface PlayerHistoryDialogProps {
   open: boolean;
@@ -24,6 +25,7 @@ interface PlayerHistoryDialogProps {
   player: string;
   token: string;
   seasonId: number;
+  cardDetails?: SplCardDetail[];
 }
 
 export function PlayerHistoryDialog({
@@ -32,6 +34,7 @@ export function PlayerHistoryDialog({
   player,
   token,
   seasonId,
+  cardDetails,
 }: PlayerHistoryDialogProps) {
   const [currentSeasonId] = useState(seasonId);
   const { isLoading, error, rewardHistory, fetchHistory, clearHistory, clearError } =
@@ -125,7 +128,7 @@ export function PlayerHistoryDialog({
         )}
 
         {rewardHistory && rewardHistory.totalEntries > 0 && (
-          <RewardSection rewardHistory={rewardHistory} />
+          <RewardSection rewardHistory={rewardHistory} cardDetails={cardDetails} />
         )}
 
         {/* Loading State */}

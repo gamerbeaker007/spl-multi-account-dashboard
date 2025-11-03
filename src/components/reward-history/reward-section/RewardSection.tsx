@@ -5,12 +5,14 @@ import { Box, Button, ButtonGroup, Tab, Tabs } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { RewardHistorySummary } from '../RewardHistorySummary';
 import { EntryList } from './EntryList';
+import { SplCardDetail } from '@/types/spl/cardDetails';
 
 interface Props {
   rewardHistory: ParsedPlayerRewardHistory;
+  cardDetails?: SplCardDetail[];
 }
 
-export function RewardSection({ rewardHistory }: Props) {
+export function RewardSection({ rewardHistory, cardDetails }: Props) {
   const [activeTab, setActiveTab] = useState(0);
   const [entryFilter, setEntryFilter] = useState<'all' | 'daily' | 'league' | 'purchase'>('all');
 
@@ -92,7 +94,7 @@ export function RewardSection({ rewardHistory }: Props) {
           </Box>
 
           {/* Entry List */}
-          <EntryList entries={allEntries} />
+          <EntryList entries={allEntries} cardDetails={cardDetails} />
         </Box>
       )}
     </>
