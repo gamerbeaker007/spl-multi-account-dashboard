@@ -55,7 +55,6 @@ function formatReward(reward: AggregatedReward): string {
   }
   if (reward.potion_type) {
     const potionType = capitalize(reward.potion_type.toLowerCase());
-    console.log('Formatting potion reward of type:', potionType);
     const potionInGameName = capitalize(potionType == 'Gold' ? 'Alchemy' : potionType);
     return `${reward.quantity}x ${potionInGameName}`;
   }
