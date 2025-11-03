@@ -27,9 +27,9 @@ export function Packs({ packs }: Props) {
         <Box>
           {Object.entries(packs).map(([edition, amount]) => (
             <Box key={edition} justifyItems={'center'} sx={{ display: 'inline-block', m: 1 }}>
-              {findPackIconUrl(edition) && (
+              {findPackIconUrl(parseInt(edition)) && (
                 <Image
-                  src={findPackIconUrl(edition)}
+                  src={findPackIconUrl(parseInt(edition))}
                   alt={editionNames[edition]}
                   width={iconSize}
                   height={iconSize}

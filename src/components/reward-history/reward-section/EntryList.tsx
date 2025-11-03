@@ -1,13 +1,13 @@
 'use client';
 
-import { ParsedHistoryEntry, ParsedPurchaseEntry } from '@/types/spl/parsedHistory';
+import { ParsedHistory } from '@/types/parsedHistory';
 import { Box, Card, CardContent, Stack, Typography, alpha } from '@mui/material';
 import { ListContentSummary } from './ListContentSummary';
 import { ListIcon } from './ListIcon';
 import { ListRewardChips } from './ListRewardChips';
 
 interface EntryListItemProps {
-  entry: ParsedHistoryEntry | ParsedPurchaseEntry;
+  entry: ParsedHistory;
   index: number;
 }
 
@@ -30,6 +30,9 @@ export function EntryListItem({ entry }: EntryListItemProps) {
         <Box>
           <ListRewardChips entry={entry} />
         </Box>
+
+        {/* TODO potion used for chest and draws */}
+
         {/* TODO detail cards */}
       </CardContent>
     </Card>
@@ -37,7 +40,7 @@ export function EntryListItem({ entry }: EntryListItemProps) {
 }
 
 interface EntryListProps {
-  entries: (ParsedHistoryEntry | ParsedPurchaseEntry)[];
+  entries: ParsedHistory[];
 }
 
 export function EntryList({ entries }: EntryListProps) {

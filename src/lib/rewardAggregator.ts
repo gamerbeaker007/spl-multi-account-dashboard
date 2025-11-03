@@ -1,13 +1,18 @@
 // Simple reward aggregation function for the API response format
 import {
-  ParsedHistoryEntry,
-  ParsedPurchaseEntry,
-  ParsedReward,
+  ClaimDailyResult,
+  ClaimLeagueRewardData,
+  ClaimLeagueRewardResult,
+  ParsedHistory,
+  PurchaseResult,
+  RewardItems,
   RewardSummary,
-} from '@/types/spl/parsedHistory';
-import logger from './log/logger.server';
+} from '@/types/parsedHistory';
 
-export function aggregateRewards(entries: ParsedHistoryEntry[]): RewardSummary {
+/**
+ * Aggregate rewards from daily quest entries
+ */
+export function aggregateRewards(entries: ParsedHistory[]): RewardSummary {
   const summary: RewardSummary = {
     totalPacks: {},
     totalFrontierEntries: 0,
@@ -26,41 +31,62 @@ export function aggregateRewards(entries: ParsedHistoryEntry[]): RewardSummary {
   };
 
   entries.forEach(entry => {
-    // Count quest types for daily claims
-    if (entry.type === 'claim_daily' && entry.questName) {
-      summary.questTypeBreakdown[entry.questName] =
-        (summary.questTypeBreakdown[entry.questName] || 0) + 1;
+    // Check if it's a ClaimDailyResult
+    if (entry.type === 'claim_daily') {
+      const dailyEntry = entry.result as ClaimDailyResult;
+
+      // Count quest types
+      if (dailyEntry.quest_data.name) {
+        summary.questTypeBreakdown[dailyEntry.quest_data.name] =
+          (summary.questTypeBreakdown[dailyEntry.quest_data.name] || 0) + 1;
+      }
+
+      // Process rewards from daily quest
+      if (dailyEntry.quest_data.rewards?.result?.rewards) {
+        processRewardArray(dailyEntry.quest_data.rewards.result.rewards, summary);
+      }
+
+      // Process potions used
+      if (dailyEntry.potions) {
+        processPotionsUsed(dailyEntry.potions, summary);
+      }
     }
+    // Check if it's a ClaimRewardResult (league rewards)
+    else if (entry.type === 'claim_reward') {
+      const leagueEntry = entry.result as ClaimLeagueRewardResult;
+      const leagueData = entry.data as ClaimLeagueRewardData;
 
-    // Process rewards - handle both array format and complex claim_reward format
-    if (entry.rewards) {
-      if (Array.isArray(entry.rewards)) {
-        // Simple reward array (from claim_daily)
-        processRewardArray(entry.rewards, summary);
-      } else if (typeof entry.rewards === 'object') {
-        // Complex claim_reward format with minor/major/ultimate
-        const rewards = entry.rewards;
+      // Count draws
+      if (leagueEntry.rewards.minor_draw) {
+        summary.totalDraws.minor += leagueEntry.rewards.minor_draw;
+      }
+      if (leagueEntry.rewards.major_draw) {
+        summary.totalDraws.major += leagueEntry.rewards.major_draw;
+      }
+      if (leagueEntry.rewards.ultimate_draw) {
+        summary.totalDraws.ultimate += leagueEntry.rewards.ultimate_draw;
+      }
 
-        // Count draws
-        if (rewards.minor_draw) summary.totalDraws.minor += rewards.minor_draw;
-        if (rewards.major_draw) summary.totalDraws.major += rewards.major_draw;
-        if (rewards.ultimate_draw) summary.totalDraws.ultimate += rewards.ultimate_draw;
+      // Process rewards from each tier
+      if (leagueEntry.rewards.minor?.result?.rewards) {
+        processRewardArray(leagueEntry.rewards.minor.result.rewards, summary);
+      }
+      if (leagueEntry.rewards.major?.result?.rewards) {
+        processRewardArray(leagueEntry.rewards.major.result.rewards, summary);
+      }
+      if (leagueEntry.rewards.ultimate?.result?.rewards) {
+        processRewardArray(leagueEntry.rewards.ultimate.result.rewards, summary);
+      }
 
-        // Process each tier's rewards
-        if (rewards.minor?.result?.rewards) {
-          processRewardArray(rewards.minor.result.rewards, summary);
-        }
-        if (rewards.major?.result?.rewards) {
-          processRewardArray(rewards.major.result.rewards, summary);
-        }
-        if (rewards.ultimate?.result?.rewards) {
-          processRewardArray(rewards.ultimate.result.rewards, summary);
-        }
+      // Process league advancements
+      if (leagueEntry.type) {
+        // TODO: Add format and tier info to ClaimRewardResult type for league advancements
+        // For now, this information is not available in the result structure
 
         // Process potions used
         // Process potions used for each draw tier
         ['minor', 'major', 'ultimate'].forEach((tier: string) => {
-          const tierResult = rewards[tier as 'minor' | 'major' | 'ultimate']?.result;
+          const tierResult = leagueEntry.rewards[tier as 'minor' | 'major' | 'ultimate']?.result;
           if (tierResult?.potions) {
             Object.entries(tierResult.potions).forEach(([potionType, potionData]) => {
               summary.totalPotionsUsed[potionType] =
@@ -70,21 +96,20 @@ export function aggregateRewards(entries: ParsedHistoryEntry[]): RewardSummary {
         });
 
         //process meta data
-        entry.metaData = entry.metaData || {};
-        switch (entry.metaData.format) {
+        switch (leagueData.format) {
           case 'foundation':
-            if (entry.metaData.tier) {
-              summary.leagueAdvancements.foundation.push(entry.metaData.tier);
+            if (leagueData.tier) {
+              summary.leagueAdvancements.foundation.push(leagueData.tier);
             }
             break;
           case 'wild':
-            if (entry.metaData.tier) {
-              summary.leagueAdvancements.wild.push(entry.metaData.tier);
+            if (leagueData.tier) {
+              summary.leagueAdvancements.wild.push(leagueData.tier);
             }
             break;
           case 'modern':
-            if (entry.metaData.tier) {
-              summary.leagueAdvancements.modern.push(entry.metaData.tier);
+            if (leagueData.tier) {
+              summary.leagueAdvancements.modern.push(leagueData.tier);
             }
             break;
         }
@@ -95,22 +120,12 @@ export function aggregateRewards(entries: ParsedHistoryEntry[]): RewardSummary {
   return summary;
 }
 
-function processRewardArray(rewards: ParsedReward[], summary: RewardSummary): void {
+/**
+ * Process an array of reward items
+ */
+function processRewardArray(rewards: RewardItems[], summary: RewardSummary): void {
   rewards.forEach(reward => {
     switch (reward.type) {
-      case 'pack':
-        const edition = reward.edition || 0;
-        summary.totalPacks[edition] = (summary.totalPacks[edition] || 0) + reward.quantity;
-        break;
-
-      case 'frontier_entries':
-        summary.totalFrontierEntries += reward.quantity;
-        break;
-
-      case 'ranked_entries':
-        summary.totalRankedEntries += reward.quantity;
-        break;
-
       case 'reward_card':
         if (reward.card) {
           const cardId = reward.card.card_detail_id;
@@ -138,12 +153,7 @@ function processRewardArray(rewards: ParsedReward[], summary: RewardSummary): vo
         break;
 
       case 'merits':
-      case 'reward_merits':
         summary.totalMerits += reward.quantity;
-        break;
-
-      case 'energy':
-        summary.totalEnergy += reward.quantity;
         break;
 
       case 'common_scroll':
@@ -153,17 +163,42 @@ function processRewardArray(rewards: ParsedReward[], summary: RewardSummary): vo
         summary.totalScrolls[reward.type] =
           (summary.totalScrolls[reward.type] || 0) + reward.quantity;
         break;
-      default:
-        logger.warn(`Unknown reward type encountered during aggregation: ${reward.type}`);
+
+      case 'ranked_entries':
+        summary.totalRankedEntries += reward.quantity;
+        break;
+
+      case 'frontier_entries':
+        summary.totalFrontierEntries += reward.quantity;
+        break;
+      case 'energy':
+        summary.totalEnergy += reward.quantity;
         break;
     }
   });
 }
 
 /**
+ * Process potions used
+ */
+function processPotionsUsed(
+  potions: { legendary: { charges_used: number }; gold: { charges_used: number } },
+  summary: RewardSummary
+): void {
+  if (potions.legendary?.charges_used) {
+    summary.totalPotionsUsed['legendary'] =
+      (summary.totalPotionsUsed['legendary'] || 0) + potions.legendary.charges_used;
+  }
+  if (potions.gold?.charges_used) {
+    summary.totalPotionsUsed['gold'] =
+      (summary.totalPotionsUsed['gold'] || 0) + potions.gold.charges_used;
+  }
+}
+
+/**
  * Aggregate rewards from purchase entries
  */
-export function aggregatePurchaseRewards(entries: ParsedPurchaseEntry[]): RewardSummary {
+export function aggregatePurchaseRewards(entries: PurchaseResult[]): RewardSummary {
   const summary: RewardSummary = {
     totalPacks: {},
     totalFrontierEntries: 0,
@@ -183,12 +218,15 @@ export function aggregatePurchaseRewards(entries: ParsedPurchaseEntry[]): Reward
 
   entries.forEach(entry => {
     // Process rewards from draw purchases
-    if (entry.rewards && Array.isArray(entry.rewards)) {
-      processRewardArray(entry.rewards, summary);
+    if ('data' in entry && entry.data && typeof entry.data === 'object' && 'result' in entry.data) {
+      const drawData = entry.data as { result: { rewards: RewardItems[] } };
+      if (drawData.result?.rewards) {
+        processRewardArray(drawData.result.rewards, summary);
+      }
     }
 
     // Track draw purchases by sub-type
-    switch (entry.subType) {
+    switch (entry.sub_type) {
       case 'minor_draw':
         summary.totalShopDraws.minor += entry.quantity || 0;
         break;
@@ -209,6 +247,18 @@ export function aggregatePurchaseRewards(entries: ParsedPurchaseEntry[]): Reward
         break;
       case 'legendary_draw':
         summary.totalRarityDraws.legendary += entry.quantity || 0;
+        break;
+      case 'reward_merits':
+        // Merits purchase - add to total
+        if (
+          'data' in entry &&
+          entry.data &&
+          typeof entry.data === 'object' &&
+          'amount' in entry.data
+        ) {
+          const meritsData = entry.data as { amount: number };
+          summary.totalMerits += meritsData.amount || 0;
+        }
         break;
       default:
         break;

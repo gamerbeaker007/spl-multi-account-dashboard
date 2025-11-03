@@ -1,4 +1,4 @@
-import { ParsedPlayerRewardHistory } from '@/types/spl/parsedHistory';
+import { ParsedPlayerRewardHistory } from '@/types/parsedHistory';
 import { useCallback, useState } from 'react';
 
 interface UsePlayerHistoryState {

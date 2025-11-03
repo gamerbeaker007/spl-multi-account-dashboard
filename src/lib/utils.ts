@@ -54,7 +54,7 @@ const packIconMap: { [key: string]: string } = {
   15: 'img_pack_foundations_250.png',
 };
 
-export const findPackIconUrl = (edition: string): string => {
+export const findPackIconUrl = (edition: number): string => {
   const editionName = packIconMap[edition];
   return `${WEB_URL}website/icons/${editionName}`;
 };

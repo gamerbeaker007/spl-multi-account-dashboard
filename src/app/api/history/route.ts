@@ -1,12 +1,12 @@
 import { fetchPlayerHistoryByDateRange, getSeasonDateRange } from '@/lib/api/splApi';
 import { decryptToken } from '@/lib/auth/encryption';
-import { parseHistoryEntry, parsePurchaseEntry } from '@/lib/historyParser';
 import logger from '@/lib/log/logger.server';
 import {
   aggregatePurchaseRewards,
   aggregateRewards,
   mergeRewardSummaries,
 } from '@/lib/rewardAggregator';
+import { ParsedHistory, PurchaseResult } from '@/types/parsedHistory';
 import { NextRequest, NextResponse } from 'next/server';
 
 const ALL_HISTORY_TYPES = 'claim_reward,claim_daily,purchase';
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: `Invalid seasonId: ${seasonId}` }, { status: 400 });
       }
 
-      // Fetch all history types in a single call
+      // Fetch all history types in a single call - already returns parsed SplHistoryV2[]
       const allHistory = await fetchPlayerHistoryByDateRange(
         player,
         decryptedToken,
@@ -45,36 +45,24 @@ export async function GET(request: NextRequest) {
         seasonRange.endDate
       );
 
-      // Separate entries by type and parse accordingly
-      const dailyEntries = allHistory.filter(e => e.type === 'claim_daily').map(parseHistoryEntry);
-
-      const leagueEntries = allHistory
-        .filter(e => e.type === 'claim_reward')
-        .map(parseHistoryEntry);
-
       const purchaseEntries = allHistory
-        .filter(e => e.type === 'purchase')
-        .map(parsePurchaseEntry)
-        .filter(entry => entry !== undefined);
+        .filter(
+          (e): e is ParsedHistory & { type: 'purchase'; result: PurchaseResult } =>
+            e.type === 'purchase' && e.result !== null
+        )
+        .map(e => e.result);
 
       // Aggregate each category
-      const dailyAggregation = aggregateRewards(dailyEntries);
-      const leagueAggregation = aggregateRewards(leagueEntries);
+      const dailyAggregation = aggregateRewards(allHistory);
       const purchaseAggregation = aggregatePurchaseRewards(purchaseEntries);
 
       // Merge all aggregations
-      const totalAggregation = mergeRewardSummaries(
-        dailyAggregation,
-        leagueAggregation,
-        purchaseAggregation
-      );
+      const totalAggregation = mergeRewardSummaries(dailyAggregation, purchaseAggregation);
 
       const result = {
-        dailyEntries,
-        leagueEntries,
-        purchaseEntries,
-        totalEntries: dailyEntries.length + leagueEntries.length + purchaseEntries.length,
-        seasonId: seasonId,
+        allEntries: allHistory,
+        totalEntries: allHistory.length,
+        seasonId: parseInt(seasonId),
         aggregation: totalAggregation,
         dateRange: {
           start: seasonRange.startDate.toISOString(),

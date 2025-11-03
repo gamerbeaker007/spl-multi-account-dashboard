@@ -1,11 +1,17 @@
 'use client';
 
 import { leagueNames } from '@/lib/utils';
-import { ParsedHistoryEntry, ParsedPurchaseEntry } from '@/types/spl/parsedHistory';
+import {
+  ClaimDailyResult,
+  ClaimLeagueRewardData,
+  ClaimSeasonLeagueRewardData,
+  ParsedHistory,
+  PurchaseResult,
+} from '@/types/parsedHistory';
 import { Box, capitalize, Chip, Stack, Typography } from '@mui/material';
 
 interface Props {
-  entry: ParsedHistoryEntry | ParsedPurchaseEntry;
+  entry: ParsedHistory;
 }
 
 const PURCHASE_TYPE_LABELS: Record<string, string> = {
@@ -19,24 +25,13 @@ const PURCHASE_TYPE_LABELS: Record<string, string> = {
   ranked_draw_entry: 'Ranked Draw Entry Purchase',
   reward_merits: 'Merits Purchase',
   reward_energy: 'Energy Purchase',
+  unbind_scroll: 'Unbind Scroll Purchase',
+  potion: 'Potion Purchase',
 };
 
-// Type guards
-function isPurchaseEntry(
-  entry: ParsedHistoryEntry | ParsedPurchaseEntry
-): entry is ParsedPurchaseEntry {
-  return entry.type === 'purchase';
-}
-
-function isHistoryEntry(
-  entry: ParsedHistoryEntry | ParsedPurchaseEntry
-): entry is ParsedHistoryEntry {
-  return 'blockNum' in entry;
-}
-
 // Helper function to get entry type metadata
-function getEntryTypeInfo(entry: ParsedHistoryEntry | ParsedPurchaseEntry) {
-  if (isPurchaseEntry(entry)) {
+function getEntryTypeInfo(entry: ParsedHistory) {
+  if (entry.type === 'purchase') {
     return { label: 'Purchase', color: 'success' as const };
   }
   if (entry.type === 'claim_daily') {
@@ -49,17 +44,18 @@ function getEntryTypeInfo(entry: ParsedHistoryEntry | ParsedPurchaseEntry) {
 }
 
 // Component for daily quest details
-function DailyQuestDetails({ entry }: { entry: ParsedHistoryEntry }) {
+function DailyQuestDetails({ entry }: { entry: ParsedHistory }) {
+  const result = entry.result as ClaimDailyResult;
   return (
     <Typography variant="body2" color="text.secondary" gutterBottom>
-      Quest: <strong>{entry.questName}</strong>
+      Quest: <strong>{result.quest_data.name}</strong>
     </Typography>
   );
 }
 
 // Component for league advancement details
-function LeagueAdvancementDetails({ entry }: { entry: ParsedHistoryEntry }) {
-  const { format = '', tier = 0 } = entry.metaData || {};
+function LeagueAdvancementDetails({ entry }: { entry: ClaimLeagueRewardData }) {
+  const { format = '', tier = 0 } = entry || {};
   return (
     <Typography variant="body2" color="text.secondary" gutterBottom>
       League Advancement: {capitalize(format)} - {leagueNames[tier]}
@@ -68,8 +64,8 @@ function LeagueAdvancementDetails({ entry }: { entry: ParsedHistoryEntry }) {
 }
 
 // Component for league season details
-function LeagueSeasonDetails({ entry }: { entry: ParsedHistoryEntry }) {
-  const { season } = entry.metaData || {};
+function LeagueSeasonDetails({ entry }: { entry: ClaimSeasonLeagueRewardData }) {
+  const { season } = entry || {};
 
   return (
     <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -79,24 +75,24 @@ function LeagueSeasonDetails({ entry }: { entry: ParsedHistoryEntry }) {
 }
 
 // Component for purchase details
-function PurchaseDetails({ entry }: { entry: ParsedPurchaseEntry }) {
-  const purchaseLabel = entry.subType
-    ? PURCHASE_TYPE_LABELS[entry.subType] || 'Unknown Purchase Type'
+function PurchaseDetails({ entry }: { entry: PurchaseResult }) {
+  const findType = entry.sub_type || entry.type;
+  const purchaseLabel = findType
+    ? PURCHASE_TYPE_LABELS[findType] || 'Unknown Purchase Type'
     : 'Unknown Purchase Type';
 
   return (
     <Typography variant="body2" color="text.secondary" gutterBottom>
-      {entry.quantity}x {purchaseLabel} · {entry.paymentAmount?.toLocaleString()}{' '}
-      {entry.paymentCurrency}
-      {entry.amountUsd && ` ($${entry.amountUsd})`}
+      {entry.quantity}x {purchaseLabel} · {entry.payment_amount?.toLocaleString()}{' '}
+      {entry.payment_currency}
     </Typography>
   );
 }
 
 export const ListContentSummary = ({ entry }: Props) => {
   const { label, color } = getEntryTypeInfo(entry);
-  const isHistory = isHistoryEntry(entry);
-  const isPurchase = isPurchaseEntry(entry);
+  const isHistory = entry.type !== 'purchase';
+  const isPurchase = entry.type === 'purchase';
 
   // Determine which details component to render
   const renderDetails = () => {
@@ -105,19 +101,20 @@ export const ListContentSummary = ({ entry }: Props) => {
     }
 
     if (entry.type === 'claim_reward' && isHistory) {
-      const metaDataType = entry.metaData?.type;
+      const result = entry.data as ClaimLeagueRewardData | ClaimSeasonLeagueRewardData;
+      const metaDataType = result.type;
 
       if (metaDataType === 'league') {
-        return <LeagueAdvancementDetails entry={entry} />;
+        return <LeagueAdvancementDetails entry={result} />;
       }
 
       if (metaDataType === 'league_season') {
-        return <LeagueSeasonDetails entry={entry} />;
+        return <LeagueSeasonDetails entry={result} />;
       }
     }
 
     if (isPurchase) {
-      return <PurchaseDetails entry={entry} />;
+      return <PurchaseDetails entry={entry.result as PurchaseResult} />;
     }
 
     return null;
@@ -129,7 +126,7 @@ export const ListContentSummary = ({ entry }: Props) => {
       <Stack direction="row" spacing={1} alignItems="center" mb={0.5}>
         <Chip label={label} color={color} size="small" />
         <Typography variant="caption" color="text.secondary">
-          {new Date(entry.createdDate).toLocaleString()}
+          {new Date(entry.created_date).toLocaleString()}
         </Typography>
       </Stack>
 

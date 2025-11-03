@@ -45,6 +45,16 @@ export function PlayerHistoryDialog({
     await fetchHistory(player, token, currentSeasonId - 1);
   };
 
+  const dailyEntries = rewardHistory
+    ? rewardHistory.allEntries.filter(entry => entry.type === 'claim_daily').length
+    : 0;
+  const leagueEntries = rewardHistory
+    ? rewardHistory.allEntries.filter(entry => entry.type === 'claim_reward').length
+    : 0;
+  const purchaseEntries = rewardHistory
+    ? rewardHistory.allEntries.filter(entry => entry.type === 'purchase').length
+    : 0;
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Season Rewards - {player}</DialogTitle>
@@ -96,9 +106,8 @@ export function PlayerHistoryDialog({
                   <strong>Total Entries:</strong> {rewardHistory.totalEntries}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Daily:</strong> {rewardHistory.dailyEntries.length} |{' '}
-                  <strong>League:</strong> {rewardHistory.leagueEntries.length} |{' '}
-                  <strong>Purchases:</strong> {rewardHistory.purchaseEntries.length}
+                  <strong>Daily:</strong> {dailyEntries} | <strong>League:</strong> {leagueEntries}{' '}
+                  | <strong>Purchases:</strong> {purchaseEntries}
                 </Typography>
                 <Typography variant="body2">
                   <strong>Date Range:</strong>{' '}

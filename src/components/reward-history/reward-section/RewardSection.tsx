@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  ParsedHistoryEntry,
-  ParsedPlayerRewardHistory,
-  ParsedPurchaseEntry,
-} from '@/types/spl/parsedHistory';
+import { ParsedHistory, ParsedPlayerRewardHistory } from '@/types/parsedHistory';
 import { Box, Button, ButtonGroup, Tab, Tabs } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { RewardHistorySummary } from '../RewardHistorySummary';
@@ -26,28 +22,32 @@ export function RewardSection({ rewardHistory }: Props) {
   const allEntries = useMemo(() => {
     if (!rewardHistory) return [];
 
-    const combined: (ParsedHistoryEntry | ParsedPurchaseEntry)[] = [];
+    const combined: ParsedHistory[] = [];
 
-    // Add daily entries
-    if (entryFilter === 'all' || entryFilter === 'daily') {
-      combined.push(...rewardHistory.dailyEntries);
+    if (entryFilter === 'all') {
+      combined.push(...rewardHistory.allEntries);
+    } else if (entryFilter === 'daily') {
+      combined.push(...rewardHistory.allEntries.filter(entry => entry.type === 'claim_daily'));
+    } else if (entryFilter === 'league') {
+      combined.push(...rewardHistory.allEntries.filter(entry => entry.type === 'claim_reward'));
+    } else if (entryFilter === 'purchase') {
+      combined.push(...rewardHistory.allEntries.filter(entry => entry.type === 'purchase'));
     }
 
-    // Add league entries
-    if (entryFilter === 'all' || entryFilter === 'league') {
-      combined.push(...rewardHistory.leagueEntries);
-    }
-
-    // Add purchase entries
-    if (entryFilter === 'all' || entryFilter === 'purchase') {
-      combined.push(...rewardHistory.purchaseEntries);
-    }
-
-    // Sort by date descending (newest first)
     return combined.sort(
-      (a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+      (a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime()
     );
   }, [rewardHistory, entryFilter]);
+
+  const dailyEntries = rewardHistory
+    ? rewardHistory.allEntries.filter(entry => entry.type === 'claim_daily').length
+    : 0;
+  const leagueEntries = rewardHistory
+    ? rewardHistory.allEntries.filter(entry => entry.type === 'claim_reward').length
+    : 0;
+  const purchaseEntries = rewardHistory
+    ? rewardHistory.allEntries.filter(entry => entry.type === 'purchase').length
+    : 0;
 
   return (
     <>
@@ -68,25 +68,25 @@ export function RewardSection({ rewardHistory }: Props) {
                 variant={entryFilter === 'all' ? 'contained' : 'outlined'}
                 onClick={() => setEntryFilter('all')}
               >
-                All ({rewardHistory.totalEntries})
+                All ({dailyEntries + leagueEntries + purchaseEntries})
               </Button>
               <Button
                 variant={entryFilter === 'daily' ? 'contained' : 'outlined'}
                 onClick={() => setEntryFilter('daily')}
               >
-                Daily ({rewardHistory.dailyEntries.length})
+                Daily ({dailyEntries})
               </Button>
               <Button
                 variant={entryFilter === 'league' ? 'contained' : 'outlined'}
                 onClick={() => setEntryFilter('league')}
               >
-                League ({rewardHistory.leagueEntries.length})
+                League ({leagueEntries})
               </Button>
               <Button
                 variant={entryFilter === 'purchase' ? 'contained' : 'outlined'}
                 onClick={() => setEntryFilter('purchase')}
               >
-                Purchase ({rewardHistory.purchaseEntries.length})
+                Purchase ({purchaseEntries})
               </Button>
             </ButtonGroup>
           </Box>
