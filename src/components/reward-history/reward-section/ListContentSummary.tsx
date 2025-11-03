@@ -81,10 +81,14 @@ function PurchaseDetails({ entry }: { entry: PurchaseResult }) {
     ? PURCHASE_TYPE_LABELS[findType] || 'Unknown Purchase Type'
     : 'Unknown Purchase Type';
 
+  let qty = entry.quantity || 0;
+  if (findType === 'reward_merits') {
+    qty = qty / 200; // Convert merits to number of purchases (2000 merits per purchase)
+  }
+
   return (
     <Typography variant="body2" color="text.secondary" gutterBottom>
-      {entry.quantity}x {purchaseLabel} · {entry.payment_amount?.toLocaleString()}{' '}
-      {entry.payment_currency}
+      {qty}x {purchaseLabel} · {entry.payment_amount?.toLocaleString()} {entry.payment_currency}
     </Typography>
   );
 }

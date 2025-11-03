@@ -66,7 +66,12 @@ export function EntryList({ entries, cardDetails }: EntryListProps) {
   return (
     <Box>
       {entries.map((entry, index) => (
-        <EntryListItem key={`${entry.type}-${index}`} entry={entry} index={index} cardDetails={cardDetails} />
+        <EntryListItem
+          key={`${entry.type}-${index}`}
+          entry={entry}
+          index={index}
+          cardDetails={cardDetails}
+        />
       ))}
     </Box>
   );

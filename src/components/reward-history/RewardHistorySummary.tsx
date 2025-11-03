@@ -9,6 +9,7 @@ import { Consumables } from './Consumables';
 import { Entries } from './Entries';
 import { LeagueAdvancements } from './LeagueAdvancements';
 import { Packs } from './Packs';
+import { Shop } from './Shop';
 
 interface PlayerHistoryButtonProps {
   rewardHistory: ParsedPlayerRewardHistory; // Now expects parsed data
@@ -44,12 +45,12 @@ export function RewardHistorySummary({ rewardHistory }: PlayerHistoryButtonProps
       </Box>
 
       <Box display={'flex'} flexDirection="row" gap={2}>
-        <Chests title="Chests" totalDraws={rewardHistory.aggregation.totalDraws} />
+        <Chests totalDraws={rewardHistory.aggregation.totalDraws} />
         <Consumables
           title="Potions Used"
           totalPotions={rewardHistory.aggregation.totalPotionsUsed}
         />
-        <Chests title="Chests Shop" totalDraws={rewardHistory.aggregation.totalShopDraws} />
+        <Shop totalShopPurchases={rewardHistory.aggregation.totalShopPurchases} />
       </Box>
       <Cards totalCards={rewardHistory.aggregation.totalCards} cardDetails={cardDetails} />
     </Box>

@@ -298,7 +298,14 @@ export interface RewardSummary {
   totalEnergy: number;
   totalScrolls: { [scrollType: string]: number };
   totalDraws: { minor: number; major: number; ultimate: number };
-  totalShopDraws: { minor: number; major: number; ultimate: number };
+  totalShopPurchases: {
+    potions: { gold: number; legendary: number };
+    scrolls: { common: number; rare: number; epic: number; legendary: number };
+    merits: number;
+    rankedEntries: number;
+    rarityDraws: { common: number; rare: number; epic: number; legendary: number };
+    chests: { minor: number; major: number; ultimate: number };
+  };
   totalRarityDraws: { common: number; rare: number; epic: number; legendary: number };
   leagueAdvancements: { foundation: number[]; wild: number[]; modern: number[] };
   questTypeBreakdown: { [questType: string]: number };

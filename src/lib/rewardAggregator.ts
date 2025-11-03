@@ -4,9 +4,12 @@ import {
   ClaimLeagueRewardData,
   ClaimLeagueRewardResult,
   ParsedHistory,
+  PotionType,
   PurchaseResult,
+  RankedDrawEntry,
   RewardItems,
   RewardSummary,
+  UnbindScrollData,
 } from '@/types/parsedHistory';
 
 /**
@@ -24,7 +27,14 @@ export function aggregateRewards(entries: ParsedHistory[]): RewardSummary {
     totalEnergy: 0,
     totalScrolls: {},
     totalDraws: { minor: 0, major: 0, ultimate: 0 },
-    totalShopDraws: { minor: 0, major: 0, ultimate: 0 },
+    totalShopPurchases: {
+      potions: { gold: 0, legendary: 0 },
+      scrolls: { common: 0, rare: 0, epic: 0, legendary: 0 },
+      merits: 0,
+      rankedEntries: 0,
+      chests: { minor: 0, major: 0, ultimate: 0 },
+      rarityDraws: { common: 0, rare: 0, epic: 0, legendary: 0 },
+    },
     totalRarityDraws: { common: 0, rare: 0, epic: 0, legendary: 0 },
     leagueAdvancements: { foundation: [], wild: [], modern: [] },
     questTypeBreakdown: {},
@@ -80,10 +90,6 @@ export function aggregateRewards(entries: ParsedHistory[]): RewardSummary {
 
       // Process league advancements
       if (leagueEntry.type) {
-        // TODO: Add format and tier info to ClaimRewardResult type for league advancements
-        // For now, this information is not available in the result structure
-
-        // Process potions used
         // Process potions used for each draw tier
         ['minor', 'major', 'ultimate'].forEach((tier: string) => {
           const tierResult = leagueEntry.rewards[tier as 'minor' | 'major' | 'ultimate']?.result;
@@ -174,6 +180,10 @@ function processRewardArray(rewards: RewardItems[], summary: RewardSummary): voi
       case 'energy':
         summary.totalEnergy += reward.quantity;
         break;
+      case 'pack':
+        const edition = reward.edition || 0;
+        summary.totalPacks[edition] = (summary.totalPacks[edition] || 0) + reward.quantity;
+        break;
     }
   });
 }
@@ -209,8 +219,16 @@ export function aggregatePurchaseRewards(entries: PurchaseResult[]): RewardSumma
     totalMerits: 0,
     totalEnergy: 0,
     totalScrolls: {},
+    totalShopPurchases: {
+      potions: { gold: 0, legendary: 0 },
+      scrolls: { common: 0, rare: 0, epic: 0, legendary: 0 },
+      merits: 0,
+      rankedEntries: 0,
+      chests: { minor: 0, major: 0, ultimate: 0 },
+      rarityDraws: { common: 0, rare: 0, epic: 0, legendary: 0 },
+    },
     totalDraws: { minor: 0, major: 0, ultimate: 0 },
-    totalShopDraws: { minor: 0, major: 0, ultimate: 0 },
+
     totalRarityDraws: { common: 0, rare: 0, epic: 0, legendary: 0 },
     leagueAdvancements: { foundation: [], wild: [], modern: [] },
     questTypeBreakdown: {},
@@ -228,40 +246,65 @@ export function aggregatePurchaseRewards(entries: PurchaseResult[]): RewardSumma
     // Track draw purchases by sub-type
     switch (entry.sub_type) {
       case 'minor_draw':
-        summary.totalShopDraws.minor += entry.quantity || 0;
+        summary.totalShopPurchases.chests.minor += entry.quantity || 0;
         break;
       case 'major_draw':
-        summary.totalShopDraws.major += entry.quantity || 0;
+        summary.totalShopPurchases.chests.major += entry.quantity || 0;
         break;
       case 'ultimate_draw':
-        summary.totalShopDraws.ultimate += entry.quantity || 0;
+        summary.totalShopPurchases.chests.ultimate += entry.quantity || 0;
         break;
       case 'common_draw':
-        summary.totalRarityDraws.common += entry.quantity || 0;
+        summary.totalShopPurchases.rarityDraws.common += entry.quantity || 0;
         break;
       case 'rare_draw':
-        summary.totalRarityDraws.rare += entry.quantity || 0;
+        summary.totalShopPurchases.rarityDraws.rare += entry.quantity || 0;
         break;
       case 'epic_draw':
-        summary.totalRarityDraws.epic += entry.quantity || 0;
+        summary.totalShopPurchases.rarityDraws.epic += entry.quantity || 0;
         break;
       case 'legendary_draw':
-        summary.totalRarityDraws.legendary += entry.quantity || 0;
+        summary.totalShopPurchases.rarityDraws.legendary += entry.quantity || 0;
         break;
       case 'reward_merits':
-        // Merits purchase - add to total
-        if (
-          'data' in entry &&
-          entry.data &&
-          typeof entry.data === 'object' &&
-          'amount' in entry.data
-        ) {
-          const meritsData = entry.data as { amount: number };
-          summary.totalMerits += meritsData.amount || 0;
-        }
+        summary.totalShopPurchases.merits += entry.quantity / 200 || 0; // 2000 merits per purchase
+        summary.totalMerits += entry.quantity || 0;
         break;
       default:
         break;
+    }
+
+    if (entry.type === 'potion') {
+      const potion = entry.data as PotionType;
+      if (potion.potion_type === 'GOLD') {
+        summary.totalShopPurchases.potions.gold += entry.quantity || 0;
+      } else if (potion.potion_type === 'LEGENDARY') {
+        summary.totalShopPurchases.potions.legendary += entry.quantity || 0;
+      }
+    }
+
+    if (entry.type === 'ranked_draw_entry') {
+      const rankedEntry = entry.data as RankedDrawEntry;
+      summary.totalShopPurchases.rankedEntries += rankedEntry.result.player_entries || 0;
+    }
+
+    if (entry.type === 'unbind_scroll') {
+      const unbindScroll = entry.data as UnbindScrollData;
+      console.log(unbindScroll);
+      switch (unbindScroll.data.scroll_type) {
+        case 'UNBIND_CA_C':
+          summary.totalShopPurchases.scrolls.common += unbindScroll.qty || 0;
+          break;
+        case 'UNBIND_CA_R':
+          summary.totalShopPurchases.scrolls.rare += unbindScroll.qty || 0;
+          break;
+        case 'UNBIND_CA_E':
+          summary.totalShopPurchases.scrolls.epic += unbindScroll.qty || 0;
+          break;
+        case 'UNBIND_CA_L':
+          summary.totalShopPurchases.scrolls.legendary += unbindScroll.qty || 0;
+          break;
+      }
     }
   });
   return summary;
@@ -282,7 +325,14 @@ export function mergeRewardSummaries(...summaries: RewardSummary[]): RewardSumma
     totalEnergy: 0,
     totalScrolls: {},
     totalDraws: { minor: 0, major: 0, ultimate: 0 },
-    totalShopDraws: { minor: 0, major: 0, ultimate: 0 },
+    totalShopPurchases: {
+      potions: { gold: 0, legendary: 0 },
+      scrolls: { common: 0, rare: 0, epic: 0, legendary: 0 },
+      merits: 0,
+      rankedEntries: 0,
+      chests: { minor: 0, major: 0, ultimate: 0 },
+      rarityDraws: { common: 0, rare: 0, epic: 0, legendary: 0 },
+    },
     totalRarityDraws: { common: 0, rare: 0, epic: 0, legendary: 0 },
     leagueAdvancements: { foundation: [], wild: [], modern: [] },
     questTypeBreakdown: {},
@@ -335,9 +385,18 @@ export function mergeRewardSummaries(...summaries: RewardSummary[]): RewardSumma
     merged.totalDraws.ultimate += summary.totalDraws.ultimate;
 
     // Merge Shop draws
-    merged.totalShopDraws.minor += summary.totalShopDraws.minor;
-    merged.totalShopDraws.major += summary.totalShopDraws.major;
-    merged.totalShopDraws.ultimate += summary.totalShopDraws.ultimate;
+    merged.totalShopPurchases.chests.minor += summary.totalShopPurchases.chests.minor;
+    merged.totalShopPurchases.chests.major += summary.totalShopPurchases.chests.major;
+    merged.totalShopPurchases.chests.ultimate += summary.totalShopPurchases.chests.ultimate;
+    merged.totalShopPurchases.potions.gold += summary.totalShopPurchases.potions.gold;
+    merged.totalShopPurchases.potions.legendary += summary.totalShopPurchases.potions.legendary;
+    merged.totalShopPurchases.merits += summary.totalShopPurchases.merits;
+    merged.totalShopPurchases.rankedEntries += summary.totalShopPurchases.rankedEntries;
+    merged.totalShopPurchases.rarityDraws.common += summary.totalShopPurchases.rarityDraws.common;
+    merged.totalShopPurchases.rarityDraws.rare += summary.totalShopPurchases.rarityDraws.rare;
+    merged.totalShopPurchases.rarityDraws.epic += summary.totalShopPurchases.rarityDraws.epic;
+    merged.totalShopPurchases.rarityDraws.legendary +=
+      summary.totalShopPurchases.rarityDraws.legendary;
 
     // Merge league advancements
     merged.leagueAdvancements.foundation.push(...summary.leagueAdvancements.foundation);
