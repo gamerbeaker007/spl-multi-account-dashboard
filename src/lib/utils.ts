@@ -1,3 +1,5 @@
+import { WEB_URL } from './staticsIconUrls';
+
 export const largeNumberFormat = (balance: string | number) => {
   const numValue = typeof balance === 'string' ? parseFloat(balance) : balance;
 
@@ -24,4 +26,35 @@ export const calculateEnergy = (ecr: number, lastUpdatedTime: string): number =>
   const energy = Math.floor(regeneratedEnergy + ecrValue);
 
   return Math.min(energy, 50);
+};
+
+export const leagueNames = [
+  'Novice',
+  'Bronze III',
+  'Bronze II',
+  'Bronze I',
+  'Silver III',
+  'Silver II',
+  'Silver I',
+  'Gold III',
+  'Gold II',
+  'Gold I',
+  'Diamond III',
+  'Diamond II',
+  'Diamond I',
+  'Champion III',
+  'Champion II',
+  'Champion I',
+];
+
+const packIconMap: { [key: string]: string } = {
+  1: 'icon_pack_beta.png',
+  7: 'img_pack_chaos-legion_200.png',
+  8: 'img_pack_riftwatchers_opt.png',
+  15: 'img_pack_foundations_250.png',
+};
+
+export const findPackIconUrl = (edition: number): string => {
+  const editionName = packIconMap[edition];
+  return `${WEB_URL}website/icons/${editionName}`;
 };

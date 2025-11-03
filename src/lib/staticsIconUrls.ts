@@ -31,6 +31,10 @@ export const ranked_entries_icon_url = `${WEB_URL}website/icons/img_fortune-entr
 export const reward_draw_minor_icon_url = `${WEB_URL}website/ui_elements/shop/ranked/draws/img_chest-minor_250.webp`;
 export const reward_draw_major_icon_url = `${WEB_URL}website/ui_elements/shop/ranked/draws/img_chest-major_250.webp`;
 export const reward_draw_ultimate_icon_url = `${WEB_URL}website/ui_elements/shop/ranked/draws/img_chest-ultimate_250.webp`;
+export const reward_draw_common_icon_url = `${WEB_URL}website/ui_elements/shop/ranked/draws/img_draws-common_250.png`;
+export const reward_draw_rare_icon_url = `${WEB_URL}website/ui_elements/shop/ranked/draws/img_draws-rare_250.png`;
+export const reward_draw_epic_icon_url = `${WEB_URL}website/ui_elements/shop/ranked/draws/img_draws-epic_250.png`;
+export const reward_draw_legendary_icon_url = `${WEB_URL}website/ui_elements/shop/ranked/draws/img_draws-legendary_250.png`;
 
 export const edition_alpha_icon_url = `${WEB_URL}website/icons/icon-edition-alpha.svg`;
 export const edition_beta_icon_url = `${WEB_URL}website/icons/icon-edition-beta.svg`;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCardDetails } from '@/hooks/useCardDetails';
-import { ParsedPlayerRewardHistory } from '@/types/spl/parsedHistory';
+import { ParsedPlayerRewardHistory } from '@/types/parsedHistory';
 import { Alert, Box, CircularProgress } from '@mui/material';
 import { Cards } from './Cards';
 import { Chests } from './Chests';
@@ -9,6 +9,7 @@ import { Consumables } from './Consumables';
 import { Entries } from './Entries';
 import { LeagueAdvancements } from './LeagueAdvancements';
 import { Packs } from './Packs';
+import { Shop } from './Shop';
 
 interface PlayerHistoryButtonProps {
   rewardHistory: ParsedPlayerRewardHistory; // Now expects parsed data
@@ -30,6 +31,7 @@ export function RewardHistorySummary({ rewardHistory }: PlayerHistoryButtonProps
       <Box display={'flex'} flexDirection="row" gap={2}>
         <LeagueAdvancements leagueAdvancements={rewardHistory.aggregation.leagueAdvancements} />
         <Consumables
+          title="Consumables"
           totalPotions={rewardHistory.aggregation.totalPotions}
           totalMerits={rewardHistory.aggregation.totalMerits}
           totalEnergy={rewardHistory.aggregation.totalEnergy}
@@ -42,7 +44,14 @@ export function RewardHistorySummary({ rewardHistory }: PlayerHistoryButtonProps
         />
       </Box>
 
-      <Chests totalDraws={rewardHistory.aggregation.totalDraws} />
+      <Box display={'flex'} flexDirection="row" gap={2}>
+        <Chests totalDraws={rewardHistory.aggregation.totalDraws} />
+        <Consumables
+          title="Potions Used"
+          totalPotions={rewardHistory.aggregation.totalPotionsUsed}
+        />
+        <Shop totalShopPurchases={rewardHistory.aggregation.totalShopPurchases} />
+      </Box>
       <Cards totalCards={rewardHistory.aggregation.totalCards} cardDetails={cardDetails} />
     </Box>
   );

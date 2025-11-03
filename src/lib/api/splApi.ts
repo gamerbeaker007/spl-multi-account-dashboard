@@ -1,3 +1,17 @@
+import {
+  ClaimDailyData,
+  ClaimDailyResult,
+  ClaimDailyResultReward,
+  ClaimLeagueRewardData,
+  ClaimLeagueRewardResult,
+  ParsedHistory,
+  PurchaseData,
+  PurchaseResult,
+  purchaseTypes,
+  RankedDrawEntry,
+  RewardDraw,
+  RewardMerits,
+} from '@/types/parsedHistory';
 import { LoginResponse } from '@/types/spl/auth';
 import { SplBalance } from '@/types/spl/balances';
 import { SplCardCollection } from '@/types/spl/card';
@@ -37,6 +51,87 @@ splBaseClient.defaults.raxConfig = {
     logger.warn(`Retry attempt #${cfg?.currentRetryAttempt}`);
   },
 };
+
+// Valid purchase types we want to include
+const VALID_PURCHASE_TYPES: purchaseTypes[] = [
+  'reward_merits',
+  'reward_draw',
+  'ranked_draw_entry',
+  'potion',
+  'unbind_scroll',
+];
+
+/**
+ * Parse raw SplHistory entry into typed ParsedHistory
+ */
+function parseHistoryToInternalTypes(entry: SplHistory): ParsedHistory | null {
+  try {
+    let parsedData: ClaimLeagueRewardData | ClaimDailyData | PurchaseData;
+    let parsedResult: ClaimLeagueRewardResult | ClaimDailyResult | PurchaseResult | null = null;
+
+    // Parse data field based on type
+    if (entry.type === 'claim_reward') {
+      parsedData = JSON.parse(entry.data) as ClaimLeagueRewardData;
+      if (entry.result) {
+        parsedResult = JSON.parse(entry.result) as ClaimLeagueRewardResult;
+      }
+    } else if (entry.type === 'claim_daily') {
+      parsedData = JSON.parse(entry.data) as ClaimDailyData;
+      if (entry.result) {
+        parsedResult = JSON.parse(entry.result) as ClaimDailyResult;
+        // The quest_data.rewards field is a JSON string, not an object - parse it
+        parsedResult.quest_data.rewards = JSON.parse(
+          parsedResult.quest_data.rewards as unknown as string
+        ) as ClaimDailyResultReward;
+      }
+    } else if (entry.type === 'purchase') {
+      parsedData = JSON.parse(entry.data) as PurchaseData;
+
+      // Skip purchases that are not in our valid list
+      if (!VALID_PURCHASE_TYPES.includes(parsedData.type)) {
+        logger.debug(`Skipping purchase type: ${parsedData.type}`);
+        return null;
+      }
+
+      if (entry.result) {
+        parsedResult = JSON.parse(entry.result) as PurchaseResult;
+        parsedResult.data = JSON.parse(parsedResult.data as unknown as string) as
+          | RankedDrawEntry
+          | RewardMerits
+          | RewardDraw;
+      }
+    } else {
+      logger.warn(`Unknown history entry type: ${entry.type}`);
+      return null;
+    }
+
+    if (!parsedResult) {
+      logger.debug(`No result for entry ${entry.id} - skipping`);
+      return null;
+    }
+
+    return {
+      id: entry.id,
+      block_id: entry.block_id,
+      prev_block_id: entry.prev_block_id,
+      type: entry.type as 'claim_daily' | 'claim_reward' | 'purchase',
+      player: entry.player,
+      affected_player: entry.affected_player,
+      data: parsedData,
+      success: entry.success,
+      error: entry.error,
+      block_num: entry.block_num,
+      created_date: entry.created_date,
+      result: parsedResult,
+      steem_price: entry.steem_price,
+      sbd_price: entry.sbd_price,
+      is_owner: entry.is_owner,
+    };
+  } catch (error) {
+    logger.error(`Failed to parse history entry ${entry.id}: ${error}`);
+    return null;
+  }
+}
 
 // https://api.splinterlands.com/players/balances?username=beaker007
 /**
@@ -400,13 +495,14 @@ export async function fetchCardDetails(): Promise<SplCardDetail[]> {
 // https://api.splinterlands.com/players/history
 /**
  * Fetch single page of player history from Splinterlands API
+ * Returns typed ParsedHistory with parsed data and result fields
  */
 export async function fetchPlayerHistory(
   player: string,
   decryptedToken: string,
   types: string, // comma-separated list of types
   beforeBlock?: number
-): Promise<SplHistory[]> {
+): Promise<ParsedHistory[]> {
   const url = '/players/history';
   logger.debug(`Fetching player history for player: ${player}`);
 
@@ -436,7 +532,13 @@ export async function fetchPlayerHistory(
         throw new Error('Invalid response from Splinterlands API: expected array');
       }
 
-      return response.data as SplHistory[];
+      const rawHistory = response.data as SplHistory[];
+      // Parse all entries to V2 format
+      const parsedHistory = rawHistory
+        .map(parseHistoryToInternalTypes)
+        .filter((entry): entry is ParsedHistory => entry !== null); // Filter out nulls
+
+      return parsedHistory as ParsedHistory[];
     } else {
       throw new Error('History request failed');
     }
@@ -453,6 +555,7 @@ const DEFAULT_LIMIT = 500;
 /**
  * Recursively fetch player history between two dates
  * Uses before_block parameter to paginate through results
+ * Returns typed ParsedHistory with parsed data and result fields
  */
 export async function fetchPlayerHistoryByDateRange(
   player: string,
@@ -460,12 +563,12 @@ export async function fetchPlayerHistoryByDateRange(
   types: string,
   startDate: Date,
   endDate: Date
-): Promise<SplHistory[]> {
+): Promise<ParsedHistory[]> {
   logger.debug(
     `Fetching player history for ${player} between ${startDate.toISOString()} and ${endDate.toISOString()}`
   );
 
-  const allEntries: SplHistory[] = [];
+  const allEntries: ParsedHistory[] = [];
   let lastBlockNum: number | undefined;
   let hasMoreData = true;
   let iterationCount = 0;
@@ -524,15 +627,14 @@ export async function fetchPlayerHistoryByDateRange(
     }
   }
 
-  // Sort by created_date descending (newest first) and remove failed entries
-
-  const successfulEntries = allEntries
-    .filter(entry => Boolean(entry.success))
-    .sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime());
-
-  logger.debug(
-    `Completed history fetch for ${player}: ${successfulEntries.length} / ${allEntries.length} entries in ${iterationCount} iterations`
+  // Sort by created_date descending (newest first) - entries are already filtered for success in parseToV2
+  const sortedEntries = allEntries.sort(
+    (a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime()
   );
 
-  return successfulEntries;
+  logger.debug(
+    `Completed history fetch for ${player}: ${sortedEntries.length} entries in ${iterationCount} iterations`
+  );
+
+  return sortedEntries;
 }
