@@ -117,7 +117,7 @@ export default function PlayerInfo({ username, playerDetails, onAuthChange }: Pr
                 component="span"
                 sx={{ display: 'inline-flex', alignItems: 'center', color: 'text.primary' }}
               >
-                `Rating: ${highestFormatDetails.rating} | Rank: ${highestFormatDetails.rank}`
+                Rating: ${highestFormatDetails.rating} | Rank: ${highestFormatDetails.rank}
               </Box>
             ) : (
               <Box
