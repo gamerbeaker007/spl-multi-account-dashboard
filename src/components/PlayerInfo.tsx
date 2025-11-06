@@ -115,7 +115,7 @@ export default function PlayerInfo({ username, playerDetails, onAuthChange }: Pr
             highestFormatDetails.rank != null ? (
               <Box
                 component="span"
-                sx={{ display: 'inline-flex', alignItems: 'center', color: 'text.primary' }}
+                sx={{ display: 'inline-flex', alignItems: 'center', color: 'success.main' }}
               >
                 Rating: {highestFormatDetails.rating} | Rank: {highestFormatDetails.rank}
               </Box>
