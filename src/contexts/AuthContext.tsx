@@ -1,6 +1,6 @@
 'use client';
 
-import { useCsrfToken } from '@/hooks/useCsrf';
+import { loginWithSignature } from '@/lib/actions/login';
 import { KeychainKeyTypes, KeychainSDK } from 'keychain-sdk';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
@@ -28,7 +28,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const STORAGE_KEY = 'spl-dashboard-auth-users';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { getCsrfToken } = useCsrfToken();
   const [authenticatedUsers, setAuthenticatedUsers] = useState<AuthenticatedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,38 +97,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setError(null);
 
-      // Fetch CSRF token when needed (lazy loading)
-      const csrfToken = await getCsrfToken();
-
       const finalTimestamp = timestamp || Date.now();
       const message = `${username.toLowerCase()}${finalTimestamp}`;
 
       // Get signature if not provided
       const finalSignature = signature || (await signWithKeychain(username, message));
 
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-        },
-        body: JSON.stringify({
-          username: username.toLowerCase(),
-          timestamp: finalTimestamp,
-          signature: finalSignature,
-        }),
-        credentials: 'include',
-      });
+      // Call server action for login
+      const loginData = await loginWithSignature(
+        username.toLowerCase(),
+        finalTimestamp,
+        finalSignature
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        const errorMsg = errorData.error || `Login failed with status: ${response.status}`;
-        setError(errorMsg);
-        throw new Error(errorMsg);
-      }
-
-      // Get the encrypted token from response
-      const loginData = await response.json();
       if (!loginData.token) {
         throw new Error('No encrypted token received from server');
       }

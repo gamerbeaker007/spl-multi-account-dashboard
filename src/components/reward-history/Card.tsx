@@ -1,5 +1,3 @@
-'use client';
-
 import { WEB_URL } from '@/lib/staticsIconUrls';
 import { RewardItemCard } from '@/types/parsedHistory';
 import { SplCardDetail } from '@/types/spl/cardDetails';

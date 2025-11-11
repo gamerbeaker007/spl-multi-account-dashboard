@@ -1,18 +1,17 @@
-import { fetchDailyProgress } from '@/lib/api/splApi';
-import { decryptToken } from '@/lib/auth/encryption';
+'use server';
+// Server action for fetching daily progress
 import logger from '@/lib/log/logger.server';
-import { SplDailyProgress } from '@/types/spl/dailies';
+import { decryptToken } from '@/lib/auth/encryption';
 import { SplFormat } from '@/types/spl/format';
-import { NextRequest, NextResponse } from 'next/server';
+import { SplDailyProgress } from '@/types/spl/dailies';
+import { fetchDailyProgress } from '@/lib/api/splApi';
 
-export async function POST(request: NextRequest) {
+export async function fetchPlayersDailyProgress(
+  users: Array<{ username: string; encryptedToken: string | null }>
+) {
   try {
-    // array with users as input
-    const body = await request.json();
-    const { users } = body;
-
-    if (!users || !Array.isArray(users)) {
-      return NextResponse.json({ error: 'Users array is required' }, { status: 400 });
+    if (!users || !Array.isArray(users) || users.length === 0) {
+      throw new Error('Users array is required');
     }
 
     logger.info(`Fetching daily progress for users: ${users.map(u => u.username).join(', ')}`);
@@ -22,11 +21,11 @@ export async function POST(request: NextRequest) {
     for (const user of users) {
       try {
         const username = user.username;
-        const token = await decryptToken(user.encryptedToken, process.env.SECRET_ENCRYPTION_KEY!);
+        const token = await decryptToken(user.encryptedToken!, process.env.SECRET_ENCRYPTION_KEY!);
 
         if (!token) {
-          logger.error('Failed to decrypt token in daily progress API route');
-          return NextResponse.json({ error: 'Invalid encryption token' }, { status: 400 });
+          logger.error('Failed to decrypt token in daily progress action');
+          throw new Error('Invalid encryption token');
         }
 
         const formats: SplFormat[] = ['wild', 'modern', 'foundation'];
@@ -45,7 +44,6 @@ export async function POST(request: NextRequest) {
         logger.error(
           `Failed to fetch data for user ${user.username} - ${userError instanceof Error ? userError.message : 'Unknown error'}`
         );
-        // Continue processing other users even if one fails
         playerData.push({
           username: user.username,
           error: userError instanceof Error ? userError.message : 'Failed to fetch user data',
@@ -54,13 +52,14 @@ export async function POST(request: NextRequest) {
     }
 
     logger.info(`Successfully fetched daily progress data for all users ${users.length}`);
-    return NextResponse.json({
+
+    return {
       players: playerData,
       timestamp: new Date().toISOString(),
-    });
+    };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error(`Multi-account dailies API error: ${errorMessage}`);
-    return NextResponse.json({ error: 'Failed to fetch player data' }, { status: 500 });
+    logger.error(`Multi-account dailies action error: ${errorMessage}`);
+    throw new Error('Failed to fetch player data');
   }
 }

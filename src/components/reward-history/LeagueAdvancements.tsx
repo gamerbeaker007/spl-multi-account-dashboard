@@ -1,5 +1,3 @@
-'use client';
-
 import { findLeagueLogoUrl } from '@/lib/staticsIconUrls';
 import { leagueNames } from '@/lib/utils';
 import { Box, Typography } from '@mui/material';

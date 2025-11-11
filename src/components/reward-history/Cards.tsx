@@ -1,5 +1,3 @@
-'use client';
-
 import { RewardItemCard } from '@/types/parsedHistory';
 import { SplCardDetail } from '@/types/spl/cardDetails';
 import { Box, Typography } from '@mui/material';

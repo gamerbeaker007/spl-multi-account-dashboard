@@ -1,17 +1,14 @@
+'use server';
 import { fetchMarketPrices } from '@/lib/api/peakmonstersApi';
+import logger from '@/lib/log/logger.server';
 import { fetchCardCollection, fetchListingPrices } from '@/lib/api/splApi';
 import { getPlayerCollectionValue } from '@/lib/collectionUtils';
-import logger from '@/lib/log/logger.server';
-import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
+// Server action for fetching player collection
+export async function fetchPlayersCollection(users: string[]) {
   try {
-    // array with users as input
-    const body = await request.json();
-    const { users } = body;
-
-    if (!users || !Array.isArray(users)) {
-      return NextResponse.json({ error: 'Users array is required' }, { status: 400 });
+    if (!users || !Array.isArray(users) || users.length === 0) {
+      throw new Error('Users array is required');
     }
 
     logger.info(`Fetching collection information for users: ${users}`);
@@ -43,24 +40,24 @@ export async function POST(request: NextRequest) {
         });
       } catch (userError) {
         logger.error(
-          `Failed to fetch data for user ${user.username} - ${userError instanceof Error ? userError.message : 'Unknown error'}`
+          `Failed to fetch data for user ${user} - ${userError instanceof Error ? userError.message : 'Unknown error'}`
         );
-        // Continue processing other users even if one fails
         playerData.push({
-          username: user.username,
+          username: user,
           error: userError instanceof Error ? userError.message : 'Failed to fetch user data',
         });
       }
     }
 
     logger.info(`Successfully fetched collection data for all users ${users.length}`);
-    return NextResponse.json({
+
+    return {
       players: playerData,
       timestamp: new Date().toISOString(),
-    });
+    };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error(`Multi-account status API error: ${errorMessage}`);
-    return NextResponse.json({ error: 'Failed to fetch player data' }, { status: 500 });
+    logger.error(`Multi-account collection action error: ${errorMessage}`);
+    throw new Error('Failed to fetch player data');
   }
 }

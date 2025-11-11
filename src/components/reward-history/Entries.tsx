@@ -1,5 +1,3 @@
-'use client';
-
 import { foundation_entries_icon_url, ranked_entries_icon_url } from '@/lib/staticsIconUrls';
 import { Box, Typography } from '@mui/material';
 import Image from 'next/image';

@@ -1,5 +1,3 @@
-'use client';
-
 import { useCardDetails } from '@/hooks/useCardDetails';
 import { ParsedPlayerRewardHistory } from '@/types/parsedHistory';
 import { Alert, Box, CircularProgress } from '@mui/material';

@@ -1,5 +1,3 @@
-'use client';
-
 import { ParsedHistory } from '@/types/parsedHistory';
 import { Box, Card, CardContent, Stack, Typography, alpha } from '@mui/material';
 import { ListCards } from './ListCards';

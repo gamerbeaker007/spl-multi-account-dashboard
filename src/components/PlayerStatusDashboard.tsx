@@ -1,3 +1,5 @@
+'use client';
+
 import { useUsernameContext } from '@/contexts/UsernameContext';
 import { useDailyProgress } from '@/hooks/useDailyProgress';
 import { usePlayerCardCollection } from '@/hooks/usePlayerCardCollection';

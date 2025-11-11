@@ -1,5 +1,6 @@
 import { ParsedPlayerRewardHistory } from '@/types/parsedHistory';
 import { useCallback, useState } from 'react';
+import { fetchPlayerHistory } from '@/lib/actions/fetchPlayerHistory';
 
 interface UsePlayerHistoryState {
   isLoading: boolean;
@@ -24,28 +25,12 @@ export function usePlayerHistory(): UsePlayerHistoryReturn {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const fetchParams = new URLSearchParams({
-        player,
-        seasonId: seasonId.toString(),
-      });
-
-      const response = await fetch(`/api/history?${fetchParams}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch player history');
-      }
-
-      const result = await response.json();
+      const result = await fetchPlayerHistory(player, token, seasonId);
 
       setState(prev => ({
         ...prev,
         isLoading: false,
-        history: result.entries,
+        history: result.allEntries,
         rewardHistory: result,
         error: null,
       }));

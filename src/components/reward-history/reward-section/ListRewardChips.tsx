@@ -1,5 +1,3 @@
-'use client';
-
 import { glint_icon_url } from '@/lib/staticsIconUrls';
 import { largeNumberFormat } from '@/lib/utils';
 import {

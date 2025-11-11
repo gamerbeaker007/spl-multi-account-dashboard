@@ -2,6 +2,7 @@ import { SplBalance } from '@/types/spl/balances';
 import { SplPlayerDetails } from '@/types/spl/details';
 import { SplFrontierDrawStatus, SplRankedDrawStatus } from '@/types/spl/draws';
 import { useCallback, useState } from 'react';
+import { fetchPlayersStatus } from '@/lib/actions/fetchPlayersStatus';
 
 export interface PlayerStatusData {
   username: string;
@@ -45,19 +46,7 @@ export function usePlayerStatus(initialUsernames: string[] = []): UsePlayerStatu
     setLastUsernames(usernames);
 
     try {
-      const response = await fetch('/api/status', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ users: usernames }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: PlayerStatusResponse = await response.json();
+      const result = await fetchPlayersStatus(usernames);
       setData(result);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch player status';

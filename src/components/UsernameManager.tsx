@@ -1,3 +1,5 @@
+'use client';
+
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsernameContext } from '@/contexts/UsernameContext';
 import { Add as AddIcon, Refresh as RefreshIcon } from '@mui/icons-material';

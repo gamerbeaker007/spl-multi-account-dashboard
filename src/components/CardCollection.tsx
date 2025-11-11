@@ -1,3 +1,5 @@
+'use client';
+
 import { PlayerCardCollectionData } from '@/hooks/usePlayerCardCollection';
 import { Edition, EditionValues } from '@/lib/collectionUtils';
 import { EDITION_ICON_MAPPING, EDITION_MAPPING, hammer_icon_url } from '@/lib/staticsIconUrls';

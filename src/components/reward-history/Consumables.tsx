@@ -1,5 +1,3 @@
-'use client';
-
 import {
   energy_icon_url,
   gold_icon_url,

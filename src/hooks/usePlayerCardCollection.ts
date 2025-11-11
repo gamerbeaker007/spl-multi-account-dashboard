@@ -1,5 +1,6 @@
 import { PlayerCollectionValue } from '@/lib/collectionUtils';
 import { useCallback, useState } from 'react';
+import { fetchPlayersCollection } from '@/lib/actions/fetchPlayersCollection';
 
 export interface PlayerCardCollectionData {
   username: string;
@@ -40,20 +41,8 @@ export function usePlayerCardCollection(
     setLastUsernames(usernames);
 
     try {
-      const response = await fetch('/api/collection', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ users: usernames }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: PlayerCardCollectionResponse = await response.json();
-      setData(result);
+      const result = await fetchPlayersCollection(usernames);
+      setData(result as PlayerCardCollectionResponse);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch player status';
       setError(errorMessage);

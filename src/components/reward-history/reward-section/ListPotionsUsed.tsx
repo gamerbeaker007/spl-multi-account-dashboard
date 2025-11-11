@@ -1,5 +1,3 @@
-'use client';
-
 import { gold_icon_url, legendary_icon_url } from '@/lib/staticsIconUrls';
 import {
   ClaimDailyResult,

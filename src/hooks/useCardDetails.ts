@@ -1,5 +1,6 @@
 import { SplCardDetail } from '@/types/spl/cardDetails';
 import { useCallback, useEffect, useState } from 'react';
+import { getCardDetails } from '@/lib/actions/getCardDetails';
 
 interface UseCardDetailsReturn {
   cardDetails: SplCardDetail[];
@@ -23,19 +24,7 @@ export function useCardDetails(options: UseCardDetailsOptions = {}): UseCardDeta
     setError(null);
 
     try {
-      const cardResponse = await fetch('/api/card-details');
-
-      if (!cardResponse.ok) {
-        throw new Error(`Failed to fetch card data: ${cardResponse.status}`);
-      }
-
-      const cardResult = await cardResponse.json();
-
-      // Check for API-level errors
-      if (cardResult.error) {
-        throw new Error(cardResult.error);
-      }
-
+      const cardResult = await getCardDetails();
       setCardDetails(cardResult);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch data';

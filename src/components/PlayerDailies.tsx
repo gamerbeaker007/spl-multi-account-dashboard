@@ -1,3 +1,5 @@
+'use client';
+
 import { largeNumberFormat } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
 import { SplDailyProgress } from '@/types/spl/dailies';

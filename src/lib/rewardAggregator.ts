@@ -290,7 +290,6 @@ export function aggregatePurchaseRewards(entries: PurchaseResult[]): RewardSumma
 
     if (entry.type === 'unbind_scroll') {
       const unbindScroll = entry.data as UnbindScrollData;
-      console.log(unbindScroll);
       switch (unbindScroll.data.scroll_type) {
         case 'UNBIND_CA_C':
           summary.totalShopPurchases.scrolls.common += unbindScroll.qty || 0;

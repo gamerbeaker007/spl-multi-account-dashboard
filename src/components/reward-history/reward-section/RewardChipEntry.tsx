@@ -1,5 +1,3 @@
-'use client';
-
 import {
   energy_icon_url,
   foundation_entries_icon_url,

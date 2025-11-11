@@ -1,4 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext';
+import { fetchPlayersDailyProgress } from '@/lib/actions/fetchPlayersDailyProgress';
 import { SplDailyProgress } from '@/types/spl/dailies';
 import { useCallback, useState } from 'react';
 
@@ -59,23 +60,8 @@ export const useDailyProgress = (): UseDailyProgressReturn => {
           return;
         }
 
-        const response = await fetch('/api/dailies', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            users: usersWithTokens,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || `Failed to fetch daily progress: ${response.status}`);
-        }
-
-        const responseData: DailyProgressResponse = await response.json();
-        setData(responseData);
+        const responseData = await fetchPlayersDailyProgress(authenticatedUsers);
+        setData(responseData as DailyProgressResponse);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
         console.error('Daily progress fetch error:', err);

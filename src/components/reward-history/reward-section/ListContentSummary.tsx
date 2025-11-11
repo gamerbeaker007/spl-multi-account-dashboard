@@ -1,5 +1,3 @@
-'use client';
-
 import { leagueNames } from '@/lib/utils';
 import {
   ClaimDailyResult,

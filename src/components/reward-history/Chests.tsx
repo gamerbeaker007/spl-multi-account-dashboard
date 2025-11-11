@@ -1,5 +1,3 @@
-'use client';
-
 import {
   reward_draw_major_icon_url,
   reward_draw_minor_icon_url,
