@@ -5,14 +5,14 @@ import { Box, Stack, Typography } from '@mui/material';
 import { BalanceItem } from './BalanceItem';
 
 interface Props {
-  balances: SplBalance[];
+  balances?: SplBalance[];
 }
 
 export default function Potions({ balances }: Props) {
   // Extract balance values
-  const gold = balances.find(b => b.token === 'GOLD')?.balance || 0;
-  const legendary = balances.find(b => b.token === 'LEGENDARY')?.balance || 0;
-  const midnight = balances.find(b => b.token === 'MIDNIGHTPOT')?.balance || 0;
+  const gold = balances?.find(b => b.token === 'GOLD')?.balance || 0;
+  const legendary = balances?.find(b => b.token === 'LEGENDARY')?.balance || 0;
+  const midnight = balances?.find(b => b.token === 'MIDNIGHTPOT')?.balance || 0;
 
   return (
     <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>

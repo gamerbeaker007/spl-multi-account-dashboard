@@ -1,5 +1,7 @@
 'use client';
 
+import { AuthProvider } from '@/contexts/AuthContext';
+import { UsernameProvider } from '@/contexts/UsernameContext';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
@@ -22,15 +24,18 @@ const theme = createTheme({
   },
 });
 
-interface Props {
+interface ProvidersProps {
   children: React.ReactNode;
 }
 
-export default function MuiThemeProvider({ children }: Props) {
+export function Providers({ children }: ProvidersProps) {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      {children}
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <UsernameProvider>{children}</UsernameProvider>
+        {/*{children}*/}
+      </ThemeProvider>
+    </AuthProvider>
   );
 }

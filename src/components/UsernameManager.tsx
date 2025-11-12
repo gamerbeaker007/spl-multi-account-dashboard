@@ -4,22 +4,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUsernameContext } from '@/contexts/UsernameContext';
 import { Add as AddIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import { Alert, Box, Button, Card, CardContent, Chip, TextField, Typography } from '@mui/material';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { MdLockPerson } from 'react-icons/md';
 
-interface UsernameManagerProps {
-  onFetchData: () => void;
-  loading?: boolean;
-}
-
-export default function UsernameManager({ onFetchData, loading = false }: UsernameManagerProps) {
-  const { usernames, addUsername, removeUsername, setUsernames, isInitialized } =
+export default function UsernameManager() {
+  const { usernames, addUsername, removeUsername, setUsernames, isInitialized, triggerRefreshAll } =
     useUsernameContext();
   const { loginUser } = useAuth();
   const [newUsername, setNewUsername] = useState('');
   const [error, setError] = useState('');
   const [authenticatingAll, setAuthenticatingAll] = useState(false);
-  const [authInProgress, setAuthInProgress] = useState(false);
+  const [, setAuthInProgress] = useState(false);
   const [, setAuthResults] = useState<Record<string, string>>({});
   const authCompletedRef = useRef(false);
 
@@ -57,14 +52,9 @@ export default function UsernameManager({ onFetchData, loading = false }: Userna
     }
   };
 
-  // Simple effect to trigger fetch when auth is complete
-  useEffect(() => {
-    // Only trigger if authentication just completed successfully
-    if (authCompletedRef.current && !authInProgress && !authenticatingAll) {
-      onFetchData();
-      authCompletedRef.current = false; // Reset the flag
-    }
-  }, [authInProgress, authenticatingAll, onFetchData]);
+  const handleRefreshAll = () => {
+    triggerRefreshAll();
+  };
 
   const handleAuthenticateAll = async () => {
     if (!usernames.length) return;
@@ -102,7 +92,6 @@ export default function UsernameManager({ onFetchData, loading = false }: Userna
     setAuthenticatingAll(false);
 
     // Only set authInProgress to false if we had successful authentication
-    // This will trigger the useEffect to call onFetchData
     if (hasSuccessfulAuth) {
       authCompletedRef.current = true; // Mark that auth just completed
       setAuthInProgress(false);
@@ -158,7 +147,7 @@ export default function UsernameManager({ onFetchData, loading = false }: Userna
                 type="submit"
                 variant="outlined"
                 startIcon={<AddIcon />}
-                disabled={!newUsername.trim() || loading}
+                disabled={!newUsername.trim()}
               >
                 Add
               </Button>
@@ -167,7 +156,7 @@ export default function UsernameManager({ onFetchData, loading = false }: Userna
                 variant="outlined"
                 onClick={handleAuthenticateAll}
                 startIcon={<MdLockPerson />}
-                disabled={!usernames.length || loading || authenticatingAll}
+                disabled={!usernames.length || authenticatingAll}
               >
                 {authenticatingAll ? 'Authenticating...' : 'Authenticate All'}
               </Button>
@@ -177,17 +166,17 @@ export default function UsernameManager({ onFetchData, loading = false }: Userna
                   Clear All
                 </Button>
               )}
-              {/* Fetch Data Button */}
+              {/* Refresh All Button */}
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <Button
                   variant="contained"
                   color="success"
                   startIcon={<RefreshIcon />}
-                  onClick={onFetchData}
-                  disabled={usernames.length === 0 || loading}
+                  onClick={handleRefreshAll}
+                  disabled={usernames.length === 0}
                   size="medium"
                 >
-                  {loading ? 'Fetching...' : 'Fetch Data'}
+                  Refresh All
                 </Button>
               </Box>
             </Box>
@@ -217,8 +206,7 @@ export default function UsernameManager({ onFetchData, loading = false }: Userna
           {usernames.length === 0 && (
             <Alert severity="info" sx={{ mt: 2 }}>
               <Typography variant="body2">
-                Add player usernames above and click &quot;Fetch Data&quot; to load their balances,
-                draws, and leaderboard positions.
+                Add player usernames above and click &quot;Refresh All&quot; to load their data.
               </Typography>
             </Alert>
           )}

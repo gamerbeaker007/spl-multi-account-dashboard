@@ -24,7 +24,7 @@ export default function Leaderboard({ playerDetails }: Props) {
     ?.season;
 
   return (
-    <Box sx={{ mt: 2 }}>
+    <Box mt={2} width={'100%'} height={275}>
       <Typography variant="h6">Leaderboard Rankings</Typography>
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
         Season #{firstValidSeason}

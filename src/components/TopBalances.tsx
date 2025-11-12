@@ -4,7 +4,7 @@ import { SplBalance } from '@/types/spl/balances';
 import { Avatar, Box, Card, Tooltip, Typography } from '@mui/material';
 
 interface Props {
-  balances: SplBalance[];
+  balances?: SplBalance[];
 }
 
 const iconSize = 20;
@@ -29,13 +29,13 @@ const MyCard = ({ iconUrl, title, value }: { iconUrl: string; title: string; val
 
 export default function TopBalances({ balances }: Props) {
   // Extract balance values
-  const credits = balances.find(b => b.token === 'CREDITS')?.balance || 0;
-  const dec = balances.find(b => b.token === 'DEC')?.balance || 0;
-  const decBound = balances.find(b => b.token === 'DEC-B')?.balance || 0;
-  const sps = balances.find(b => b.token === 'SPS')?.balance || 0;
-  const spsp = balances.find(b => b.token === 'SPSP')?.balance || 0;
-  const spspIn = balances.find(b => b.token === 'SPSP-IN')?.balance || 0;
-  const spspOut = balances.find(b => b.token === 'SPSP-OUT')?.balance || 0;
+  const credits = balances?.find(b => b.token === 'CREDITS')?.balance || 0;
+  const dec = balances?.find(b => b.token === 'DEC')?.balance || 0;
+  const decBound = balances?.find(b => b.token === 'DEC-B')?.balance || 0;
+  const sps = balances?.find(b => b.token === 'SPS')?.balance || 0;
+  const spsp = balances?.find(b => b.token === 'SPSP')?.balance || 0;
+  const spspIn = balances?.find(b => b.token === 'SPSP-IN')?.balance || 0;
+  const spspOut = balances?.find(b => b.token === 'SPSP-OUT')?.balance || 0;
 
   // Calculate totals
   const totalDec = dec + decBound;

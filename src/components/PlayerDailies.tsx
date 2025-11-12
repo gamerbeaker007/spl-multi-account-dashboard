@@ -1,5 +1,6 @@
 'use client';
 
+import { useDailyProgress } from '@/hooks/useDailyProgress';
 import { largeNumberFormat } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
 import { SplDailyProgress } from '@/types/spl/dailies';
@@ -20,15 +21,9 @@ import {
 import { useEffect, useState } from 'react';
 
 interface Props {
+  username: string;
   playerDetails?: SplPlayerDetails;
   balances?: SplBalance[];
-  dailyProgress?: {
-    foundation?: SplDailyProgress;
-    wild?: SplDailyProgress;
-    modern?: SplDailyProgress;
-  };
-  dailyProgressLoading?: boolean;
-  dailyProgressError?: string;
 }
 
 const maxEntriesPerDay = 15;
@@ -197,14 +192,12 @@ const DailyProgressCard = ({
   );
 };
 
-export default function PlayerDailies({
-  balances,
-  playerDetails,
-  dailyProgress,
-  dailyProgressLoading,
-  dailyProgressError,
-}: Props) {
-  if (dailyProgressLoading) {
+export default function PlayerDailies({ username, balances, playerDetails }: Props) {
+  const { data, loading } = useDailyProgress(username);
+
+  // Note: No need to manually fetch - the hook auto-fetches on auth changes
+
+  if (loading) {
     return (
       <Box sx={{ p: 2, textAlign: 'center' }}>
         <CircularProgress size={24} />
@@ -215,59 +208,51 @@ export default function PlayerDailies({
     );
   }
 
-  if (dailyProgressError) {
-    return (
-      <Alert severity="warning" sx={{ mb: 2 }}>
-        {dailyProgressError}
-      </Alert>
-    );
-  }
-
-  if (!dailyProgress) {
-    return (
-      <Alert severity="info" sx={{ mb: 2 }}>
-        No daily progress data available. Login to view daily quest progress.
-      </Alert>
-    );
-  }
-
   const hasWildMatches = (playerDetails?.season_details?.wild?.battles ?? 0) > 0;
   const hasModernMatches = (playerDetails?.season_details?.modern?.battles ?? 0) > 0;
   const hasFrontierMatches = (playerDetails?.season_details?.foundation?.battles ?? 0) > 0;
 
   return (
-    <Box width={'100%'}>
-      <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <TrophyIcon color="primary" />
-        Daily Progress
-      </Typography>
-
-      <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, width: '100%' }}>
-        {dailyProgress.foundation && hasFrontierMatches && (
-          <DailyProgressCard
-            title="Foundation"
-            progress={dailyProgress.foundation}
-            color="primary"
-          />
-        )}
-        {dailyProgress.wild && hasWildMatches && (
-          <DailyProgressCard
-            title="Wild"
-            progress={dailyProgress.wild}
-            color="secondary"
-            balances={balances}
-          />
-        )}
-
-        {dailyProgress.modern && hasModernMatches && (
-          <DailyProgressCard
-            title="Modern"
-            progress={dailyProgress.modern}
-            color="success"
-            balances={balances}
-          />
-        )}
+    <Box width={'100%'} height={260}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+        <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <TrophyIcon color="primary" />
+          Daily Progress
+        </Typography>
       </Box>
+
+      {!data ? (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          No daily progress data available. Login to view daily quest progress.
+        </Alert>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, width: '100%' }}>
+          {data?.format?.foundation && hasFrontierMatches && (
+            <DailyProgressCard
+              title="Foundation"
+              progress={data.format.foundation}
+              color="primary"
+            />
+          )}
+          {data?.format?.wild && hasWildMatches && (
+            <DailyProgressCard
+              title="Wild"
+              progress={data.format.wild}
+              color="secondary"
+              balances={balances}
+            />
+          )}
+
+          {data?.format?.modern && hasModernMatches && (
+            <DailyProgressCard
+              title="Modern"
+              progress={data.format.modern}
+              color="success"
+              balances={balances}
+            />
+          )}
+        </Box>
+      )}
     </Box>
   );
 }

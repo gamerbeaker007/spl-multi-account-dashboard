@@ -1,9 +1,6 @@
 'use client';
 
 import { useUsernameContext } from '@/contexts/UsernameContext';
-import { useDailyProgress } from '@/hooks/useDailyProgress';
-import { usePlayerCardCollection } from '@/hooks/usePlayerCardCollection';
-import { usePlayerStatus } from '@/hooks/usePlayerStatus';
 import {
   closestCenter,
   DndContext,
@@ -19,36 +16,8 @@ import UsernameManager from './UsernameManager';
 
 export default function PlayerStatusDashboard() {
   const { usernames, reorderUsernames } = useUsernameContext();
-  const { data, loading, error, fetchPlayerStatus } = usePlayerStatus();
-  const {
-    data: cardData,
-    loading: cardDataLoading,
-    error: cardDataError,
-    fetchPlayerCardCollection,
-  } = usePlayerCardCollection();
-  const {
-    data: dailyProgress,
-    loading: dailyProgressLoading,
-    error: dailyProgressError,
-    fetchDailyProgress,
-  } = useDailyProgress();
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
-
-  const handleFetchData = () => {
-    if (usernames.length > 0) {
-      fetchPlayerStatus(usernames);
-      fetchPlayerCardCollection(usernames);
-      fetchDailyProgress(usernames);
-    }
-  };
-
-  const handleAuthChange = () => {
-    // Refresh daily progress when authentication changes
-    if (usernames.length > 0) {
-      fetchDailyProgress(usernames);
-    }
-  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -73,63 +42,28 @@ export default function PlayerStatusDashboard() {
       </Typography>
 
       {/* User Management Section */}
-      <UsernameManager onFetchData={handleFetchData} loading={loading} />
-
-      {/* Error Display */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
+      <UsernameManager />
 
       {/* Data Display */}
-      {data && (
+      {usernames.length > 0 && (
         <Box>
-          <Typography variant="h6" gutterBottom>
-            Player Data (Last updated:{' '}
-            {new Date(data.timestamp).toISOString().replace('T', ' ').slice(0, 19)})
-          </Typography>
-
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
           >
             <Box display="flex" flexDirection="row" flexWrap="wrap" gap={2}>
-              {data.players &&
-                Array.isArray(data.players) &&
-                usernames.map(username => {
-                  const player = data.players.find(p => p.username === username);
-                  if (!player) return null;
-
-                  return (
-                    <PlayerCard
-                      key={player.username}
-                      player={player}
-                      seasonId={data.seasonId}
-                      onAuthChange={handleAuthChange}
-                      cardData={cardData?.players?.find(p => p.username === player.username)}
-                      cardDataLoading={cardDataLoading}
-                      cardDataError={cardDataError ?? undefined}
-                      dailyProgress={
-                        dailyProgress?.players?.find(p => p.username === player.username)
-                          ?.dailyProgress
-                      }
-                      dailyProgressLoading={dailyProgressLoading}
-                      dailyProgressError={dailyProgressError ?? undefined}
-                    />
-                  );
-                })}
+              {usernames.map(username => (
+                <PlayerCard key={username} username={username} />
+              ))}
             </Box>
           </DndContext>
         </Box>
       )}
 
       {/* Empty State */}
-      {!data && !loading && usernames.length === 0 && (
-        <Alert severity="info">
-          Add some player usernames and click &quot;Fetch Data&quot; to get started!
-        </Alert>
+      {usernames.length === 0 && (
+        <Alert severity="info">Add some player usernames to get started!</Alert>
       )}
     </Container>
   );

@@ -1,10 +1,11 @@
-import { PlayerCardCollectionData } from '@/hooks/usePlayerCardCollection';
-import { PlayerStatusData } from '@/hooks/usePlayerStatus';
-import { SplBalance } from '@/types/spl/balances';
-import { SplDailyProgress } from '@/types/spl/dailies';
+'use client';
+
+import { useUsernameContext } from '@/contexts/UsernameContext';
+import { usePlayerStatus } from '@/hooks/usePlayerStatus';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import DragHandleIcon from '@mui/icons-material/DragHandle';
-import { Alert, Box, IconButton } from '@mui/material';
+import { Alert, Box, CircularProgress, IconButton, Typography } from '@mui/material';
+import { useEffect } from 'react';
 import Leaderboard from './Leaderboard';
 import PlayerBalances from './PlayerBalances';
 import PlayerDailies from './PlayerDailies';
@@ -13,33 +14,28 @@ import PlayerInfo from './PlayerInfo';
 import { PlayerHistoryButton } from './reward-history/PlayerHistoryButton';
 
 interface Props {
-  player: PlayerStatusData;
-  seasonId: number;
-  balances?: SplBalance[];
-  cardData?: PlayerCardCollectionData;
-  cardDataLoading?: boolean;
-  cardDataError?: string;
-  dailyProgress?: {
-    foundation?: SplDailyProgress;
-    wild?: SplDailyProgress;
-    modern?: SplDailyProgress;
-  };
-  dailyProgressLoading?: boolean;
-  dailyProgressError?: string;
-  onAuthChange?: () => void;
+  username: string;
 }
 
-export const PlayerCard = ({
-  player,
-  seasonId,
-  cardData,
-  cardDataLoading,
-  cardDataError,
-  dailyProgress,
-  dailyProgressLoading,
-  dailyProgressError,
-  onAuthChange,
-}: Props) => {
+export const PlayerCard = ({ username }: Props) => {
+  const { data: player, loading, error, refetch } = usePlayerStatus(username);
+  const { refreshTrigger, userRefreshTriggers } = useUsernameContext();
+
+  // Refetch when global refresh button is clicked OR when this specific user's trigger changes
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      refetch();
+    }
+  }, [refreshTrigger, refetch]);
+
+  // Refetch when this specific user's trigger changes (e.g., when added)
+  useEffect(() => {
+    const userTrigger = userRefreshTriggers[username];
+    if (userTrigger && userTrigger > 0) {
+      refetch();
+    }
+  }, [userRefreshTriggers, username, refetch]);
+
   const {
     attributes,
     listeners,
@@ -47,11 +43,11 @@ export const PlayerCard = ({
     transform,
     isDragging,
   } = useDraggable({
-    id: player.username,
+    id: username,
   });
 
   const { setNodeRef: setDropNodeRef, isOver } = useDroppable({
-    id: player.username,
+    id: username,
   });
 
   // Combine both refs
@@ -66,6 +62,55 @@ export const PlayerCard = ({
         zIndex: isDragging ? 1000 : 'auto',
       }
     : undefined;
+
+  // Show loading state
+  if (loading && !player) {
+    return (
+      <Box
+        ref={setNodeRef}
+        style={style}
+        border="1px solid"
+        borderColor="secondary.main"
+        borderRadius={2}
+        width={450}
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        p={4}
+        sx={{ mb: 2 }}
+      >
+        <Box textAlign="center">
+          <CircularProgress size={40} />
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            Loading {username}...
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Show error state
+  if (error || player?.error) {
+    return (
+      <Box
+        ref={setNodeRef}
+        style={style}
+        border="1px solid"
+        borderColor="error.main"
+        borderRadius={2}
+        width={450}
+        p={2}
+        sx={{ mb: 2 }}
+      >
+        <Alert severity="error">{error || player?.error}</Alert>
+      </Box>
+    );
+  }
+
+  // No data state
+  if (!player) {
+    return null;
+  }
 
   return (
     <Box
@@ -113,59 +158,50 @@ export const PlayerCard = ({
         <DragHandleIcon fontSize="small" />
       </IconButton>
 
-      {player.error ? (
-        <Alert severity="error">{player.error}</Alert>
-      ) : (
-        <>
-          <PlayerInfo
-            username={player.username}
+      <PlayerInfo username={player.username} playerDetails={player.playerDetails} />
+
+      {/* History Button - Shows only when authorized */}
+      <PlayerHistoryButton
+        username={player.username}
+        seasonId={player?.seasonRewards?.season_reward_info.season}
+      />
+
+      <Box>
+        {/* Balances Section */}
+        <PlayerBalances
+          username={player.username}
+          balances={player.balances}
+          seasonRewards={player.seasonRewards}
+        />
+      </Box>
+
+      <Box width={'100%'}>
+        {/* Draws Section */}
+        {player.draws && player.balances && (
+          <PlayerDraws
+            balances={player.balances}
+            frontier={player.draws.frontier}
+            ranked={player.draws.ranked}
             playerDetails={player.playerDetails}
-            onAuthChange={onAuthChange}
           />
+        )}
+      </Box>
 
-          {/* History Button - Shows only when authorized */}
-          {seasonId && <PlayerHistoryButton username={player.username} seasonId={seasonId || 0} />}
-
-          <Box>
-            {/* Balances Section */}
-            {player.balances && player.balances.length > 0 && (
-              <PlayerBalances
-                balances={player.balances}
-                cardData={cardData}
-                cardDataLoading={cardDataLoading}
-                cardDataError={cardDataError}
-              />
-            )}
-          </Box>
-
-          <Box width={'100%'}>
-            {/* Draws Section */}
-            {player.draws && player.balances && (
-              <PlayerDraws
-                balances={player.balances}
-                frontier={player.draws.frontier}
-                ranked={player.draws.ranked}
-                playerDetails={player.playerDetails}
-              />
-            )}
-          </Box>
-
-          <Box width={'100%'}>
-            {/* Daily Progress Section */}
-            <PlayerDailies
-              balances={player.balances}
-              playerDetails={player.playerDetails}
-              dailyProgress={dailyProgress}
-              dailyProgressLoading={dailyProgressLoading}
-              dailyProgressError={dailyProgressError ?? undefined}
-            />
-          </Box>
-          <Box width={'100%'}>
-            {/* Leaderboards Section */}
-            {player.playerDetails && <Leaderboard playerDetails={player.playerDetails} />}
-          </Box>
-        </>
-      )}
+      <Box width={'100%'}>
+        {/* Daily Progress Section */}
+        <PlayerDailies
+          username={player.username}
+          balances={player.balances}
+          playerDetails={player.playerDetails}
+        />
+      </Box>
+      <Box width={'100%'}>
+        {/* Leaderboards Section */}
+        {player.playerDetails && <Leaderboard playerDetails={player.playerDetails} />}
+      </Box>
+      <Typography variant="caption" sx={{ width: '100%', mt: 1 }}>
+        Update Date: {player.timestamp ? new Date(player.timestamp).toLocaleString() : 'N/A'}
+      </Typography>
     </Box>
   );
 };

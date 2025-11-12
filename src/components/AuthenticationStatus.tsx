@@ -10,10 +10,9 @@ import { useEffect, useState } from 'react';
 
 interface Props {
   username: string;
-  onAuthChange?: () => void;
 }
 
-export const AuthenticationStatus = ({ username, onAuthChange }: Props) => {
+export const AuthenticationStatus = ({ username }: Props) => {
   const { isUserAuthenticated, loginUser, logoutUser, loading } = useAuth();
   const [loggingIn, setLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -26,12 +25,10 @@ export const AuthenticationStatus = ({ username, onAuthChange }: Props) => {
   useEffect(() => {
     if (justLoggedIn && isAuthenticated) {
       setJustLoggedIn(false);
-      onAuthChange?.();
     } else if (justLoggedOut && !isAuthenticated) {
       setJustLoggedOut(false);
-      onAuthChange?.();
     }
-  }, [isAuthenticated, justLoggedIn, justLoggedOut, onAuthChange]);
+  }, [isAuthenticated, justLoggedIn, justLoggedOut]);
 
   const handleLogin = async () => {
     try {

@@ -1,13 +1,14 @@
 'use server';
 
 import logger from '@/lib/log/logger.server';
+import { LoginResponse } from '@/types/auth';
 
 // Server action for login authentication
 export async function loginWithSignature(
   username: string,
   timestamp: number,
   signature: string
-): Promise<{ success: boolean; username: string; message: string; token: string }> {
+): Promise<LoginResponse> {
   try {
     const { splLogin } = await import('@/lib/api/splApi');
     const { encryptToken } = await import('@/lib/auth/encryption');

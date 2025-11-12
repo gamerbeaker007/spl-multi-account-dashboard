@@ -1,4 +1,3 @@
-import { PlayerCardCollectionData } from '@/hooks/usePlayerCardCollection';
 import { SplBalance } from '@/types/spl/balances';
 import { Box } from '@mui/material';
 import Glint from './Glint';
@@ -7,20 +6,15 @@ import Potions from './Potions';
 import Scrolls from './Scrolls';
 import TopBalances from './TopBalances';
 import CardCollection from './CardCollection';
+import { SPLSeasonRewards } from '@/types/spl/seasonRewards';
 
 interface Props {
-  balances: SplBalance[];
-  cardData?: PlayerCardCollectionData;
-  cardDataLoading?: boolean;
-  cardDataError?: string;
+  username: string;
+  balances?: SplBalance[];
+  seasonRewards?: SPLSeasonRewards;
 }
 
-export default function PlayerBalances({
-  balances,
-  cardData,
-  cardDataLoading,
-  cardDataError,
-}: Props) {
+export default function PlayerBalances({ username, balances, seasonRewards }: Props) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 1 }}>
       <TopBalances balances={balances} />
@@ -31,12 +25,8 @@ export default function PlayerBalances({
         <Guild balances={balances} />
       </Box>
       <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
-        <Glint balances={balances} />
-        <CardCollection
-          cardData={cardData}
-          cardDataLoading={cardDataLoading}
-          cardDataError={cardDataError}
-        />
+        <Glint balances={balances} seasonRewards={seasonRewards} />
+        <CardCollection username={username} />
       </Box>
     </Box>
   );

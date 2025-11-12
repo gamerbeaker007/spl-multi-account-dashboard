@@ -7,32 +7,7 @@ import {
 } from '@/types/spl/card';
 import { SplCardListingPriceEntry } from '@/types/spl/market';
 import { EDITION_MAPPING } from './staticsIconUrls';
-
-export interface PlayerCollectionValue {
-  date: string;
-  player: string;
-  totalListValue: number;
-  totalMarketValue: number;
-  totalBcx: number;
-  totalNumberOfCards: number;
-  totalSellableCards: number;
-  editionValues: EditionValues;
-}
-// Edition type based on the mapping keys
-export type Edition = keyof typeof EDITION_MAPPING;
-
-// Edition name type based on the mapping values
-export type EditionName = (typeof EDITION_MAPPING)[Edition];
-
-export type EditionValues = {
-  [Key in Edition]: {
-    marketValue: number;
-    listValue: number;
-    bcx: number;
-    numberOfCards: number;
-    numberOfSellableCards: number;
-  };
-};
+import { Edition, EditionValues, PlayerCollectionValue } from '@/types/playerCardCollection';
 
 /**
  * Group cards by BCX to reduce processing time for identifying values
@@ -83,7 +58,6 @@ export async function getPlayerCollectionValue(
   const totalSellableCards = sellableCards.length;
 
   const result: PlayerCollectionValue = {
-    date: new Date().toISOString().split('T')[0],
     player: account,
     totalListValue: 0,
     totalMarketValue: 0,

@@ -8,6 +8,7 @@ import {
   aggregateRewards,
   mergeRewardSummaries,
 } from '@/lib/rewardAggregator';
+import { cacheLife } from 'next/cache';
 
 const ALL_HISTORY_TYPES = 'claim_reward,claim_daily,purchase';
 
@@ -17,6 +18,9 @@ export async function fetchPlayerHistory(
   encryptedToken: string,
   seasonId?: number
 ) {
+  'use cache';
+  cacheLife('default');
+
   try {
     if (!player || !encryptedToken) {
       throw new Error('Missing required parameters: player and token');

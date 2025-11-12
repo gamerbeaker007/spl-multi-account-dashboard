@@ -1,8 +1,7 @@
 'use client';
 
-import { PlayerCardCollectionData } from '@/hooks/usePlayerCardCollection';
-import { Edition, EditionValues } from '@/lib/collectionUtils';
-import { EDITION_ICON_MAPPING, EDITION_MAPPING, hammer_icon_url } from '@/lib/staticsIconUrls';
+import { usePlayerCardCollection } from '@/hooks/usePlayerCardCollection';
+import { hammer_icon_url } from '@/lib/staticsIconUrls';
 import { largeNumberFormat } from '@/lib/utils';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
@@ -16,89 +15,41 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AiFillDollarCircle } from 'react-icons/ai';
 import { TbCards } from 'react-icons/tb';
 import { BalanceItem } from './BalanceItem';
-
-// Component to render edition breakdown tooltip content
-const EditionTooltipContent = ({ editionValues }: { editionValues: EditionValues }) => {
-  return (
-    <Box>
-      <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
-        Card Collection by Edition
-      </Typography>
-      <Stack spacing={1}>
-        {Object.entries(editionValues)
-          .filter(([, values]) => values.numberOfCards > 0) // Only show editions with cards
-          .sort(([a], [b]) => Number(a) - Number(b)) // Sort by edition number
-          .map(([editionId, values]) => {
-            const editionNum = Number(editionId) as Edition;
-            const editionName = EDITION_MAPPING[editionNum] || `Edition ${editionId}`;
-            const iconUrl = EDITION_ICON_MAPPING[editionNum];
-
-            return (
-              <Box key={editionId} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {iconUrl && <Image src={iconUrl} alt={editionName} width={20} height={20} />}
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {editionName}
-                  </Typography>
-                  <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
-                    {largeNumberFormat(values.numberOfCards)} cards •{' '}
-                    {largeNumberFormat(values.numberOfSellableCards)} sellable cards
-                  </Typography>
-                  <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
-                    List: ${largeNumberFormat(values.listValue)} • Market: $
-                    {largeNumberFormat(values.marketValue)}
-                  </Typography>
-                </Box>
-              </Box>
-            );
-          })}
-      </Stack>
-    </Box>
-  );
-};
+import CardEditionDetails from '@/components/CardEditionDetails';
 
 interface Props {
-  cardData?: PlayerCardCollectionData;
-  cardDataLoading?: boolean;
-  cardDataError?: string | null;
+  username: string;
 }
 
-export default function CardCollection({ cardData, cardDataLoading, cardDataError }: Props) {
+export default function CardCollection({ username }: Props) {
+  const { data, loading, error, fetchPlayerCardCollection } = usePlayerCardCollection(username);
+
+  useEffect(() => {
+    fetchPlayerCardCollection();
+  }, [fetchPlayerCardCollection]);
+
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleOpenDialog = () => setDialogOpen(true);
   const handleCloseDialog = () => setDialogOpen(false);
 
-  // Extract balance values
-  if (cardDataLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', padding: 2 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (cardDataError) {
+  if (error) {
     return (
       <Box sx={{ padding: 2 }}>
-        <Typography color="error">Error: {cardDataError}</Typography>
+        <Typography color="error">Error: {error}</Typography>
       </Box>
     );
   }
 
-  if (!cardData) {
-    return null;
-  }
-  const collectionPower = cardData?.collectionPower || 0;
-  const totalMarketValue = cardData?.playerCollectionValue.totalMarketValue || 0;
-  const totalListValue = cardData?.playerCollectionValue.totalListValue || 0;
-  const totalNumberOfCards = cardData?.playerCollectionValue.totalNumberOfCards || 0;
-  const totalNumberOfSellableCards = cardData?.playerCollectionValue.totalSellableCards || 0;
+  const collectionPower = data?.collectionPower || 0;
+  const totalMarketValue = data?.playerCollectionValue.totalMarketValue || 0;
+  const totalListValue = data?.playerCollectionValue.totalListValue || 0;
+  const totalNumberOfCards = data?.playerCollectionValue.totalNumberOfCards || 0;
+  const totalNumberOfSellableCards = data?.playerCollectionValue.totalSellableCards || 0;
 
   return (
     <>
@@ -110,6 +61,7 @@ export default function CardCollection({ cardData, cardDataLoading, cardDataErro
             </Typography>
             <IconButton size="small" onClick={handleOpenDialog} sx={{ color: 'primary.main' }}>
               <InfoIcon fontSize="small" />
+              {loading && <CircularProgress size={12} sx={{ ml: 0.5 }} />}
             </IconButton>
           </Box>
           <BalanceItem
@@ -179,7 +131,7 @@ export default function CardCollection({ cardData, cardDataLoading, cardDataErro
           </Box>
         </DialogTitle>
         <DialogContent>
-          <EditionTooltipContent editionValues={cardData.playerCollectionValue.editionValues} />
+          {data && <CardEditionDetails editionValues={data.playerCollectionValue.editionValues} />}
         </DialogContent>
       </Dialog>
     </>

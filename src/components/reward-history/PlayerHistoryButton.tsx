@@ -9,46 +9,41 @@ import { PlayerHistoryDialog } from './PlayerHistoryDialog';
 
 interface PlayerHistoryButtonProps {
   username: string;
-  seasonId: number;
+  seasonId?: number;
 }
 
 export function PlayerHistoryButton({ username, seasonId }: PlayerHistoryButtonProps) {
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
-  const { getUserToken, isUserAuthenticated } = useAuth();
+  const { getUserToken } = useAuth();
   const { cardDetails } = useCardDetails();
 
-  const isAuthorized = isUserAuthenticated(username);
-
-  if (!isAuthorized) {
-    return null; // Don't show anything if not authorized
-  }
-
   const userToken = getUserToken(username);
-  if (!userToken) {
-    return null; // Don't show if no token available
-  }
 
   return (
-    <Box width="100%" sx={{ mb: 2 }}>
-      <Button
-        variant="outlined"
-        startIcon={<HistoryIcon />}
-        onClick={() => setHistoryDialogOpen(true)}
-        fullWidth
-        color="secondary"
-        size="small"
-      >
-        View Reward History
-      </Button>
+    <Box height={15} width="100%" sx={{ mb: 2 }}>
+      {userToken && (
+        <>
+          <Button
+            variant="outlined"
+            startIcon={<HistoryIcon />}
+            onClick={() => setHistoryDialogOpen(true)}
+            fullWidth
+            color="secondary"
+            size="small"
+          >
+            View Reward History
+          </Button>
 
-      <PlayerHistoryDialog
-        open={historyDialogOpen}
-        onClose={() => setHistoryDialogOpen(false)}
-        player={username}
-        token={userToken}
-        seasonId={seasonId}
-        cardDetails={cardDetails}
-      />
+          <PlayerHistoryDialog
+            open={historyDialogOpen}
+            onClose={() => setHistoryDialogOpen(false)}
+            player={username}
+            token={userToken}
+            seasonId={seasonId ?? 0}
+            cardDetails={cardDetails}
+          />
+        </>
+      )}
     </Box>
   );
 }

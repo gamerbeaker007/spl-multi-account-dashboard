@@ -12,7 +12,7 @@ import {
   RewardDraw,
   RewardMerits,
 } from '@/types/parsedHistory';
-import { LoginResponse } from '@/types/spl/auth';
+import { SplLoginResponse } from '@/types/spl/auth';
 import { SplBalance } from '@/types/spl/balances';
 import { SplCardCollection } from '@/types/spl/card';
 import { SplCardDetail } from '@/types/spl/cardDetails';
@@ -27,6 +27,7 @@ import axios from 'axios';
 import * as rax from 'retry-axios';
 import { validateSplJwt } from '../auth/jwt/splJwtValidation';
 import logger from '../log/logger.server';
+import { SPLSeasonRewards } from '@/types/spl/seasonRewards';
 
 const splBaseClient = axios.create({
   baseURL: 'https://api.splinterlands.com',
@@ -349,7 +350,7 @@ export async function fetchPlayerDetails(player: string): Promise<SplPlayerDetai
 }
 
 //https://api2.splinterlands.com/players/current_rewards?username=beaker007
-export async function fetchCurrentSeasonId(username: string): Promise<number> {
+export async function fetchCurrentRewards(username: string): Promise<SPLSeasonRewards> {
   const url = '/players/current_rewards';
   logger.debug(`Fetching current rewards for user: ${username}`);
 
@@ -364,7 +365,7 @@ export async function fetchCurrentSeasonId(username: string): Promise<number> {
       throw new Error('Invalid response from Splinterlands API: expected array');
     }
 
-    return data.season_reward_info.season as number;
+    return data as SPLSeasonRewards;
   } catch (error) {
     logger.error(
       `Failed to fetch current rewards: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -377,7 +378,7 @@ export async function splLogin(
   username: string,
   timestamp: number,
   signature: string
-): Promise<LoginResponse> {
+): Promise<SplLoginResponse> {
   const url = 'players/v2/login';
 
   logger.info(`splLogin called for user: ${username}`);
@@ -396,9 +397,9 @@ export async function splLogin(
       if (response.data.error) {
         throw new Error(response.data.error);
       }
-      const result = response.data as LoginResponse;
+      const result = response.data as SplLoginResponse;
 
-      return result as LoginResponse;
+      return result as SplLoginResponse;
     } else {
       throw new Error('Login request failed');
     }

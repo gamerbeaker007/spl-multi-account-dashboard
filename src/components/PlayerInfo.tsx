@@ -7,7 +7,6 @@ import { AuthenticationStatus } from './AuthenticationStatus';
 interface Props {
   username: string;
   playerDetails?: SplPlayerDetails;
-  onAuthChange?: () => void;
 }
 
 const avatarSize = 25;
@@ -50,7 +49,7 @@ function getNullRatingInfo(battles: number = 0): React.ReactNode {
   );
 }
 
-export default function PlayerInfo({ username, playerDetails, onAuthChange }: Props) {
+export default function PlayerInfo({ username, playerDetails }: Props) {
   const result = playerDetails ? getHighestRatingFormat(playerDetails) : null;
   const highestFormatDetails = result?.playerHighestFormatInfo || null;
   const format = result?.format || null;
@@ -70,12 +69,11 @@ export default function PlayerInfo({ username, playerDetails, onAuthChange }: Pr
         justifyContent: 'center',
         alignItems: 'center',
         width: '100%',
-        mb: 1,
       }}
     >
       {/* Authentication Status */}
       <Box sx={{ mb: 1 }}>
-        <AuthenticationStatus username={username} onAuthChange={onAuthChange} />
+        <AuthenticationStatus username={username} />
       </Box>
 
       <Box

@@ -1,78 +1,70 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchPlayersDailyProgress } from '@/lib/actions/fetchPlayersDailyProgress';
-import { SplDailyProgress } from '@/types/spl/dailies';
-import { useCallback, useState } from 'react';
-
-interface DailyProgressData {
-  username: string;
-  dailyProgress?: {
-    foundation?: SplDailyProgress;
-    wild?: SplDailyProgress;
-    modern?: SplDailyProgress;
-  };
-  error?: string;
-}
-
-interface DailyProgressResponse {
-  players: DailyProgressData[];
-  timestamp: string;
-}
+import { useCallback, useEffect, useState } from 'react';
+import { DailyProgressData } from '@/types/playerDailyProgress';
 
 interface UseDailyProgressReturn {
-  data: DailyProgressResponse | null;
+  data: DailyProgressData | null;
   loading: boolean;
   error: string | null;
-  fetchDailyProgress: (usernames: string[]) => Promise<void>;
+  fetchDailyProgress: () => Promise<void>;
 }
 
-export const useDailyProgress = (): UseDailyProgressReturn => {
-  const [data, setData] = useState<DailyProgressResponse | null>(null);
+export const useDailyProgress = (username: string): UseDailyProgressReturn => {
+  const [data, setData] = useState<DailyProgressData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { getUserToken, isUserAuthenticated } = useAuth();
+  const { getUserToken, isUserAuthenticated, authenticatedUsers } = useAuth();
 
-  const fetchDailyProgress = useCallback(
-    async (usernames: string[]) => {
-      if (!usernames.length) {
-        setError('No usernames provided');
+  const fetchDailyProgress = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const encryptedToken = getUserToken(username);
+      const isAuthenticated = isUserAuthenticated(username);
+
+      if (!encryptedToken || !isAuthenticated) {
+        setError('Not authenticated, please log in to show daily progress');
+        setData(null); // Clear data when not authenticated
+        setLoading(false);
         return;
       }
 
-      setLoading(true);
-      setError(null);
+      const responseData = await fetchPlayersDailyProgress(username, encryptedToken);
+      setData(responseData);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      console.error('Daily progress fetch error:', err);
+      setError(errorMessage);
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [username, getUserToken, isUserAuthenticated]);
 
-      try {
-        // Prepare the request payload with usernames and their tokens
-        const usersWithTokens = usernames.map(username => ({
-          username,
-          encryptedToken: getUserToken(username),
-          isAuthenticated: isUserAuthenticated(username),
-        }));
+  // Auto-fetch when authentication status changes
+  useEffect(() => {
+    const isAuthenticated = isUserAuthenticated(username);
+    const encryptedToken = getUserToken(username);
 
-        // Check if any users are authenticated
-        const authenticatedUsers = usersWithTokens.filter(
-          user => user.isAuthenticated && user.encryptedToken
-        );
-
-        if (authenticatedUsers.length === 0) {
-          setError('Not authenticated, please log in to show daily progress');
-          setLoading(false);
-          return;
-        }
-
-        const responseData = await fetchPlayersDailyProgress(authenticatedUsers);
-        setData(responseData as DailyProgressResponse);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-        console.error('Daily progress fetch error:', err);
-        setError(errorMessage);
-        setData(null);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [getUserToken, isUserAuthenticated]
-  );
+    if (isAuthenticated && encryptedToken) {
+      // User is logged in - fetch daily progress
+      fetchDailyProgress();
+    } else {
+      // User logged out - clear data
+      setData(null);
+      setError('Not authenticated, please log in to show daily progress');
+    }
+  }, [
+    // Watch for changes in the authenticated users array
+    // This will trigger when user logs in/out
+    authenticatedUsers,
+    username,
+    fetchDailyProgress,
+    getUserToken,
+    isUserAuthenticated,
+  ]);
 
   return {
     data,

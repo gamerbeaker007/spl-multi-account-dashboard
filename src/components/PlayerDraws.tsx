@@ -61,7 +61,7 @@ export default function PlayerDraws({ balances, frontier, ranked, playerDetails 
       (playerDetails?.season_details?.modern?.battles ?? 0)) > 0;
 
   return (
-    <Box mb={2} width={'100%'}>
+    <Box mb={2} width={'100%'} height={175}>
       <Typography variant="h6">Modes</Typography>
       <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, width: '100%' }}>
         {frontier && hasFrontierMatches && (

@@ -1,3 +1,5 @@
+'use client';
+
 import { SplCardDetail } from '@/types/spl/cardDetails';
 import { useCallback, useEffect, useState } from 'react';
 import { getCardDetails } from '@/lib/actions/getCardDetails';

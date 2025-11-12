@@ -1,4 +1,4 @@
-export interface LoginResponse {
+export interface SplLoginResponse {
   name: string;
   timestamp: string;
   token: string;

@@ -5,13 +5,13 @@ import { Box, Stack, Typography } from '@mui/material';
 import { BalanceItem } from './BalanceItem';
 
 interface Props {
-  balances: SplBalance[];
+  balances?: SplBalance[];
 }
 
 export default function Guild({ balances }: Props) {
   // Extract balance values
-  const merits = balances.find(b => b.token === 'MERITS')?.balance || 0;
-  const gp = balances.find(b => b.token === 'GP')?.balance || 0;
+  const merits = balances?.find(b => b.token === 'MERITS')?.balance || 0;
+  const gp = balances?.find(b => b.token === 'GP')?.balance || 0;
 
   return (
     <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>

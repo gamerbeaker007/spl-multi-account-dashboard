@@ -1,6 +1,6 @@
-import MuiThemeProvider from '@/components/ThemeProvider';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { UsernameProvider } from '@/contexts/UsernameContext';
+'use client';
+
+import { Providers } from '@/contexts/Providers';
 
 export default function RootLayout({
   children,
@@ -10,11 +10,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          <MuiThemeProvider>
-            <UsernameProvider>{children}</UsernameProvider>
-          </MuiThemeProvider>
-        </AuthProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

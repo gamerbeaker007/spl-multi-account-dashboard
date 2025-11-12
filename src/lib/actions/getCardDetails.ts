@@ -2,8 +2,12 @@
 // Server action for fetching card details
 import logger from '@/lib/log/logger.server';
 import { fetchCardDetails } from '@/lib/api/splApi';
+import { cacheLife } from 'next/cache';
 
 export async function getCardDetails() {
+  'use cache';
+  cacheLife('cardDetails');
+
   try {
     logger.info('Fetching card details via server action');
     const data = await fetchCardDetails();
