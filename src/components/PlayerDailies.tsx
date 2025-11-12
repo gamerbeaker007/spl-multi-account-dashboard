@@ -1,5 +1,6 @@
 'use client';
 
+import { useUsernameContext } from '@/contexts/UsernameContext';
 import { useDailyProgress } from '@/hooks/useDailyProgress';
 import { largeNumberFormat } from '@/lib/utils';
 import { SplBalance } from '@/types/spl/balances';
@@ -193,20 +194,15 @@ const DailyProgressCard = ({
 };
 
 export default function PlayerDailies({ username, balances, playerDetails }: Props) {
-  const { data, loading } = useDailyProgress(username);
+  const { data, loading, fetchDailyProgress } = useDailyProgress(username);
+  const { refreshTrigger } = useUsernameContext();
 
-  // Note: No need to manually fetch - the hook auto-fetches on auth changes
-
-  if (loading) {
-    return (
-      <Box sx={{ p: 2, textAlign: 'center' }}>
-        <CircularProgress size={24} />
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Loading daily progress...
-        </Typography>
-      </Box>
-    );
-  }
+  // Refetch when refresh button is clicked
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      fetchDailyProgress();
+    }
+  }, [refreshTrigger, fetchDailyProgress]);
 
   const hasWildMatches = (playerDetails?.season_details?.wild?.battles ?? 0) > 0;
   const hasModernMatches = (playerDetails?.season_details?.modern?.battles ?? 0) > 0;
@@ -215,10 +211,13 @@ export default function PlayerDailies({ username, balances, playerDetails }: Pro
   return (
     <Box width={'100%'} height={260}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <TrophyIcon color="primary" />
-          Daily Progress
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <TrophyIcon color="primary" />
+            Daily Progress
+          </Typography>
+          {loading && <CircularProgress size={12} sx={{ ml: 0.5 }} />}
+        </Box>
       </Box>
 
       {!data ? (

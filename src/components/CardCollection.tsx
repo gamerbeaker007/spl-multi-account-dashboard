@@ -1,5 +1,7 @@
 'use client';
 
+import CardEditionDetails from '@/components/CardEditionDetails';
+import { useUsernameContext } from '@/contexts/UsernameContext';
 import { usePlayerCardCollection } from '@/hooks/usePlayerCardCollection';
 import { hammer_icon_url } from '@/lib/staticsIconUrls';
 import { largeNumberFormat } from '@/lib/utils';
@@ -19,18 +21,26 @@ import { useEffect, useState } from 'react';
 import { AiFillDollarCircle } from 'react-icons/ai';
 import { TbCards } from 'react-icons/tb';
 import { BalanceItem } from './BalanceItem';
-import CardEditionDetails from '@/components/CardEditionDetails';
 
 interface Props {
   username: string;
 }
 
 export default function CardCollection({ username }: Props) {
-  const { data, loading, error, fetchPlayerCardCollection } = usePlayerCardCollection(username);
+  const { data, loading, error, refetch } = usePlayerCardCollection(username);
+  const { refreshTrigger } = useUsernameContext();
 
+  // Fetch on mount
   useEffect(() => {
-    fetchPlayerCardCollection();
-  }, [fetchPlayerCardCollection]);
+    refetch();
+  }, [refetch]);
+
+  // Refetch when refresh button is clicked
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      refetch();
+    }
+  }, [refreshTrigger, refetch]);
 
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -61,8 +71,8 @@ export default function CardCollection({ username }: Props) {
             </Typography>
             <IconButton size="small" onClick={handleOpenDialog} sx={{ color: 'primary.main' }}>
               <InfoIcon fontSize="small" />
-              {loading && <CircularProgress size={12} sx={{ ml: 0.5 }} />}
             </IconButton>
+            {loading && <CircularProgress size={12} sx={{ ml: 0.5 }} />}
           </Box>
           <BalanceItem
             iconUrl={hammer_icon_url}
