@@ -47,19 +47,38 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) 
   const { logoutUser } = useAuth();
 
   useEffect(() => {
+    let mounted = true;
+    let initialized = false;
+
+    // Timeout fallback to prevent stuck loading
+    const timeoutId = setTimeout(() => {
+      if (mounted && !initialized) {
+        console.warn('UsernameContext initialization timeout - forcing initialized state');
+        setIsInitialized(true);
+      }
+    }, 2000);
+
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsedUsernames = JSON.parse(stored);
-        if (Array.isArray(parsedUsernames)) {
+        if (Array.isArray(parsedUsernames) && mounted) {
           setUsernamesState(parsedUsernames);
         }
       }
     } catch (error) {
       console.error('Error loading usernames from localStorage:', error);
     } finally {
-      setIsInitialized(true);
+      if (mounted) {
+        initialized = true;
+        setIsInitialized(true);
+      }
     }
+
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const setUsernames = (newUsernames: string[]) => {

@@ -15,9 +15,19 @@ import { PlayerCard } from './PlayerCard';
 import UsernameManager from './UsernameManager';
 
 export default function PlayerStatusDashboard() {
-  const { usernames, reorderUsernames } = useUsernameContext();
-
+  const { usernames, reorderUsernames, isInitialized } = useUsernameContext();
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
+
+  // Wait for context to initialize before rendering
+  if (!isInitialized) {
+    return (
+      <Container maxWidth="xl" sx={{ px: { xs: 2, md: 6, lg: 8 } }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
+          <Typography>Loading...</Typography>
+        </Box>
+      </Container>
+    );
+  }
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
