@@ -64,3 +64,6 @@ export const card_rarity_common_icon_url = `${WEB_URL}website/create_team/icon_r
 export const card_rarity_rare_icon_url = `${WEB_URL}website/create_team/icon_rarity_rare_new.svg`;
 export const card_rarity_epic_icon_url = `${WEB_URL}website/create_team/icon_rarity_epic_new.svg`;
 export const card_rarity_legendary_icon_url = `${WEB_URL}website/create_team/icon_rarity_legendary_new.svg`;
+
+export const archon_filter_icon_url = `${WEB_URL}website/collection/icon_filter_archons.svg`;
+export const unit_filter_icon_url = `${WEB_URL}website/collection/icon_filter_units.svg`;

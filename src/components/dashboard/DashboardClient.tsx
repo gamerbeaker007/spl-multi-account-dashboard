@@ -136,10 +136,12 @@ function DrawerAndContent({ selectedUser }: { selectedUser: string }) {
     selectedSets,
     selectedRarities,
     selectedElements,
+    selectedRoles,
     hideMissingCards,
     setSelectedSets,
     setSelectedRarities,
     setSelectedElements,
+    setSelectedRoles,
     setHideMissingCards,
     toggleDrawer,
   } = useCardFilter();
@@ -153,10 +155,12 @@ function DrawerAndContent({ selectedUser }: { selectedUser: string }) {
         selectedSets={selectedSets}
         selectedRarities={selectedRarities}
         selectedElements={selectedElements}
+        selectedRoles={selectedRoles}
         hideMissingCards={hideMissingCards}
         onSetChange={setSelectedSets}
         onRarityChange={setSelectedRarities}
         onElementChange={setSelectedElements}
+        onRoleChange={setSelectedRoles}
         onHideMissingCardsChange={setHideMissingCards}
       />
 

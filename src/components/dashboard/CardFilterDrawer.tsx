@@ -7,6 +7,9 @@ import {
   cardIconMap,
   CardRarity,
   cardRarityOptions,
+  CardRole,
+  cardRoleIconMap,
+  cardRoleOptions,
   cardSetIconMap,
   CardSetName,
   cardSetOptions,
@@ -31,10 +34,12 @@ interface CardFilterDrawerProps {
   selectedSets: CardSetName[];
   selectedRarities: CardRarity[];
   selectedElements?: CardElement[];
+  selectedRoles: CardRole[];
   hideMissingCards?: boolean;
   onSetChange: (sets: CardSetName[]) => void;
   onRarityChange: (rarities: CardRarity[]) => void;
   onElementChange?: (elements: CardElement[]) => void;
+  onRoleChange?: (roles: CardRole[]) => void;
   onHideMissingCardsChange?: (hide: boolean) => void;
 }
 
@@ -44,10 +49,12 @@ export function CardFilterDrawer({
   selectedSets,
   selectedRarities,
   selectedElements,
+  selectedRoles,
   hideMissingCards,
   onSetChange,
   onRarityChange,
   onElementChange,
+  onRoleChange,
   onHideMissingCardsChange,
 }: CardFilterDrawerProps) {
   const modernSets: CardSetName[] = ['rebellion', 'conclave', 'foundation'];
@@ -95,6 +102,7 @@ export function CardFilterDrawer({
     onSetChange([]);
     onRarityChange([]);
     onElementChange?.([]);
+    onRoleChange?.([]);
   };
 
   const isSetSelected = (set: CardSetName) => {
@@ -107,6 +115,18 @@ export function CardFilterDrawer({
 
   const isElementSelected = (element: CardElement) => {
     return selectedElements?.includes(element) ?? false;
+  };
+
+  const handleRoleToggle = (role: CardRole) => {
+    if (selectedRoles.includes(role)) {
+      onRoleChange?.(selectedRoles.filter(r => r !== role));
+    } else {
+      onRoleChange?.([...selectedRoles, role]);
+    }
+  };
+
+  const isRoleSelected = (role: CardRole) => {
+    return selectedRoles.includes(role);
   };
 
   return (
@@ -184,6 +204,14 @@ export function CardFilterDrawer({
             iconMap={cardElementIconMap}
             handleToggle={handleElementToggle}
             isSelected={isElementSelected}
+          />
+
+          <FilterOption
+            title="Role"
+            options={cardRoleOptions}
+            iconMap={cardRoleIconMap}
+            handleToggle={handleRoleToggle}
+            isSelected={isRoleSelected}
           />
 
           <Box mt={3}>

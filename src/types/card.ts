@@ -1,4 +1,5 @@
 import {
+  archon_filter_icon_url,
   card_rarity_common_icon_url,
   card_rarity_epic_icon_url,
   card_rarity_legendary_icon_url,
@@ -25,6 +26,7 @@ import {
   fire_element_icon_url,
   life_element_icon_url,
   neutral_element_icon_url,
+  unit_filter_icon_url,
   water_element_icon_url,
 } from '@/lib/staticsIconUrls';
 
@@ -200,4 +202,15 @@ export const cardFoilSuffixMap: Record<CardFoil, string> = {
   'gold arcane': '_gold',
   black: '_blk',
   'black arcane': '_blk',
+};
+
+export const cardRoleOptions = ['archon', 'unit'];
+export const typeMap = {
+  Summoner: 'archon',
+  Monster: 'unit',
+};
+export type CardRole = (typeof cardRoleOptions)[number];
+export const cardRoleIconMap: Record<CardRole, string> = {
+  archon: archon_filter_icon_url,
+  unit: unit_filter_icon_url,
 };

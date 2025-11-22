@@ -58,7 +58,8 @@ export const CardSection = ({ username, cardDetails, playerCards }: CardSectionP
             detail.editions.split(',').map(e => Number(e))[0], // Use first edition for filter check
             detail.rarity,
             detail.color.toLowerCase(),
-            detail.secondary_color ? detail.secondary_color.toLowerCase() : null
+            detail.secondary_color ? detail.secondary_color.toLowerCase() : null,
+            detail.type
           );
 
           // Skip this card entirely if it doesn't pass filters
@@ -83,7 +84,8 @@ export const CardSection = ({ username, cardDetails, playerCards }: CardSectionP
                   pc.edition,
                   detail.rarity,
                   detail.color.toLowerCase(),
-                  detail.secondary_color ? detail.secondary_color.toLowerCase() : null
+                  detail.secondary_color ? detail.secondary_color.toLowerCase() : null,
+                  detail.type
                 )
               )
                 return acc;
