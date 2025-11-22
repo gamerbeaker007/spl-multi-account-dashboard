@@ -1,5 +1,4 @@
-import { findLeagueLogoUrl } from '@/lib/staticsIconUrls';
-import { leagueNames } from '@/lib/utils';
+import { findLeagueLogoUrl, leagueNames } from '@/lib/utils';
 import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
 

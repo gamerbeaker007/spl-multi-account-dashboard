@@ -6,7 +6,7 @@ import { cacheLife } from 'next/cache';
 
 export async function getCardDetails() {
   'use cache';
-  cacheLife('cardDetails');
+  cacheLife('days');
 
   try {
     logger.info('Fetching card details via server action');

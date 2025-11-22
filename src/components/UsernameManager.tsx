@@ -1,6 +1,5 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
 import { useUsernameContext } from '@/contexts/UsernameContext';
 import { Add as AddIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import { Alert, Box, Button, Card, CardContent, Chip, TextField, Typography } from '@mui/material';
@@ -8,9 +7,15 @@ import React, { useRef, useState } from 'react';
 import { MdLockPerson } from 'react-icons/md';
 
 export default function UsernameManager() {
-  const { usernames, addUsername, removeUsername, setUsernames, isInitialized, triggerRefreshAll } =
-    useUsernameContext();
-  const { loginUser } = useAuth();
+  const {
+    usernames,
+    addUsername,
+    removeUsername,
+    setUsernames,
+    isInitialized,
+    triggerRefreshAll,
+    loginUser,
+  } = useUsernameContext();
   const [newUsername, setNewUsername] = useState('');
   const [error, setError] = useState('');
   const [authenticatingAll, setAuthenticatingAll] = useState(false);

@@ -1,14 +1,15 @@
 'use server';
 import { fetchMarketPrices } from '@/lib/api/peakmonstersApi';
-import logger from '@/lib/log/logger.server';
 import { fetchCardCollection, fetchListingPrices } from '@/lib/api/splApi';
 import { getPlayerCollectionValue } from '@/lib/collectionUtils';
-import { EDITION_MAPPING } from '@/lib/staticsIconUrls';
+import logger from '@/lib/log/logger.server';
+import { editionMap } from '@/types/card';
 import { EditionValues, PlayerCardCollectionData } from '@/types/playerCardCollection';
+import { SplPlayerCard } from '@/types/spl/card';
 import { cacheLife } from 'next/cache';
 
 function createEmptyEditionValues(): EditionValues {
-  const editions = Object.keys(EDITION_MAPPING).map(Number) as (keyof typeof EDITION_MAPPING)[];
+  const editions = Object.keys(editionMap).map(Number) as (keyof typeof editionMap)[];
   return editions.reduce((acc, edition) => {
     acc[edition] = {
       marketValue: 0,
@@ -22,9 +23,11 @@ function createEmptyEditionValues(): EditionValues {
 }
 
 // Server action for fetching player collection
-export async function fetchPlayersCardCollection(user: string): Promise<PlayerCardCollectionData> {
+export async function fetchPlayersCardCollectionValue(
+  user: string
+): Promise<PlayerCardCollectionData> {
   'use cache';
-  cacheLife('playerCardCollection');
+  cacheLife('hours');
 
   try {
     logger.info(`Fetching collection information for users: ${user}`);
@@ -49,7 +52,6 @@ export async function fetchPlayersCardCollection(user: string): Promise<PlayerCa
 
     try {
       const playerCollection = await fetchCardCollection(user);
-
       const totalCollectionPower = playerCollection.cards.reduce(
         (total, card) => total + card.collection_power || 0,
         0
@@ -84,4 +86,13 @@ export async function fetchPlayersCardCollection(user: string): Promise<PlayerCa
     logger.error(`Multi-account collection action error: ${errorMessage}`);
     throw new Error('Failed to fetch player data');
   }
+}
+
+export async function fetchPlayerCardCollection(user: string): Promise<SplPlayerCard[]> {
+  'use cache';
+  cacheLife('hours');
+
+  const playerCollection = await fetchCardCollection(user);
+
+  return playerCollection.cards;
 }

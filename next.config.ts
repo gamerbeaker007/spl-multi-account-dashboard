@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+    formats: ['image/avif', 'image/webp'],
+    qualities: [75, 85, 95],
+    minimumCacheTTL: 31536000, // 1 year - card images don't change
   },
   cacheComponents: true,
   cacheLife: {
@@ -23,11 +26,6 @@ const nextConfig: NextConfig = {
       stale: 30, // 30 seconds
       revalidate: 60, // 1 minute
       expire: 900, // 15 minutes - daily quests change often
-    },
-    playerCardCollection: {
-      stale: 300, // 5 minutes
-      revalidate: 600, // 10 minutes
-      expire: 3600, // 1 hour - collection doesn't change often
     },
     cardDetails: {
       stale: 3600, // 1 hour

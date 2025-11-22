@@ -1,6 +1,5 @@
 import {
   energy_icon_url,
-  findLeagueLogoUrl,
   foundation_entries_icon_url,
   glint_icon_url,
   gold_icon_url,
@@ -18,6 +17,7 @@ import {
   unbind_ca_l_icon_url,
   unbind_ca_r_icon_url,
 } from '@/lib/staticsIconUrls';
+import { findLeagueLogoUrl } from '@/lib/utils';
 import {
   ClaimDailyResult,
   ClaimLeagueRewardData,

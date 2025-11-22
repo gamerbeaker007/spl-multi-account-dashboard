@@ -1,4 +1,10 @@
-import { WEB_URL } from './staticsIconUrls';
+import { SplFormat } from '@/types/spl/format';
+import {
+  foundation_league_icon_url,
+  modern_league_icon_url,
+  WEB_URL,
+  wild_league_icon_url,
+} from './staticsIconUrls';
 
 export const largeNumberFormat = (balance: string | number) => {
   const numValue = typeof balance === 'string' ? parseFloat(balance) : balance;
@@ -58,3 +64,19 @@ export const findPackIconUrl = (edition: number): string => {
   const editionName = packIconMap[edition];
   return `${WEB_URL}website/icons/${editionName}`;
 };
+
+export function findLeagueLogoUrl(
+  format: SplFormat | null,
+  league: number | undefined
+): string | null {
+  if (!format || !league) return null;
+
+  const formatIconUrlMap = {
+    foundation: foundation_league_icon_url,
+    wild: wild_league_icon_url,
+    modern: modern_league_icon_url,
+  };
+
+  const leagueIconUrl = formatIconUrlMap[format] || wild_league_icon_url;
+  return leagueIconUrl.replace('0.png', `${league}.png`);
+}

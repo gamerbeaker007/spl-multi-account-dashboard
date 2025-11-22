@@ -1,5 +1,3 @@
-import { EDITION_MAPPING } from '@/lib/staticsIconUrls';
-
 export interface PlayerCardCollectionData {
   username: string;
   date: string;
@@ -17,11 +15,8 @@ export interface PlayerCollectionValue {
   totalSellableCards: number;
   editionValues: EditionValues;
 }
-// Edition type based on the mapping keys
-export type Edition = keyof typeof EDITION_MAPPING;
-
 export type EditionValues = {
-  [Key in Edition]: {
+  [Key: number]: {
     marketValue: number;
     listValue: number;
     bcx: number;

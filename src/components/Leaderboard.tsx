@@ -1,8 +1,8 @@
 import { Avatar, Box, Card, Typography } from '@mui/material';
 
-import { findLeagueLogoUrl } from '@/lib/staticsIconUrls';
 import { SplLeagueInfo, SplPlayerDetails } from '@/types/spl/details';
 import { SplFormat } from '@/types/spl/format';
+import { findLeagueLogoUrl } from '@/lib/utils';
 
 interface Props {
   playerDetails?: SplPlayerDetails;

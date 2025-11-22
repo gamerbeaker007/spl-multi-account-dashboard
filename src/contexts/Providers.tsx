@@ -1,8 +1,7 @@
 'use client';
 
-import { AuthProvider } from '@/contexts/AuthContext';
 import { UsernameProvider } from '@/contexts/UsernameContext';
-import CssBaseline from '@mui/material/CssBaseline';
+import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const theme = createTheme({
@@ -30,12 +29,9 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <AuthProvider>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <UsernameProvider>{children}</UsernameProvider>
-        {/*{children}*/}
-      </ThemeProvider>
-    </AuthProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <UsernameProvider>{children}</UsernameProvider>
+    </ThemeProvider>
   );
 }

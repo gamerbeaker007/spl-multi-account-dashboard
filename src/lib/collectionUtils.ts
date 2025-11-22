@@ -6,8 +6,9 @@ import {
   SplPlayerCard,
 } from '@/types/spl/card';
 import { SplCardListingPriceEntry } from '@/types/spl/market';
-import { EDITION_MAPPING } from './staticsIconUrls';
-import { Edition, EditionValues, PlayerCollectionValue } from '@/types/playerCardCollection';
+import { EditionValues, PlayerCollectionValue } from '@/types/playerCardCollection';
+import { CardFoil, cardFoilSuffixMap, editionMap } from '@/types/card';
+import { WEB_URL } from './staticsIconUrls';
 
 /**
  * Group cards by BCX to reduce processing time for identifying values
@@ -71,13 +72,13 @@ export async function getPlayerCollectionValue(
     // Group all BCX and unbound cards
     const groupedCards = groupBcx(sellableCards);
 
-    Object.keys(EDITION_MAPPING).forEach(editionKey => {
+    Object.keys(editionMap).forEach(editionKey => {
       const edition = parseInt(editionKey);
 
       const editionCards = groupedCards.filter(card => card.edition === edition);
       const collectionValue = getCollectionValue(editionCards, listPrices, marketPrices);
 
-      result.editionValues[edition as Edition] = {
+      result.editionValues[edition] = {
         listValue: collectionValue.listValue,
         marketValue: collectionValue.marketValue,
         bcx: playerCards
@@ -223,4 +224,19 @@ function findCard(
       price.gold === collectionCard.gold &&
       price.edition === collectionCard.edition
   );
+}
+
+export function getCardImg(
+  cardName: string,
+  editionId: number,
+  foil: CardFoil,
+  level?: number
+): string {
+  const suffix = cardFoilSuffixMap[foil];
+  const baseCardUrl = `${WEB_URL}cards_by_level`;
+  const safeCardName = encodeURIComponent(cardName.trim());
+  const lvl = level && level > 1 ? level : 1;
+  const editionName =
+    editionMap[editionId as keyof typeof editionMap]?.urlName || 'unknown_edition';
+  return `${baseCardUrl}/${editionName}/${safeCardName}_lv${lvl}${suffix}.png`;
 }

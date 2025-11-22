@@ -25,6 +25,7 @@ export interface SplCardDetail {
   id: number;
   name: string;
   color: string;
+  secondary_color: string | null;
   type: string;
   sub_type: string;
   rarity: number;

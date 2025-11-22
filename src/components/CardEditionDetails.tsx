@@ -1,10 +1,10 @@
 'use client';
 
-import { EDITION_ICON_MAPPING, EDITION_MAPPING } from '@/lib/staticsIconUrls';
 import { largeNumberFormat } from '@/lib/utils';
 import { Box, Stack, Typography } from '@mui/material';
 import Image from 'next/image';
-import { Edition, EditionValues } from '@/types/playerCardCollection';
+import { EditionValues } from '@/types/playerCardCollection';
+import { editionMap } from '@/types/card';
 
 interface Props {
   editionValues: EditionValues;
@@ -22,9 +22,8 @@ export default function CardEditionDetails({ editionValues }: Props) {
           .filter(([, values]) => values.numberOfCards > 0) // Only show editions with cards
           .sort(([a], [b]) => Number(a) - Number(b)) // Sort by edition number
           .map(([editionId, values]) => {
-            const editionNum = Number(editionId) as Edition;
-            const editionName = EDITION_MAPPING[editionNum] || `Edition ${editionId}`;
-            const iconUrl = EDITION_ICON_MAPPING[editionNum];
+            const editionName = editionMap[Number(editionId)].displayName || `Edition ${editionId}`;
+            const iconUrl = editionMap[Number(editionId)].setIcon;
 
             return (
               <Box key={editionId} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

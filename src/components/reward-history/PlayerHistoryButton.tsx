@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useUsernameContext } from '@/contexts/UsernameContext';
 import { useCardDetails } from '@/hooks/useCardDetails';
 import HistoryIcon from '@mui/icons-material/History';
 import { Box, Button } from '@mui/material';
@@ -14,7 +14,7 @@ interface PlayerHistoryButtonProps {
 
 export function PlayerHistoryButton({ username, seasonId }: PlayerHistoryButtonProps) {
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
-  const { getUserToken } = useAuth();
+  const { getUserToken } = useUsernameContext();
   const { cardDetails } = useCardDetails();
 
   const userToken = getUserToken(username);

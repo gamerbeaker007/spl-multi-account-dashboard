@@ -1,5 +1,3 @@
-import { SplFormat } from '@/types/spl/format';
-
 export const WEB_URL = `https://d36mxiodymuqjm.cloudfront.net/`;
 
 export const dec_icon_url = `${WEB_URL}website/icon_dec.png`;
@@ -54,62 +52,15 @@ export const edition_foundation_icon_url = `${WEB_URL}website/icons/icon-edition
 export const edition_conclave_extra_icon_url = `${WEB_URL}website/icons/icon-edition-extra.svg`;
 export const edition_conclave_rewards_icon_url = edition_reward_icon_url;
 
-export const EDITION_MAPPING = {
-  0: 'Alpha',
-  1: 'Beta',
-  2: 'Promo',
-  3: 'Reward',
-  4: 'Untamed',
-  5: 'Dice',
-  6: 'Gladius',
-  7: 'Chaos',
-  8: 'Rift',
-  9: 'Soulkeep', //mostly ignored in this app
-  10: 'Soulbound', // Soulbound chaos legion
-  11: 'Soulkeep ?', // also Soulkeep not sure what this is
-  12: 'Rebellion',
-  13: 'Soulbound Rebellion',
-  14: 'Conclave Arcana',
-  15: 'Foundation',
-  16: 'Soulbound Foundation',
-  17: 'Conclave Extra',
-  18: 'Conclave Rewards',
-} as const;
+export const fire_element_icon_url = `${WEB_URL}website/collection/icon_element_fire.svg`;
+export const water_element_icon_url = `${WEB_URL}website/collection/icon_element_water.svg`;
+export const death_element_icon_url = `${WEB_URL}website/collection/icon_element_death.svg`;
+export const life_element_icon_url = `${WEB_URL}website/collection/icon_element_life.svg`;
+export const earth_element_icon_url = `${WEB_URL}website/collection/icon_element_earth.svg`;
+export const dragon_element_icon_url = `${WEB_URL}website/collection/icon_element_dragon.svg`;
+export const neutral_element_icon_url = `${WEB_URL}website/collection/icon_element_neutral.svg`;
 
-export const EDITION_ICON_MAPPING = {
-  0: edition_alpha_icon_url,
-  1: edition_beta_icon_url,
-  2: edition_promo_icon_url,
-  3: edition_reward_icon_url,
-  4: edition_untamed_icon_url,
-  5: edition_dice_icon_url,
-  6: edition_gladius_icon_url,
-  7: edition_chaos_icon_url,
-  8: edition_rift_icon_url,
-  9: edition_soulkeep_icon_url,
-  10: edition_soulbound_icon_url,
-  11: edition_soulkeep_icon_url,
-  12: edition_rebellion_icon_url,
-  13: edition_soulbound_rebellion_icon_url,
-  14: edition_conclave_arcana_icon_url,
-  15: edition_foundation_icon_url,
-  16: edition_foundation_icon_url,
-  17: edition_conclave_extra_icon_url,
-  18: edition_conclave_rewards_icon_url,
-} as const;
-
-export function findLeagueLogoUrl(
-  format: SplFormat | null,
-  league: number | undefined
-): string | null {
-  if (!format || !league) return null;
-
-  const formatIconUrlMap = {
-    foundation: foundation_league_icon_url,
-    wild: wild_league_icon_url,
-    modern: modern_league_icon_url,
-  };
-
-  const leagueIconUrl = formatIconUrlMap[format] || wild_league_icon_url;
-  return leagueIconUrl.replace('0.png', `${league}.png`);
-}
+export const card_rarity_common_icon_url = `${WEB_URL}website/create_team/icon_rarity_common_new.svg`;
+export const card_rarity_rare_icon_url = `${WEB_URL}website/create_team/icon_rarity_rare_new.svg`;
+export const card_rarity_epic_icon_url = `${WEB_URL}website/create_team/icon_rarity_epic_new.svg`;
+export const card_rarity_legendary_icon_url = `${WEB_URL}website/create_team/icon_rarity_legendary_new.svg`;
