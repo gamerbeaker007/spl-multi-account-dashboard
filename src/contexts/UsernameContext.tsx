@@ -85,7 +85,7 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) 
           console.warn('UsernameContext initialization timeout - forcing initialized state');
           if (mounted) setIsInitialized(true);
         }
-      }, 1000); // Reduced to 1 second for faster feedback
+      }, 2000); // Increased to 2 seconds to allow for slow network/validation
 
       try {
         // Load usernames
@@ -99,24 +99,36 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) 
 
         // Load authenticated users
         const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
+
         if (storedAuth) {
           const parsedAuth = JSON.parse(storedAuth);
-          if (Array.isArray(parsedAuth)) {
-            // Validate tokens on F5/reload
-            const validatedUsers = await validateStoredTokens(parsedAuth);
-            if (mounted) {
-              setAuthenticatedUsers(validatedUsers);
-              // Update localStorage with validated users (removes invalid tokens)
-              try {
-                localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(validatedUsers));
-              } catch (error) {
-                console.error('Error saving validated auth users to localStorage:', error);
-              }
-            }
+          if (Array.isArray(parsedAuth) && mounted) {
+            // Load auth users immediately without validation to prevent hanging
+            setAuthenticatedUsers(parsedAuth);
+
+            // Validate tokens asynchronously in the background (don't await)
+            validateStoredTokens(parsedAuth)
+              .then(validatedUsers => {
+                if (mounted) {
+                  setAuthenticatedUsers(validatedUsers);
+                  // Update localStorage with validated users (removes invalid tokens)
+                  try {
+                    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(validatedUsers));
+                  } catch (error) {
+                    console.error(
+                      '[UsernameContext] Error saving validated auth users to localStorage:',
+                      error
+                    );
+                  }
+                }
+              })
+              .catch(error => {
+                console.error('[UsernameContext] Error validating tokens:', error);
+              });
           }
         }
       } catch (error) {
-        console.error('Error loading data from localStorage:', error);
+        console.error('[UsernameContext] Error loading data from localStorage:', error);
       } finally {
         clearTimeout(timeoutId);
         if (mounted) {
@@ -126,8 +138,10 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) 
       }
     };
 
-    initializeContext();
-
+    // Only run on client side
+    if (typeof window !== 'undefined') {
+      initializeContext();
+    }
     return () => {
       mounted = false;
     };

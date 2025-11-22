@@ -1,7 +1,7 @@
 'use client';
 
 import { UsernameProvider } from '@/contexts/UsernameContext';
-import CssBaseline from '@mui/material/CssBaseline';
+import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const theme = createTheme({

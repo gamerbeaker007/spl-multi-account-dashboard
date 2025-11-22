@@ -190,20 +190,38 @@ export function CardFilterDrawer({
             <Typography variant="subtitle1" gutterBottom>
               Display Options
             </Typography>
-            <ToggleButtonGroup
-              value={hideMissingCards ? 'hide' : 'show'}
-              exclusive
-              onChange={(_, value) => {
-                if (value !== null) {
-                  onHideMissingCardsChange?.(value === 'hide');
-                }
-              }}
-              fullWidth
-              size="small"
-            >
-              <ToggleButton value="show">Show Missing</ToggleButton>
-              <ToggleButton value="hide">Hide Missing</ToggleButton>
-            </ToggleButtonGroup>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                onClick={() => onHideMissingCardsChange?.(!hideMissingCards)}
+                sx={{
+                  width: 44,
+                  height: 24,
+                  borderRadius: 12,
+                  bgcolor: hideMissingCards ? 'primary.main' : 'action.disabled',
+                  position: 'relative',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                  '&:hover': {
+                    opacity: 0.8,
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: '50%',
+                    bgcolor: 'background.paper',
+                    position: 'absolute',
+                    top: 2,
+                    left: hideMissingCards ? 22 : 2,
+                    transition: 'left 0.2s',
+                    boxShadow: 1,
+                  }}
+                />
+              </Box>
+              <Typography variant="body2">Hide Missing Cards</Typography>
+            </Box>
           </Box>
         </Box>
       </Drawer>
