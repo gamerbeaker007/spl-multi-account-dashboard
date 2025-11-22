@@ -53,6 +53,17 @@ export const CardSection = ({ username, cardDetails, playerCards }: CardSectionP
           const detail = cardDetails.find(d => d.id === collection.card_detail_id);
           if (!detail) return null;
 
+          // Apply all filters to determine if this card should be shown at all
+          const passesFilter = filterCard(
+            detail.editions.split(',').map(e => Number(e))[0], // Use first edition for filter check
+            detail.rarity,
+            detail.color.toLowerCase(),
+            detail.secondary_color ? detail.secondary_color.toLowerCase() : null
+          );
+
+          // Skip this card entirely if it doesn't pass filters
+          if (!passesFilter) return null;
+
           const editions = detail.editions.split(',').map(e => Number(e));
           //remove edtions that are not in the filter
           const validEditions = editions.filter(editionId => {
