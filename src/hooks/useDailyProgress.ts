@@ -1,7 +1,7 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { useUsernameContext } from '@/contexts/UsernameContext';
 import { fetchPlayersDailyProgress } from '@/lib/actions/fetchPlayersDailyProgress';
-import { useCallback, useEffect, useState } from 'react';
 import { DailyProgressData } from '@/types/playerDailyProgress';
+import { useCallback, useEffect, useState } from 'react';
 
 interface UseDailyProgressReturn {
   data: DailyProgressData | null;
@@ -14,7 +14,7 @@ export const useDailyProgress = (username: string): UseDailyProgressReturn => {
   const [data, setData] = useState<DailyProgressData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { getUserToken, isUserAuthenticated, authenticatedUsers } = useAuth();
+  const { getUserToken, isUserAuthenticated, authenticatedUsers } = useUsernameContext();
 
   const fetchDailyProgress = useCallback(async () => {
     setLoading(true);

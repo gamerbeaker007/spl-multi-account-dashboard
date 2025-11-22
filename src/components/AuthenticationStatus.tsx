@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useUsernameContext } from '@/contexts/UsernameContext';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import LoginIcon from '@mui/icons-material/Login';
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export const AuthenticationStatus = ({ username }: Props) => {
-  const { isUserAuthenticated, loginUser, logoutUser, loading } = useAuth();
+  const { isUserAuthenticated, loginUser, logoutUser, loading } = useUsernameContext();
   const [loggingIn, setLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [justLoggedIn, setJustLoggedIn] = useState(false);
