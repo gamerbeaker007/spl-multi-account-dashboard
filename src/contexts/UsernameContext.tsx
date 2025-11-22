@@ -85,7 +85,7 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) 
           console.warn('UsernameContext initialization timeout - forcing initialized state');
           if (mounted) setIsInitialized(true);
         }
-      }, 2000);
+      }, 1000); // Reduced to 1 second for faster feedback
 
       try {
         // Load usernames
@@ -148,7 +148,7 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) 
           validatedUsers.push(user);
         } else {
           // Token is invalid/expired - log it out
-          console.log(`Token expired for user: ${user.username}`);
+          console.warn(`Token expired for user: ${user.username}`);
         }
       } catch (error) {
         console.error(`Error validating token for ${user.username}:`, error);

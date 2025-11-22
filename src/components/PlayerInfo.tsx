@@ -1,7 +1,10 @@
-import { avatar_icon_url, findLeagueLogoUrl } from '@/lib/staticsIconUrls';
+import { avatar_icon_url } from '@/lib/staticsIconUrls';
+import { findLeagueLogoUrl } from '@/lib/utils';
 import { SplLeagueInfo as SplFormatInfo, SplPlayerDetails } from '@/types/spl/details';
 import { SplFormat } from '@/types/spl/format';
-import { Avatar, Box, Typography } from '@mui/material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import { Avatar, Box, IconButton, Typography } from '@mui/material';
+import Link from 'next/link';
 import { AuthenticationStatus } from './AuthenticationStatus';
 
 interface Props {
@@ -62,6 +65,7 @@ export default function PlayerInfo({ username, playerDetails }: Props) {
   return (
     <Box
       sx={{
+        position: 'relative',
         display: 'flex ',
         flexDirection: 'column',
         flexWrap: 'wrap',
@@ -131,6 +135,26 @@ export default function PlayerInfo({ username, playerDetails }: Props) {
           )}
         </Typography>
       </Box>
+
+      {/* Dashboard Link Icon */}
+      <IconButton
+        component={Link}
+        href={`/dashboard?user=${encodeURIComponent(username)}`}
+        size="small"
+        sx={{
+          position: 'absolute',
+          bottom: 8,
+          right: 8,
+          backgroundColor: 'primary.main',
+          color: 'primary.contrastText',
+          '&:hover': {
+            backgroundColor: 'primary.dark',
+          },
+        }}
+        aria-label="View dashboard"
+      >
+        <DashboardIcon fontSize="small" />
+      </IconButton>
     </Box>
   );
 }
