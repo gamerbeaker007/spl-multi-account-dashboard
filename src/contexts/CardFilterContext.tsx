@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  CardElement,
-  CardRarity,
-  cardRarityOptions,
-  CardRole,
-  CardSetName,
-  editionMap,
-  typeMap,
-} from '@/types/card';
+import { CardElement, CardRarity, CardRole, CardSetName, editionMap, typeMap } from '@/types/card';
 import { createContext, ReactNode, useCallback, useContext, useState } from 'react';
 
 interface CardFilterContextType {
@@ -32,10 +24,10 @@ interface CardFilterContextType {
   // Filtering
   filterCard: (
     edition: number,
-    rarity: number,
-    color: string,
-    secondaryColor: string | null,
-    type: string
+    rarity: CardRarity,
+    color: CardElement,
+    secondaryColor: CardElement | undefined,
+    type: CardRole
   ) => boolean;
 }
 
@@ -70,21 +62,20 @@ export const CardFilterProvider: React.FC<CardFilterProviderProps> = ({ children
   const filterCard = useCallback(
     (
       edition: number,
-      rarity: number,
-      color: string,
-      secondaryColor: string | null,
-      type: string
+      rarity: CardRarity,
+      color: CardElement,
+      secondaryColor: CardElement | undefined,
+      type: CardRole
     ): boolean => {
-      const rarityValue = cardRarityOptions[(rarity ?? 1) - 1];
       // Filter by card set (edition)
       if (selectedSets.length > 0) {
         // Check if any of the card's editions match the selected sets
-        if (!edition || !selectedSets.includes(editionMap[edition].setName ?? '')) return false;
+        if (!selectedSets.includes(editionMap[edition].setName ?? '')) return false;
       }
 
       // Filter by rarity
       if (selectedRarities.length > 0) {
-        if (!rarityValue || !selectedRarities.includes(rarityValue)) return false;
+        if (!rarity || !selectedRarities.includes(rarity)) return false;
       }
 
       // Filter by element

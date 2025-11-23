@@ -1,5 +1,5 @@
 'use client';
-import { SplPlayerCard } from '@/types/spl/card';
+import { CardDetail } from '@/types/card';
 import { Box, Skeleton, Tooltip, Typography } from '@mui/material';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -9,7 +9,7 @@ interface Props {
   name: string;
   imageUrl: string;
   subTitle: string;
-  allCards?: SplPlayerCard[];
+  allCards?: CardDetail[];
   opacity?: number;
   priority?: boolean;
 }
@@ -25,7 +25,7 @@ export const Card = ({
   name,
   imageUrl,
   subTitle,
-  allCards: players,
+  allCards,
   opacity = 1,
   priority = false,
 }: Props) => {
@@ -39,21 +39,21 @@ export const Card = ({
   };
 
   // Group cards by player and level
-  const groupCards = (cards: SplPlayerCard[]) => {
+  const groupCards = (cards: CardDetail[]) => {
     const grouped = new Map<
       string,
       { player: string; level: number; bcx: number; count: number }
     >();
 
     cards.forEach(card => {
-      const key = `${card.player}-${card.level}`;
+      const key = `${card.owner}-${card.level}`;
       if (grouped.has(key)) {
         const existing = grouped.get(key)!;
         existing.count += 1;
         existing.bcx = card.bcx;
       } else {
         grouped.set(key, {
-          player: card.player,
+          player: card.owner,
           level: card.level,
           bcx: card.bcx,
           count: 1,
@@ -65,13 +65,13 @@ export const Card = ({
     return Array.from(grouped.values()).sort((a, b) => b.level - a.level);
   };
 
-  const owned = players ? groupCards(players.filter(p => p.player === player)) : [];
-  const delegatedCards = players ? groupCards(players.filter(p => p.player !== player)) : [];
+  const owned = allCards ? groupCards(allCards.filter(p => p.owner === player)) : [];
+  const delegatedCards = allCards ? groupCards(allCards.filter(p => p.owner !== player)) : [];
 
   return (
     <Tooltip
       title={
-        players && players.length > 0 ? (
+        allCards && allCards.length > 0 ? (
           <Box>
             {owned.length > 0 && (
               <>

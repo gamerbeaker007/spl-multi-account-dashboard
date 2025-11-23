@@ -1,4 +1,4 @@
-import { fetchPlayersCardCollectionValue } from '@/lib/actions/fetchPlayersCardCollection';
+import { getPlayersCardCollectionValue } from '@/lib/actions/getPlayersCardCollection';
 import { PlayerCardCollectionData } from '@/types/playerCardCollection';
 import { useCallback, useState } from 'react';
 
@@ -20,7 +20,7 @@ export function usePlayerCardCollection(username: string): UsePlayerCardCollecti
     setError(null);
 
     try {
-      const result = await fetchPlayersCardCollectionValue(username);
+      const result = await getPlayersCardCollectionValue(username);
       setData(result);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch player status';

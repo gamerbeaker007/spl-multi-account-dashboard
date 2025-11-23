@@ -1,47 +1,17 @@
 'use client';
 import { useCardFilter } from '@/contexts/CardFilterContext';
-import { SplCardDetail } from '@/types/spl/cardDetails';
-
 import { getCardImg } from '@/lib/collectionUtils';
-import { CardFoil, cardFoilOptions, editionMap } from '@/types/card';
-import { SplPlayerCard } from '@/types/spl/card';
+import { CardFoil, DetailedPlayerCardCollection } from '@/types/card';
 import { Box, Typography } from '@mui/material';
 import { Card } from './Card';
 
 interface CardSectionProps {
   username: string;
-  cardDetails: SplCardDetail[];
-  playerCards: SplPlayerCard[];
+  playerCards: DetailedPlayerCardCollection;
 }
 
-export const CardSection = ({ username, cardDetails, playerCards }: CardSectionProps) => {
-  const { filterCard, selectedSets, hideMissingCards } = useCardFilter();
-
-  const combinedCollection = cardDetails.reduce(
-    (acc, card) => {
-      const key = card.id;
-      const playerCard = playerCards.filter(pc => {
-        return pc.card_detail_id === card.id;
-      });
-
-      if (!acc[key]) {
-        acc[key] = {
-          card_detail_id: card.id,
-          cardDetail: card,
-          cards: playerCard,
-        };
-      }
-      return acc;
-    },
-    {} as Record<
-      string,
-      {
-        card_detail_id: number;
-        cardDetail: SplCardDetail;
-        cards?: SplPlayerCard[];
-      }
-    >
-  );
+export const CardSection = ({ username, playerCards }: CardSectionProps) => {
+  const { filterCard, hideMissingCards } = useCardFilter();
 
   return (
     <Box display="flex" flex={1} flexDirection="column">
@@ -49,60 +19,41 @@ export const CardSection = ({ username, cardDetails, playerCards }: CardSectionP
         CARDS:
       </Typography>
       <Box display={'flex'} flexDirection={'row'} flexWrap={'wrap'}>
-        {Object.values(combinedCollection).map((collection, collectionIndex) => {
-          const detail = cardDetails.find(d => d.id === collection.card_detail_id);
-          if (!detail) return null;
+        {Object.values(playerCards).map((cardItem, cardIndex) => {
+          // When hide missing and the there are no owned cards, skip rendering
+          if (hideMissingCards && cardItem.allCards?.length === 0) return null;
 
           // Apply all filters to determine if this card should be shown at all
           const passesFilter = filterCard(
-            detail.editions.split(',').map(e => Number(e))[0], // Use first edition for filter check
-            detail.rarity,
-            detail.color.toLowerCase(),
-            detail.secondary_color ? detail.secondary_color.toLowerCase() : null,
-            detail.type
+            cardItem.edition,
+            cardItem.rarity,
+            cardItem.color,
+            cardItem.secondaryColor,
+            cardItem.role
           );
-
           // Skip this card entirely if it doesn't pass filters
           if (!passesFilter) return null;
 
-          const editions = detail.editions.split(',').map(e => Number(e));
-          //remove edtions that are not in the filter
-          const validEditions = editions.filter(editionId => {
-            if (selectedSets.length === 0) return true;
-            if (editionId === 9 || editionId === 11) return false;
-            const editionInfo = editionMap[editionId];
-            if (!editionInfo || !editionInfo.setName) return false;
-            return selectedSets.includes(editionInfo.setName);
-          });
+          // Skip spoulkeep editions or foundation soulbound cards
+          if (cardItem.edition === 9 || cardItem.edition === 11 || cardItem.edition === 16)
+            return null;
 
           // Group player cards by edition and foil
-          const cardsByEditionAndFoil = collection.cards?.reduce(
-            (acc, pc) => {
-              // Apply filters
-              if (
-                !filterCard(
-                  pc.edition,
-                  detail.rarity,
-                  detail.color.toLowerCase(),
-                  detail.secondary_color ? detail.secondary_color.toLowerCase() : null,
-                  detail.type
-                )
-              )
-                return acc;
-
-              const key = `${pc.edition}-${pc.foil}`;
+          const cardsByEditionAndFoil = cardItem.allCards?.reduce(
+            (acc, card) => {
+              const key = `${card.edition}-${card.foil}`;
               if (!acc[key]) {
                 acc[key] = {
-                  edition: pc.edition,
-                  foil: cardFoilOptions[pc.foil],
+                  edition: card.edition,
+                  foil: card.foil,
                   count: 0,
                   highest_level: 0,
                   cards: [],
                 };
               }
               acc[key].count += 1;
-              acc[key].highest_level = Math.max(acc[key].highest_level, pc.level || 0);
-              acc[key].cards.push(pc);
+              acc[key].highest_level = Math.max(acc[key].highest_level, card.level || 0);
+              acc[key].cards.push(card);
               return acc;
             },
             {} as Record<
@@ -112,7 +63,7 @@ export const CardSection = ({ username, cardDetails, playerCards }: CardSectionP
                 foil: CardFoil;
                 count: number;
                 highest_level: number;
-                cards: SplPlayerCard[];
+                cards: typeof cardItem.allCards;
               }
             >
           );
@@ -122,7 +73,7 @@ export const CardSection = ({ username, cardDetails, playerCards }: CardSectionP
             // Render owned cards grouped by edition and foil
             return Object.values(cardsByEditionAndFoil).map((cardGroup, groupIndex) => {
               const imageUrl = getCardImg(
-                detail.name,
+                cardItem.name,
                 cardGroup.edition,
                 cardGroup.foil,
                 cardGroup.highest_level
@@ -130,13 +81,13 @@ export const CardSection = ({ username, cardDetails, playerCards }: CardSectionP
 
               return (
                 <Card
-                  key={`${collection.card_detail_id}-${cardGroup.edition}-${cardGroup.foil}`}
+                  key={`${cardItem.cardDetailId}-${cardGroup.edition}-${cardGroup.foil}`}
                   player={username}
-                  name={detail.name}
+                  name={cardItem.name}
                   imageUrl={imageUrl}
                   subTitle={`(Lvl ${cardGroup.highest_level}) - x${cardGroup.count}`}
                   allCards={cardGroup.cards}
-                  priority={collectionIndex < 8 && groupIndex === 0}
+                  priority={cardIndex < 8 && groupIndex === 0}
                 />
               );
             });
@@ -145,19 +96,17 @@ export const CardSection = ({ username, cardDetails, playerCards }: CardSectionP
             if (hideMissingCards) return null;
 
             // Render missing cards for each edition
-            return validEditions.map(editionId => {
-              return (
-                <Card
-                  key={`${collection.card_detail_id}-missing-${editionId}`}
-                  player={username}
-                  name={detail.name}
-                  imageUrl={getCardImg(detail.name, editionId, 'regular', 0)}
-                  subTitle="(Missing)"
-                  opacity={0.3}
-                  priority={collectionIndex < 8}
-                />
-              );
-            });
+            return (
+              <Card
+                key={`${cardItem.cardDetailId}-missing-${cardItem.edition}`}
+                player={username}
+                name={cardItem.name}
+                imageUrl={getCardImg(cardItem.name, cardItem.edition, 'regular', 0)}
+                subTitle="(Missing)"
+                opacity={0.3}
+                priority={cardIndex < 8}
+              />
+            );
           }
         })}
       </Box>

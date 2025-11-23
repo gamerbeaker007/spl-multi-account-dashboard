@@ -1,13 +1,13 @@
 import logger from '@/lib/log/logger.server';
+import { CardFoil, cardFoilSuffixMap, editionMap } from '@/types/card';
 import { PeakmonstersMarketPriceEntry } from '@/types/peakmonsters/market';
+import { EditionValues, PlayerCollectionValue } from '@/types/playerCardCollection';
 import {
   EnrichedCollectionCard as EnrichedPlayerCardCollection,
   SplCardCollection,
   SplPlayerCard,
 } from '@/types/spl/card';
 import { SplCardListingPriceEntry } from '@/types/spl/market';
-import { EditionValues, PlayerCollectionValue } from '@/types/playerCardCollection';
-import { CardFoil, cardFoilSuffixMap, editionMap } from '@/types/card';
 import { WEB_URL } from './staticsIconUrls';
 
 /**

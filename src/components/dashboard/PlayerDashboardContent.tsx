@@ -2,13 +2,13 @@
 
 import { CardSection } from '@/components/dashboard/CardSection';
 import { useCardDetails } from '@/hooks/useCardDetails';
-import { fetchPlayerCardCollection } from '@/lib/actions/fetchPlayersCardCollection';
-import { SplPlayerCard } from '@/types/spl/card';
+import { getDetailedPlayerCardCollection } from '@/lib/actions/getPlayersCardCollection';
+import { DetailedPlayerCardCollection } from '@/types/card';
 import { Alert, Box, CircularProgress } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 export function PlayerDashboardContent({ username }: { username: string }) {
-  const [cardCollection, setCardCollection] = useState<SplPlayerCard[] | null>(null);
+  const [cardCollection, setCardCollection] = useState<DetailedPlayerCardCollection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const {
@@ -22,7 +22,7 @@ export function PlayerDashboardContent({ username }: { username: string }) {
       setLoading(true);
       setError(null);
       try {
-        const collection = await fetchPlayerCardCollection(username);
+        const collection = await getDetailedPlayerCardCollection(username);
         setCardCollection(collection);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load card collection');
@@ -61,5 +61,5 @@ export function PlayerDashboardContent({ username }: { username: string }) {
     );
   }
 
-  return <CardSection username={username} cardDetails={cardDetails} playerCards={cardCollection} />;
+  return <CardSection username={username} playerCards={cardCollection} />;
 }

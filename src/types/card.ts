@@ -214,3 +214,37 @@ export const cardRoleIconMap: Record<CardRole, string> = {
   archon: archon_filter_icon_url,
   unit: unit_filter_icon_url,
 };
+
+
+export interface CardDetail {
+  id: number;
+  uid: string;
+  name: string;
+  owner: string;
+  xp: number;
+  edition: number;
+  cardSet: CardSetName;
+  collectionPower: number;
+  bcx: number;
+  setId: string;
+  bcxUnbound: number;
+  foil: CardFoil;
+  mint: string | null;
+  level: number;
+  imgUrl: string;
+}
+
+export interface DetailedPlayerCardCollectionItem {
+  cardDetailId: number;
+  name: string;
+  edition: number;
+  tier?: number;
+  rarity: CardRarity;
+  color: CardElement;
+  secondaryColor: CardElement | undefined;
+  role: CardRole;
+  highestLevelCard?: CardDetail;
+  allCards?: CardDetail[];
+}
+
+export type DetailedPlayerCardCollection = Record<string, DetailedPlayerCardCollectionItem>;
