@@ -87,7 +87,7 @@ export const CardSection = ({ username, playerCards }: CardSectionProps) => {
                   imageUrl={imageUrl}
                   subTitle={`(Lvl ${cardGroup.highest_level}) - x${cardGroup.count}`}
                   allCards={cardGroup.cards}
-                  priority={cardIndex < 8 && groupIndex === 0}
+                  priority={cardIndex < 6 && groupIndex === 0}
                 />
               );
             });
@@ -104,7 +104,7 @@ export const CardSection = ({ username, playerCards }: CardSectionProps) => {
                 imageUrl={getCardImg(cardItem.name, cardItem.edition, 'regular', 0)}
                 subTitle="(Missing)"
                 opacity={0.3}
-                priority={cardIndex < 8}
+                priority={cardIndex < 6}
               />
             );
           }

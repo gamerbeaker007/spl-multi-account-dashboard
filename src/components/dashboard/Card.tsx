@@ -129,7 +129,7 @@ export const Card = ({
             height={CARD_HEIGHT}
             priority={priority}
             loading={priority ? undefined : 'lazy'}
-            quality={85}
+            sizes="120px"
             onLoad={() => setImageLoaded(true)}
             onError={handleImageError}
             style={{

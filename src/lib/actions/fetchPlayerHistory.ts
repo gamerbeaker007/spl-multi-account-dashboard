@@ -19,7 +19,7 @@ export async function fetchPlayerHistory(
   seasonId?: number
 ) {
   'use cache';
-  cacheLife('default');
+  cacheLife('minutes');
 
   try {
     if (!player || !encryptedToken) {

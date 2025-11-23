@@ -11,7 +11,7 @@ export async function fetchPlayersDailyProgress(
   encryptedToken: string
 ): Promise<DailyProgressData> {
   'use cache';
-  cacheLife('status');
+  cacheLife('minutes');
 
   try {
     logger.info(`Fetching daily progress for users: ${user}`);

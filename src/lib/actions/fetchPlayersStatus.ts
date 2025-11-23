@@ -14,7 +14,7 @@ import { cacheLife } from 'next/cache';
 
 export async function fetchPlayersStatus(user: string): Promise<PlayerStatusData> {
   'use cache';
-  cacheLife('status');
+  cacheLife('minutes');
 
   try {
     logger.info(`Fetching complete status for users: ${user}`);
