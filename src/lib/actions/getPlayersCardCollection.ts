@@ -148,9 +148,9 @@ export async function getDetailedPlayerCardCollection(
     });
 
     const role = card.type === 'Summoner' ? 'archon' : ('unit' as CardRole);
-    const color: CardElement = card.color as CardElement;
+    const color: CardElement = card.color.toLowerCase() as CardElement;
     const secondaryColor: CardElement | undefined = card.secondary_color
-      ? (card.secondary_color as CardElement)
+      ? (card.secondary_color.toLowerCase() as CardElement)
       : undefined;
     const rarity = cardRarityOptions[card.rarity - 1] as CardRarity;
 

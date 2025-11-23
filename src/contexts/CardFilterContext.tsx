@@ -1,6 +1,6 @@
 'use client';
 
-import { CardElement, CardRarity, CardRole, CardSetName, editionMap, typeMap } from '@/types/card';
+import { CardElement, CardRarity, CardRole, CardSetName, editionMap } from '@/types/card';
 import { createContext, ReactNode, useCallback, useContext, useState } from 'react';
 
 interface CardFilterContextType {
@@ -27,7 +27,7 @@ interface CardFilterContextType {
     rarity: CardRarity,
     color: CardElement,
     secondaryColor: CardElement | undefined,
-    type: CardRole
+    role: CardRole
   ) => boolean;
 }
 
@@ -65,7 +65,7 @@ export const CardFilterProvider: React.FC<CardFilterProviderProps> = ({ children
       rarity: CardRarity,
       color: CardElement,
       secondaryColor: CardElement | undefined,
-      type: CardRole
+      role: CardRole
     ): boolean => {
       // Filter by card set (edition)
       if (selectedSets.length > 0) {
@@ -89,7 +89,7 @@ export const CardFilterProvider: React.FC<CardFilterProviderProps> = ({ children
 
       // Filter by role
       if (selectedRoles.length > 0) {
-        if (!type || !selectedRoles.includes(typeMap[type as keyof typeof typeMap])) return false;
+        if (!role || !selectedRoles.includes(role)) return false;
       }
 
       return true;

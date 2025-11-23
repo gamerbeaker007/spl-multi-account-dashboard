@@ -205,10 +205,6 @@ export const cardFoilSuffixMap: Record<CardFoil, string> = {
 };
 
 export const cardRoleOptions = ['archon', 'unit'];
-export const typeMap = {
-  Summoner: 'archon',
-  Monster: 'unit',
-};
 export type CardRole = (typeof cardRoleOptions)[number];
 export const cardRoleIconMap: Record<CardRole, string> = {
   archon: archon_filter_icon_url,
