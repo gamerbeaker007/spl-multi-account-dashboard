@@ -1,4 +1,4 @@
-import { fetchPlayersStatus } from '@/lib/actions/fetchPlayersStatus';
+import { getPlayersStatus } from '@/lib/actions/getPlayersStatus';
 import { PlayerStatusData } from '@/types/playerStatus';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -30,7 +30,7 @@ export function usePlayerStatus(username: string): UsePlayerStatusReturn {
     setError(null);
 
     try {
-      const result = await fetchPlayersStatus(username);
+      const result = await getPlayersStatus(username);
       if (isMountedRef.current) {
         setData(result);
       }

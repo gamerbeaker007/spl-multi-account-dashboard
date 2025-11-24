@@ -1,18 +1,20 @@
 'use server';
 
 // Server action for fetching player status
-import logger from '@/lib/log/logger.server';
 import {
+  fetchBrawlDetails,
   fetchCurrentRewards,
   fetchFrontierDraws,
   fetchPlayerBalances,
   fetchPlayerDetails,
   fetchRankedDraws,
 } from '@/lib/api/splApi';
+import logger from '@/lib/log/logger.server';
 import { PlayerStatusData } from '@/types/playerStatus';
+import { SplBrawlDetails } from '@/types/spl/brawl';
 import { cacheLife } from 'next/cache';
 
-export async function fetchPlayersStatus(user: string): Promise<PlayerStatusData> {
+export async function getPlayersStatus(user: string): Promise<PlayerStatusData> {
   'use cache';
   cacheLife('minutes');
 
@@ -34,6 +36,13 @@ export async function fetchPlayersStatus(user: string): Promise<PlayerStatusData
           fetchCurrentRewards(user),
         ]);
 
+      let brawlDetails = null;
+      if (playerDetails.guild?.id) {
+        const guildId = playerDetails.guild.id;
+        const tournamentId = playerDetails.guild.tournament_id;
+        brawlDetails = await fetchBrawlDetails(guildId, tournamentId);
+      }
+
       logger.info(`Successfully fetched complete status data for all user ${user}`);
       return {
         ...playerData,
@@ -44,6 +53,7 @@ export async function fetchPlayersStatus(user: string): Promise<PlayerStatusData
         },
         playerDetails,
         seasonRewards: currenSeasonRewards,
+        brawlDetails: brawlDetails as SplBrawlDetails,
       };
     } catch (userError) {
       logger.error(

@@ -4,10 +4,16 @@ import { CardSection } from '@/components/dashboard/CardSection';
 import { useCardDetails } from '@/hooks/useCardDetails';
 import { getDetailedPlayerCardCollection } from '@/lib/actions/getPlayersCardCollection';
 import { DetailedPlayerCardCollection } from '@/types/card';
-import { Alert, Box, CircularProgress } from '@mui/material';
+import { Alert, Box, CircularProgress, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-export function PlayerDashboardContent({ username }: { username: string }) {
+export function PlayerDashboardContent({
+  username,
+  showHeader = false,
+}: {
+  username: string;
+  showHeader?: boolean;
+}) {
   const [cardCollection, setCardCollection] = useState<DetailedPlayerCardCollection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,5 +67,14 @@ export function PlayerDashboardContent({ username }: { username: string }) {
     );
   }
 
-  return <CardSection username={username} playerCards={cardCollection} />;
+  return (
+    <Box>
+      {showHeader && (
+        <Typography variant="h5" fontWeight="bold" sx={{ mb: 3, textAlign: 'center' }}>
+          {username}
+        </Typography>
+      )}
+      <CardSection username={username} playerCards={cardCollection} />
+    </Box>
+  );
 }

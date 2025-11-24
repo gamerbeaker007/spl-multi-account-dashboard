@@ -6,7 +6,7 @@ import { CardFilterProvider, useCardFilter } from '@/contexts/CardFilterContext'
 import { useUsernameContext } from '@/contexts/UsernameContext';
 import { Box, Skeleton, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo } from 'react';
 
 function PlayerDashboardSkeleton() {
   return (
@@ -31,27 +31,31 @@ function PlayerDashboardSkeleton() {
 function DashboardContent() {
   const { usernames, isInitialized } = useUsernameContext();
   const searchParams = useSearchParams();
-  const userParam = searchParams.get('user');
+  const userParam = searchParams.get('users');
   const router = useRouter();
 
-  // Track if user manually changed selection
-  const [manualSelection, setManualSelection] = useState<string | null>(null);
+  // Derive selected users from URL parameter (comma-separated)
+  const selectedUsers = useMemo(() => {
+    if (!isInitialized || usernames.length === 0) return [];
 
-  // Derive selected user from manual selection, URL param, or first user
-  const selectedUser = useMemo(() => {
-    if (manualSelection) {
-      return manualSelection;
+    if (userParam) {
+      // Parse comma-separated users from URL
+      const users = userParam
+        .split(',')
+        .map(u => u.trim())
+        .filter(u => usernames.includes(u));
+      return users.length > 0 ? users : [usernames[0]];
     }
-    if (userParam && usernames.includes(userParam)) {
-      return userParam;
-    }
-    return usernames.length > 0 ? usernames[0] : null;
-  }, [manualSelection, userParam, usernames]);
 
-  const handleUserChange = (_event: React.MouseEvent<HTMLElement>, newUser: string | null) => {
-    if (newUser !== null) {
-      setManualSelection(newUser);
-    }
+    // Default to first user if no URL param
+    return [usernames[0]];
+  }, [userParam, usernames, isInitialized]);
+
+  const handleUserChange = (_event: React.MouseEvent<HTMLElement>, newUsers: string[]) => {
+    if (newUsers.length === 0) return;
+    // Update URL with comma-separated users
+    const newParam = newUsers.join(',');
+    router.push(`/dashboard?users=${encodeURIComponent(newParam)}`);
   };
 
   // Redirect to home if no users
@@ -93,44 +97,50 @@ function DashboardContent() {
         }}
       >
         <ToggleButtonGroup
-          value={selectedUser}
-          exclusive
+          value={selectedUsers}
           onChange={handleUserChange}
           aria-label="user selection"
           sx={{
             flexWrap: 'wrap',
-            gap: 1,
+            gap: 0,
           }}
         >
-          {usernames.map(username => (
-            <ToggleButton
-              key={username}
-              value={username}
-              aria-label={username}
-              sx={{
-                px: 3,
-                py: 1,
-                textTransform: 'none',
-                fontWeight: selectedUser === username ? 'bold' : 'normal',
-              }}
-            >
-              {username}
-            </ToggleButton>
-          ))}
+          {usernames.map(username => {
+            const isSelected = selectedUsers.includes(username);
+            return (
+              <ToggleButton
+                key={username}
+                value={username}
+                aria-label={username}
+                sx={{
+                  px: 5,
+                  textTransform: 'none',
+                  fontWeight: isSelected ? 'bold' : 'normal',
+                  backgroundColor: isSelected ? 'primary.main' : 'transparent',
+                  color: isSelected ? 'primary.contrastText' : 'text.primary',
+                  border: isSelected ? '2px solid' : '1px solid',
+                  borderColor: isSelected ? 'primary.main' : 'divider',
+                  borderRadius: 10,
+                }}
+              >
+                {username}
+              </ToggleButton>
+            );
+          })}
         </ToggleButtonGroup>
       </Box>
 
       {/* Content Area with Filter Context - Drawer loaded immediately */}
-      {selectedUser && (
+      {selectedUsers.length > 0 && (
         <CardFilterProvider key="filter-provider">
-          <DrawerAndContent selectedUser={selectedUser} />
+          <DrawerAndContent selectedUsers={selectedUsers} />
         </CardFilterProvider>
       )}
     </Box>
   );
 }
 
-function DrawerAndContent({ selectedUser }: { selectedUser: string }) {
+function DrawerAndContent({ selectedUsers }: { selectedUsers: string[] }) {
   const {
     drawerOpen,
     selectedSets,
@@ -145,6 +155,8 @@ function DrawerAndContent({ selectedUser }: { selectedUser: string }) {
     setHideMissingCards,
     toggleDrawer,
   } = useCardFilter();
+
+  const multipleSelected = selectedUsers.length > 1;
 
   return (
     <Box display="flex" flex={1}>
@@ -164,11 +176,25 @@ function DrawerAndContent({ selectedUser }: { selectedUser: string }) {
         onHideMissingCardsChange={setHideMissingCards}
       />
 
-      {/* Main Content */}
-      <Box flex={1} ml={drawerOpen ? 2 : 0}>
-        <Suspense fallback={<PlayerDashboardSkeleton />}>
-          <PlayerDashboardContent username={selectedUser} />
-        </Suspense>
+      {/* Main Content - Multiple players side by side */}
+      <Box flex={1} ml={drawerOpen ? 2 : 0} display="flex" gap={2} flexWrap="wrap">
+        {selectedUsers.map(username => (
+          <Box
+            key={username}
+            flex={multipleSelected ? '1 1 25%' : '1'}
+            minWidth={multipleSelected ? '400px' : 'auto'}
+            sx={{
+              border: multipleSelected ? 2 : 0,
+              borderColor: 'divider',
+              borderRadius: 2,
+              p: multipleSelected ? 2 : 0,
+            }}
+          >
+            <Suspense fallback={<PlayerDashboardSkeleton />}>
+              <PlayerDashboardContent username={username} showHeader={multipleSelected} />
+            </Suspense>
+          </Box>
+        ))}
       </Box>
     </Box>
   );

@@ -1,6 +1,6 @@
+import { getPlayerHistory } from '@/lib/actions/getPlayerHistory';
 import { ParsedPlayerRewardHistory } from '@/types/parsedHistory';
 import { useCallback, useState } from 'react';
-import { fetchPlayerHistory } from '@/lib/actions/fetchPlayerHistory';
 
 interface UsePlayerHistoryState {
   isLoading: boolean;
@@ -25,7 +25,7 @@ export function usePlayerHistory(): UsePlayerHistoryReturn {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const result = await fetchPlayerHistory(player, token, seasonId);
+      const result = await getPlayerHistory(player, token, seasonId);
 
       setState(prev => ({
         ...prev,

@@ -5,7 +5,7 @@ import { fetchCardCollection, fetchListingPrices } from '@/lib/api/splApi';
 import { getPlayerCollectionValue } from '@/lib/collectionUtils';
 
 // Server action for fetching player collection
-export async function fetchPlayersCollection(users: string[]) {
+export async function getPlayersCollection(users: string[]) {
   try {
     if (!users || !Array.isArray(users) || users.length === 0) {
       throw new Error('Users array is required');

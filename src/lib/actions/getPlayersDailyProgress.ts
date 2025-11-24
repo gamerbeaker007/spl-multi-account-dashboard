@@ -1,12 +1,12 @@
 'use server';
 // Server action for fetching daily progress
-import logger from '@/lib/log/logger.server';
-import { decryptToken } from '@/lib/auth/encryption';
 import { fetchDailyProgress } from '@/lib/api/splApi';
+import { decryptToken } from '@/lib/auth/encryption';
+import logger from '@/lib/log/logger.server';
 import { DailyProgressData } from '@/types/playerDailyProgress';
 import { cacheLife } from 'next/cache';
 
-export async function fetchPlayersDailyProgress(
+export async function getPlayersDailyProgress(
   user: string,
   encryptedToken: string
 ): Promise<DailyProgressData> {

@@ -1,5 +1,5 @@
 import { useUsernameContext } from '@/contexts/UsernameContext';
-import { fetchPlayersDailyProgress } from '@/lib/actions/fetchPlayersDailyProgress';
+import { getPlayersDailyProgress } from '@/lib/actions/getPlayersDailyProgress';
 import { DailyProgressData } from '@/types/playerDailyProgress';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -31,7 +31,7 @@ export const useDailyProgress = (username: string): UseDailyProgressReturn => {
         return;
       }
 
-      const responseData = await fetchPlayersDailyProgress(username, encryptedToken);
+      const responseData = await getPlayersDailyProgress(username, encryptedToken);
       setData(responseData);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';

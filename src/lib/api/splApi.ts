@@ -28,6 +28,7 @@ import * as rax from 'retry-axios';
 import { validateSplJwt } from '../auth/jwt/splJwtValidation';
 import logger from '../log/logger.server';
 import { SPLSeasonRewards } from '@/types/spl/seasonRewards';
+import { SplBrawlDetails } from '@/types/spl/brawl';
 
 const splBaseClient = axios.create({
   baseURL: 'https://api.splinterlands.com',
@@ -485,6 +486,40 @@ export async function fetchCardDetails(): Promise<SplCardDetail[]> {
     }
 
     return data as SplCardDetail[];
+  } catch (error) {
+    logger.error(
+      `Failed to fetch card details: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+/**
+ * Fetch brawl details from Splinterlands API
+ */
+//https://api.splinterlands.com/tournaments/find_brawl?guild_id=27ecd1f1e56bb890b0f420d13edeaf7f45991b16&id=GUILD-BC328-BL56-BRAWL2
+export async function fetchBrawlDetails(
+  guildId: string,
+  trounamenetId: string
+): Promise<SplBrawlDetails> {
+  const url = '/tournaments/find_brawl';
+  logger.debug('Fetching brawl details from Splinterlands API');
+
+  const params = {
+    guild_id: guildId,
+    id: trounamenetId,
+  };
+
+  try {
+    const res = await splBaseClient.get(url, { params });
+    const data = res.data;
+
+    // Handle API-level error even if HTTP status is 200
+    if (!data) {
+      throw new Error('Invalid response from Splinterlands API: expected array');
+    }
+
+    return data as SplBrawlDetails;
   } catch (error) {
     logger.error(
       `Failed to fetch card details: ${error instanceof Error ? error.message : 'Unknown error'}`

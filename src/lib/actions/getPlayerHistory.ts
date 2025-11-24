@@ -1,23 +1,19 @@
 'use server';
+import { fetchPlayerHistoryByDateRange, getSeasonDateRange } from '@/lib/api/splApi';
 import { decryptToken } from '@/lib/auth/encryption';
 import logger from '@/lib/log/logger.server';
-import { fetchPlayerHistoryByDateRange, getSeasonDateRange } from '@/lib/api/splApi';
-import { ParsedHistory, PurchaseResult } from '@/types/parsedHistory';
 import {
   aggregatePurchaseRewards,
   aggregateRewards,
   mergeRewardSummaries,
 } from '@/lib/rewardAggregator';
+import { ParsedHistory, PurchaseResult } from '@/types/parsedHistory';
 import { cacheLife } from 'next/cache';
 
 const ALL_HISTORY_TYPES = 'claim_reward,claim_daily,purchase';
 
 // Server action for fetching player history
-export async function fetchPlayerHistory(
-  player: string,
-  encryptedToken: string,
-  seasonId?: number
-) {
+export async function getPlayerHistory(player: string, encryptedToken: string, seasonId?: number) {
   'use cache';
   cacheLife('minutes');
 

@@ -1,5 +1,6 @@
 'use client';
 
+import GuildInfo from '@/components/PlayerBrawl';
 import { useUsernameContext } from '@/contexts/UsernameContext';
 import { usePlayerStatus } from '@/hooks/usePlayerStatus';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
@@ -185,6 +186,15 @@ export const PlayerCard = ({ username }: Props) => {
             playerDetails={player.playerDetails}
           />
         )}
+      </Box>
+
+      <Box width={'100%'}>
+        {/* Daily Progress Section */}
+        <GuildInfo
+          username={player.username}
+          playerDetails={player.playerDetails}
+          brawlDetails={player.brawlDetails}
+        />
       </Box>
 
       <Box width={'100%'}>

@@ -211,7 +211,6 @@ export const cardRoleIconMap: Record<CardRole, string> = {
   unit: unit_filter_icon_url,
 };
 
-
 export interface CardDetail {
   id: number;
   uid: string;

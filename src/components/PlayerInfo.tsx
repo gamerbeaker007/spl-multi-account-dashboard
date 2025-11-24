@@ -139,7 +139,7 @@ export default function PlayerInfo({ username, playerDetails }: Props) {
       {/* Dashboard Link Icon */}
       <IconButton
         component={Link}
-        href={`/dashboard?user=${encodeURIComponent(username)}`}
+        href={`/dashboard?users=${encodeURIComponent(username)}`}
         size="small"
         sx={{
           position: 'absolute',
