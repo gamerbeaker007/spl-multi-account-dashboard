@@ -138,7 +138,7 @@ export const editionMap: Record<number, EidtionTypeDef> = {
   },
   17: {
     displayName: 'Conclave Extra',
-    urlName: 'conclave',
+    urlName: 'extra',
     setName: 'conclave',
     setIcon: edition_conclave_extra_icon_url,
   },
