@@ -98,7 +98,7 @@ export default function GuildInfo({ username, playerDetails, brawlDetails }: Pro
                     Battles: {playerBrawls?.entered_battles} / {playerBrawls?.total_battles}
                   </Typography>
                   <Typography variant={'body1'}>
-                    W/L: {playerBrawls?.wins} / {playerBrawls?.defeated ?? 0}{' '}
+                    W/L: {playerBrawls?.wins} / {playerBrawls?.losses ?? 0}{' '}
                   </Typography>
                   <Typography variant={'body1'}>Auto Wins: {playerBrawls?.auto_wins} </Typography>
                 </Box>
