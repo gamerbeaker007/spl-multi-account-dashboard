@@ -13,8 +13,12 @@ import logger from '@/lib/log/logger.server';
 import { PlayerStatusData } from '@/types/playerStatus';
 import { SplBrawlDetails } from '@/types/spl/brawl';
 import { cacheLife } from 'next/cache';
+import { decryptToken } from '../auth/encryption';
 
-export async function getPlayersStatus(user: string): Promise<PlayerStatusData> {
+export async function getPlayersStatus(
+  user: string,
+  encryptedToken?: string | undefined | null
+): Promise<PlayerStatusData> {
   'use cache';
   cacheLife('minutes');
 
@@ -40,7 +44,11 @@ export async function getPlayersStatus(user: string): Promise<PlayerStatusData> 
       if (playerDetails.guild?.id) {
         const guildId = playerDetails.guild.id;
         const tournamentId = playerDetails.guild.tournament_id;
-        brawlDetails = await fetchBrawlDetails(guildId, tournamentId);
+        const token = encryptedToken
+          ? await decryptToken(encryptedToken, process.env.SECRET_ENCRYPTION_KEY!)
+          : undefined;
+
+        brawlDetails = await fetchBrawlDetails(guildId, tournamentId, playerData.username, token);
       }
 
       logger.info(`Successfully fetched complete status data for all user ${user}`);

@@ -1,3 +1,4 @@
+import { useUsernameContext } from '@/contexts/UsernameContext';
 import { getPlayersStatus } from '@/lib/actions/getPlayersStatus';
 import { PlayerStatusData } from '@/types/playerStatus';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -15,6 +16,7 @@ export function usePlayerStatus(username: string): UsePlayerStatusReturn {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isMountedRef = useRef(true);
+  const { getUserToken } = useUsernameContext();
 
   const fetchPlayerStatus = useCallback(async () => {
     // Don't fetch if username is invalid
@@ -30,7 +32,9 @@ export function usePlayerStatus(username: string): UsePlayerStatusReturn {
     setError(null);
 
     try {
-      const result = await getPlayersStatus(username);
+      const encryptedToken = getUserToken(username);
+
+      const result = await getPlayersStatus(username, encryptedToken);
       if (isMountedRef.current) {
         setData(result);
       }
@@ -45,7 +49,7 @@ export function usePlayerStatus(username: string): UsePlayerStatusReturn {
         setLoading(false);
       }
     }
-  }, [username]);
+  }, [username, getUserToken]);
 
   const refetch = useCallback(async () => {
     await fetchPlayerStatus();

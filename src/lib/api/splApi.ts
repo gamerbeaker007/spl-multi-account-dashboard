@@ -14,6 +14,7 @@ import {
 } from '@/types/parsedHistory';
 import { SplLoginResponse } from '@/types/spl/auth';
 import { SplBalance } from '@/types/spl/balances';
+import { SplBrawlDetails } from '@/types/spl/brawl';
 import { SplCardCollection } from '@/types/spl/card';
 import { SplCardDetail } from '@/types/spl/cardDetails';
 import { SplDailyProgress } from '@/types/spl/dailies';
@@ -23,12 +24,11 @@ import { SplFormat } from '@/types/spl/format';
 import { SplHistory } from '@/types/spl/history';
 import { SplCardListingPriceEntry } from '@/types/spl/market';
 import { SplSeasonInfo } from '@/types/spl/season';
+import { SPLSeasonRewards } from '@/types/spl/seasonRewards';
 import axios from 'axios';
 import * as rax from 'retry-axios';
 import { validateSplJwt } from '../auth/jwt/splJwtValidation';
 import logger from '../log/logger.server';
-import { SPLSeasonRewards } from '@/types/spl/seasonRewards';
-import { SplBrawlDetails } from '@/types/spl/brawl';
 
 const splBaseClient = axios.create({
   baseURL: 'https://api.splinterlands.com',
@@ -500,7 +500,9 @@ export async function fetchCardDetails(): Promise<SplCardDetail[]> {
 //https://api.splinterlands.com/tournaments/find_brawl?guild_id=27ecd1f1e56bb890b0f420d13edeaf7f45991b16&id=GUILD-BC328-BL56-BRAWL2
 export async function fetchBrawlDetails(
   guildId: string,
-  trounamenetId: string
+  trounamenetId: string,
+  player: string,
+  decryptedToken?: string
 ): Promise<SplBrawlDetails> {
   const url = '/tournaments/find_brawl';
   logger.debug('Fetching brawl details from Splinterlands API');
@@ -508,10 +510,13 @@ export async function fetchBrawlDetails(
   const params = {
     guild_id: guildId,
     id: trounamenetId,
+    username: player,
   };
 
+  const headers = decryptedToken ? await getAuthorizationHeader(player, decryptedToken) : undefined;
+
   try {
-    const res = await splBaseClient.get(url, { params });
+    const res = await splBaseClient.get(url, { params, headers });
     const data = res.data;
 
     // Handle API-level error even if HTTP status is 200

@@ -38,6 +38,10 @@ export default function GuildInfo({ username, playerDetails, brawlDetails }: Pro
       ? 'error.main'
       : 'success.main';
 
+  // Check if frays is actually an array (not an error object)
+  const validFrays = Array.isArray(brawlDetails?.frays) ? brawlDetails.frays : undefined;
+  const selectedFray = validFrays?.find(fray => fray.player === username);
+
   return (
     <Box width={'100%'} height={270}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
@@ -67,7 +71,7 @@ export default function GuildInfo({ username, playerDetails, brawlDetails }: Pro
                     fontSize={18}
                     fontWeight={'bold'}
                   >
-                    Brawl:
+                    Brawl
                   </Typography>
                   <Typography variant={'body1'}>Cycle: {brawlCycle} </Typography>
                   <Typography variant={'body1'} color={statusColor[brawlDetails?.status ?? 0]}>
@@ -84,7 +88,35 @@ export default function GuildInfo({ username, playerDetails, brawlDetails }: Pro
                 </Box>
               </CardContent>
             </Card>
-            {brawlDetails?.status !== 0 && playerBrawls && (
+            {brawlDetails?.status === 0 && (
+              <Card variant="outlined" sx={{ mb: 1, flex: 1 }}>
+                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', mb: 1 }}>
+                    <Typography
+                      variant={'body1'}
+                      color={'secondary'}
+                      fontSize={18}
+                      fontWeight={'bold'}
+                    >
+                      {username}
+                    </Typography>
+                    {!validFrays ? (
+                      <Alert severity="info" sx={{ mt: 1 }}>
+                        Login to view fray selection
+                      </Alert>
+                    ) : (
+                      <Typography variant={'body1'}>
+                        {selectedFray
+                          ? `Selected Fray: ${selectedFray.index + 1}`
+                          : 'No Fray Select'}
+                      </Typography>
+                    )}
+                  </Box>
+                </CardContent>
+              </Card>
+            )}
+
+            {brawlDetails?.players && (
               <Card variant="outlined" sx={{ mb: 1, flex: 1 }}>
                 <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', mb: 1 }}>

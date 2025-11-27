@@ -13,6 +13,20 @@ export interface SplBrawlPlayerDetails {
   fray_index: number;
   brawl_level: number;
 }
+
+export interface SplFraysDetails {
+  cycle: number;
+  tournament_id: string;
+  guild_id: string;
+  index: number;
+  player: string;
+  brawl_level: number;
+  guild_join_date: string;
+  auto_wins: number;
+  avatar_id: number;
+  rank: number;
+}
+
 export interface SplBrawlDetails {
   id: string;
   format: string;
@@ -22,4 +36,5 @@ export interface SplBrawlDetails {
   players: SplBrawlPlayerDetails[];
   total_battles: number;
   completed_battles: number;
+  frays: SplFraysDetails[];
 }
