@@ -29,7 +29,7 @@ const statusColor: Record<number, string> = {
 };
 
 export default function GuildInfo({ username, playerDetails, brawlDetails }: Props) {
-  const playerBrawls = brawlDetails?.players.find(p => p.player === username) || null;
+  const playerBrawls = brawlDetails?.players?.find(p => p.player === username) || null;
   const brawlCycleRAW = brawlDetails?.id.split('-').find(id => id.startsWith('BC')) || '';
   const brawlCycle = brawlCycleRAW.split('BC')[1];
 
@@ -73,37 +73,43 @@ export default function GuildInfo({ username, playerDetails, brawlDetails }: Pro
                   <Typography variant={'body1'} color={statusColor[brawlDetails?.status ?? 0]}>
                     Status: {statusMap[brawlDetails?.status ?? 0]}{' '}
                   </Typography>
-                  <Typography variant={'body1'}>
-                    Battles: {brawlDetails?.completed_battles} / {brawlDetails?.total_battles}
-                  </Typography>
-                  {brawlDetails?.start_date && <BrawlTime startDate={brawlDetails.start_date} />}
+                  {brawlDetails?.status !== 0 && (
+                    <Typography variant={'body1'}>
+                      Battles: {brawlDetails?.completed_battles} / {brawlDetails?.total_battles}
+                    </Typography>
+                  )}
+                  {brawlDetails?.start_date && (
+                    <BrawlTime startDate={brawlDetails.start_date} status={brawlDetails.status} />
+                  )}
                 </Box>
               </CardContent>
             </Card>
-            <Card variant="outlined" sx={{ mb: 1, flex: 1 }}>
-              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', mb: 1 }}>
-                  <Typography
-                    variant={'body1'}
-                    color={'secondary'}
-                    fontSize={18}
-                    fontWeight={'bold'}
-                  >
-                    {playerBrawls?.player}
-                  </Typography>
-                  <Typography variant={'body1'}>
-                    Fray: {(playerBrawls?.fray_index ?? 0) + 1}{' '}
-                  </Typography>
-                  <Typography variant={'body1'} color={battleColor}>
-                    Battles: {playerBrawls?.entered_battles} / {playerBrawls?.total_battles}
-                  </Typography>
-                  <Typography variant={'body1'}>
-                    W/L: {playerBrawls?.wins} / {playerBrawls?.losses ?? 0}{' '}
-                  </Typography>
-                  <Typography variant={'body1'}>Auto Wins: {playerBrawls?.auto_wins} </Typography>
-                </Box>
-              </CardContent>
-            </Card>
+            {brawlDetails?.status !== 0 && playerBrawls && (
+              <Card variant="outlined" sx={{ mb: 1, flex: 1 }}>
+                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', mb: 1 }}>
+                    <Typography
+                      variant={'body1'}
+                      color={'secondary'}
+                      fontSize={18}
+                      fontWeight={'bold'}
+                    >
+                      {playerBrawls?.player}
+                    </Typography>
+                    <Typography variant={'body1'}>
+                      Fray: {(playerBrawls?.fray_index ?? 0) + 1}{' '}
+                    </Typography>
+                    <Typography variant={'body1'} color={battleColor}>
+                      Battles: {playerBrawls?.entered_battles} / {playerBrawls?.total_battles}
+                    </Typography>
+                    <Typography variant={'body1'}>
+                      W/L: {playerBrawls?.wins} / {playerBrawls?.losses ?? 0}{' '}
+                    </Typography>
+                    <Typography variant={'body1'}>Auto Wins: {playerBrawls?.auto_wins} </Typography>
+                  </Box>
+                </CardContent>
+              </Card>
+            )}
           </Box>
         </>
       )}

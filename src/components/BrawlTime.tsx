@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 
 interface Props {
   startDate: string;
+  status: number;
 }
 
 const parseRemaining = (ms: number) => {
@@ -20,7 +21,7 @@ const parseRemaining = (ms: number) => {
   return { days, hours, minutes, seconds };
 };
 
-export default function BrawlTime({ startDate }: Props) {
+export default function BrawlTime({ startDate, status }: Props) {
   const [currentTime, setCurrentTime] = useState(() => Date.now());
 
   useEffect(() => {
@@ -31,17 +32,24 @@ export default function BrawlTime({ startDate }: Props) {
     return () => clearInterval(interval);
   }, []);
 
+  const endDateExtraTime = status === 1 ? 2 * 24 * 60 * 60 * 1000 : 0; // add 2 days if status is In Progress
   const endDate = startDate
-    ? new Date(new Date(startDate).getTime() + 2 * 24 * 60 * 60 * 1000) // add two days for the end date
+    ? new Date(new Date(startDate).getTime() + endDateExtraTime) // add two days for the end date
     : null;
   const timeRemaining = endDate ? endDate.getTime() - currentTime : 0;
-
   const { days, hours, minutes, seconds } = parseRemaining(timeRemaining);
+
+  const text = status === 0 ? 'Brawl starts in' : status === 1 ? 'Brawl ends in' : null;
 
   const pad = (num: number) => num.toString().padStart(2, '0');
 
   return (
-    <Box mt={1} sx={{ justifyItems: 'center', textAlign: 'center', fontFamily: 'monospace' }}>
+    <Box mt={1} sx={{ fontFamily: 'monospace' }}>
+      {text && (
+        <Typography variant="body2" fontSize={10}>
+          {text}
+        </Typography>
+      )}
       <Grid container spacing={0.5} justifyContent="left">
         <Grid>
           <Typography variant="body1">{pad(days)}</Typography>

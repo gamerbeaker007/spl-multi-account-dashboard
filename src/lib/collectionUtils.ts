@@ -236,7 +236,8 @@ export function getCardImg(
   const baseCardUrl = `${WEB_URL}cards_by_level`;
   const safeCardName = encodeURIComponent(cardName.trim());
   const lvl = level && level > 1 ? level : 1;
-  const editionName = editionMap[editionId as keyof typeof editionMap]?.urlName || 'unknown_edition';
+  const editionName =
+    editionMap[editionId as keyof typeof editionMap]?.urlName || 'unknown_edition';
 
   return `${baseCardUrl}/${editionName}/${safeCardName}_lv${lvl}${suffix}.png`;
 }
