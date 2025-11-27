@@ -75,73 +75,77 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) 
 
   // Initialize: Load usernames and auth users, validate tokens
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     let mounted = true;
-    let initialized = false;
 
-    const initializeContext = async () => {
-      // Timeout fallback to prevent stuck loading
-      const timeoutId = setTimeout(() => {
-        if (mounted && !initialized) {
-          console.warn('UsernameContext initialization timeout - forcing initialized state');
-          if (mounted) setIsInitialized(true);
-        }
-      }, 2000); // Increased to 2 seconds to allow for slow network/validation
-
+    const initializeContext = () => {
       try {
-        // Load usernames
+        // Load usernames from localStorage
         const storedUsernames = localStorage.getItem(USERNAMES_STORAGE_KEY);
         if (storedUsernames) {
-          const parsedUsernames = JSON.parse(storedUsernames);
-          if (Array.isArray(parsedUsernames) && mounted) {
-            setUsernamesState(parsedUsernames);
+          try {
+            const parsedUsernames = JSON.parse(storedUsernames);
+            if (Array.isArray(parsedUsernames)) {
+              setUsernamesState(parsedUsernames);
+            }
+          } catch (parseError) {
+            console.error('[UsernameContext] Error parsing usernames:', parseError);
+            localStorage.removeItem(USERNAMES_STORAGE_KEY);
           }
         }
 
-        // Load authenticated users
+        // Load authenticated users from localStorage
         const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
-
         if (storedAuth) {
-          const parsedAuth = JSON.parse(storedAuth);
-          if (Array.isArray(parsedAuth) && mounted) {
-            // Load auth users immediately without validation to prevent hanging
-            setAuthenticatedUsers(parsedAuth);
+          try {
+            const parsedAuth = JSON.parse(storedAuth);
+            if (Array.isArray(parsedAuth)) {
+              // Set authenticated users immediately
+              setAuthenticatedUsers(parsedAuth);
 
-            // Validate tokens asynchronously in the background (don't await)
-            validateStoredTokens(parsedAuth)
-              .then(validatedUsers => {
-                if (mounted) {
-                  setAuthenticatedUsers(validatedUsers);
-                  // Update localStorage with validated users (removes invalid tokens)
-                  try {
-                    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(validatedUsers));
-                  } catch (error) {
-                    console.error(
-                      '[UsernameContext] Error saving validated auth users to localStorage:',
-                      error
-                    );
+              // Validate tokens asynchronously in the background
+              validateStoredTokens(parsedAuth)
+                .then(validatedUsers => {
+                  if (mounted) {
+                    setAuthenticatedUsers(validatedUsers);
+                    try {
+                      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(validatedUsers));
+                    } catch (error) {
+                      console.error('[UsernameContext] Error saving validated auth users:', error);
+                    }
                   }
-                }
-              })
-              .catch(error => {
-                console.error('[UsernameContext] Error validating tokens:', error);
-              });
+                })
+                .catch(error => {
+                  console.error('[UsernameContext] Error validating tokens:', error);
+                  if (mounted) {
+                    setAuthenticatedUsers([]);
+                    localStorage.removeItem(AUTH_STORAGE_KEY);
+                  }
+                });
+            }
+          } catch (parseError) {
+            console.error('[UsernameContext] Error parsing auth data:', parseError);
+            localStorage.removeItem(AUTH_STORAGE_KEY);
           }
         }
       } catch (error) {
-        console.error('[UsernameContext] Error loading data from localStorage:', error);
+        console.error('[UsernameContext] Error during initialization:', error);
       } finally {
-        clearTimeout(timeoutId);
+        // Always set initialized to true immediately after loading from localStorage
+        // Don't wait for async validation to complete
         if (mounted) {
-          initialized = true;
           setIsInitialized(true);
         }
       }
     };
 
-    // Only run on client side
-    if (typeof window !== 'undefined') {
-      initializeContext();
-    }
+    // Run initialization immediately
+    initializeContext();
+
     return () => {
       mounted = false;
     };
