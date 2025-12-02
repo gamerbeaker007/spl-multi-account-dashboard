@@ -163,7 +163,7 @@ const DailyProgressCard = ({
                       Max Ranked Entries based on staked SPS: {spsp ? getSpspEntries(spsp) : 0}
                     </Typography>
                     <Typography variant="caption">
-                      Total SPS: {largeNumberFormat(totalSPSP)}
+                      Total SPSP: {largeNumberFormat(totalSPSP)}
                     </Typography>
                     <Typography variant="caption">SPSP: {largeNumberFormat(spsp)}</Typography>
                     <Typography variant="caption">SPSP In: {largeNumberFormat(spspIn)}</Typography>
@@ -180,7 +180,7 @@ const DailyProgressCard = ({
                     Max Entries:{' '}
                     {Math.min(
                       progress.current_rewards.max_ranked_entries,
-                      spsp ? getSpspEntries(spsp) : 0
+                      totalSPSP ? getSpspEntries(totalSPSP) : 0
                     )}
                   </Typography>
                 </Box>
