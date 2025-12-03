@@ -51,6 +51,8 @@ export const edition_conclave_arcana_icon_url = `${WEB_URL}website/icons/icon-ed
 export const edition_foundation_icon_url = `${WEB_URL}website/icons/icon-edition-foundations.svg`;
 export const edition_conclave_extra_icon_url = `${WEB_URL}website/icons/icon-edition-extra.svg`;
 export const edition_conclave_rewards_icon_url = edition_reward_icon_url;
+export const edition_eternal_icon_url = `${WEB_URL}website/icons/icon-edition-eternal.svg`;
+export const edition_land_card_icon_url = `${WEB_URL}website/icons/icon-edition-land.svg`;
 
 export const fire_element_icon_url = `${WEB_URL}website/collection/icon_element_fire.svg`;
 export const water_element_icon_url = `${WEB_URL}website/collection/icon_element_water.svg`;

@@ -13,8 +13,10 @@ import {
   edition_conclave_arcana_icon_url,
   edition_conclave_extra_icon_url,
   edition_conclave_rewards_icon_url,
+  edition_eternal_icon_url,
   edition_foundation_icon_url,
   edition_gladius_icon_url,
+  edition_land_card_icon_url,
   edition_promo_icon_url,
   edition_rebellion_icon_url,
   edition_reward_icon_url,
@@ -74,6 +76,7 @@ export const editionMap: Record<number, EidtionTypeDef> = {
   6: {
     displayName: 'Gladius',
     urlName: 'gladius',
+    setName: 'eternal',
     setIcon: edition_gladius_icon_url,
   },
   7: {
@@ -148,6 +151,12 @@ export const editionMap: Record<number, EidtionTypeDef> = {
     setName: 'conclave',
     setIcon: edition_conclave_rewards_icon_url,
   },
+  19: {
+    displayName: 'Eternal',
+    urlName: 'land',
+    setName: 'eternal',
+    setIcon: edition_land_card_icon_url,
+  },
 } as const;
 
 export const cardRarityOptions = ['common', 'rare', 'epic', 'legendary'];
@@ -167,6 +176,7 @@ export const cardSetOptions = [
   'rebellion',
   'conclave',
   'foundation',
+  'eternal',
 ];
 export type CardSetName = (typeof cardSetOptions)[number];
 
@@ -178,6 +188,7 @@ export const cardSetIconMap: Record<CardSetName, string> = {
   rebellion: edition_rebellion_icon_url,
   conclave: edition_conclave_arcana_icon_url,
   foundation: edition_foundation_icon_url,
+  eternal: edition_eternal_icon_url,
 };
 
 export const cardElementOptions = ['red', 'blue', 'white', 'black', 'green', 'gold', 'gray'];
