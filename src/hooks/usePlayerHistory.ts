@@ -9,7 +9,7 @@ interface UsePlayerHistoryState {
 }
 
 interface UsePlayerHistoryReturn extends UsePlayerHistoryState {
-  fetchHistory: (player: string, token: string, seasonId: number) => Promise<void>;
+  fetchHistory: (player: string, seasonId: number) => Promise<void>;
   clearHistory: () => void;
   clearError: () => void;
 }
@@ -21,11 +21,12 @@ export function usePlayerHistory(): UsePlayerHistoryReturn {
     rewardHistory: null,
   });
 
-  const fetchHistory = useCallback(async (player: string, token: string, seasonId: number) => {
+  const fetchHistory = useCallback(async (player: string, seasonId: number) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const result = await getPlayerHistory(player, token, seasonId);
+      // Token will be retrieved from cookies on the server side
+      const result = await getPlayerHistory(player, seasonId);
 
       setState(prev => ({
         ...prev,

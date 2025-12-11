@@ -14,24 +14,24 @@ export const useDailyProgress = (username: string): UseDailyProgressReturn => {
   const [data, setData] = useState<DailyProgressData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { getUserToken, isUserAuthenticated, authenticatedUsers } = useUsernameContext();
+  const { isUserAuthenticated, authenticatedUsers } = useUsernameContext();
 
   const fetchDailyProgress = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const encryptedToken = getUserToken(username);
       const isAuthenticated = isUserAuthenticated(username);
 
-      if (!encryptedToken || !isAuthenticated) {
+      if (!isAuthenticated) {
         setError('Not authenticated, please log in to show daily progress');
         setData(null); // Clear data when not authenticated
         setLoading(false);
         return;
       }
 
-      const responseData = await getPlayersDailyProgress(username, encryptedToken);
+      // Token will be retrieved from cookies on the server side
+      const responseData = await getPlayersDailyProgress(username);
       setData(responseData);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
@@ -41,14 +41,13 @@ export const useDailyProgress = (username: string): UseDailyProgressReturn => {
     } finally {
       setLoading(false);
     }
-  }, [username, getUserToken, isUserAuthenticated]);
+  }, [username, isUserAuthenticated]);
 
   // Auto-fetch when authentication status changes
   useEffect(() => {
     const isAuthenticated = isUserAuthenticated(username);
-    const encryptedToken = getUserToken(username);
 
-    if (isAuthenticated && encryptedToken) {
+    if (isAuthenticated) {
       // User is logged in - fetch daily progress
       fetchDailyProgress();
     } else {
@@ -62,7 +61,6 @@ export const useDailyProgress = (username: string): UseDailyProgressReturn => {
     authenticatedUsers,
     username,
     fetchDailyProgress,
-    getUserToken,
     isUserAuthenticated,
   ]);
 

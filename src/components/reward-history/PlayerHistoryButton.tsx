@@ -14,14 +14,14 @@ interface PlayerHistoryButtonProps {
 
 export function PlayerHistoryButton({ username, seasonId }: PlayerHistoryButtonProps) {
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
-  const { getUserToken } = useUsernameContext();
+  const { isUserAuthenticated } = useUsernameContext();
   const { cardDetails } = useCardDetails();
 
-  const userToken = getUserToken(username);
+  const isAuthenticated = isUserAuthenticated(username);
 
   return (
     <Box height={15} width="100%" sx={{ mb: 2 }}>
-      {userToken && (
+      {isAuthenticated && (
         <>
           <Button
             variant="outlined"
@@ -38,7 +38,6 @@ export function PlayerHistoryButton({ username, seasonId }: PlayerHistoryButtonP
             open={historyDialogOpen}
             onClose={() => setHistoryDialogOpen(false)}
             player={username}
-            token={userToken}
             seasonId={seasonId ?? 0}
             cardDetails={cardDetails}
           />

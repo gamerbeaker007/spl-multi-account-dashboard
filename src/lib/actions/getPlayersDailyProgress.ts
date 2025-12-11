@@ -1,14 +1,23 @@
 'use server';
 // Server action for fetching daily progress
 import { fetchDailyProgress } from '@/lib/api/splApi';
-import { decryptToken } from '@/lib/auth/encryption';
+import { getUserTokenCookie } from '@/lib/auth/cookies';
 import logger from '@/lib/log/logger.server';
 import { DailyProgressData } from '@/types/playerDailyProgress';
 import { cacheLife } from 'next/cache';
 
 export async function getPlayersDailyProgress(
+  user: string
+): Promise<DailyProgressData> {
+  // Fetch token from cookies BEFORE cache scope
+  const encryptedToken = await getUserTokenCookie(user);
+
+  return await getPlayersDailyProgressCached(user, encryptedToken);
+}
+
+async function getPlayersDailyProgressCached(
   user: string,
-  encryptedToken: string
+  encryptedToken: string | null
 ): Promise<DailyProgressData> {
   'use cache';
   cacheLife('minutes');
@@ -21,18 +30,11 @@ export async function getPlayersDailyProgress(
     };
 
     try {
-      const token = await decryptToken(encryptedToken!, process.env.SECRET_ENCRYPTION_KEY!);
-
-      if (!token) {
-        logger.error('Failed to decrypt token in daily progress action');
-        throw new Error('Invalid encryption token');
-      }
-
       // Fetch all formats in parallel for better performance
       const [wildProgress, modernProgress, foundationProgress] = await Promise.all([
-        fetchDailyProgress(user, token, 'wild'),
-        fetchDailyProgress(user, token, 'modern'),
-        fetchDailyProgress(user, token, 'foundation'),
+        fetchDailyProgress(user, 'wild', encryptedToken),
+        fetchDailyProgress(user, 'modern', encryptedToken),
+        fetchDailyProgress(user, 'foundation', encryptedToken),
       ]);
 
       logger.info(`Successfully fetched daily progress data for user: ${user}`);

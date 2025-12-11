@@ -9,15 +9,24 @@ import {
   fetchPlayerDetails,
   fetchRankedDraws,
 } from '@/lib/api/splApi';
+import { getUserTokenCookie } from '@/lib/auth/cookies';
 import logger from '@/lib/log/logger.server';
 import { PlayerStatusData } from '@/types/playerStatus';
 import { SplBrawlDetails } from '@/types/spl/brawl';
 import { cacheLife } from 'next/cache';
-import { decryptToken } from '../auth/encryption';
 
 export async function getPlayersStatus(
+  user: string
+): Promise<PlayerStatusData> {
+  // Fetch token from cookies BEFORE cache scope
+  const encryptedToken = await getUserTokenCookie(user);
+
+  return await getPlayersStatusCached(user, encryptedToken);
+}
+
+async function getPlayersStatusCached(
   user: string,
-  encryptedToken?: string | undefined | null
+  encryptedToken: string | null
 ): Promise<PlayerStatusData> {
   'use cache';
   cacheLife('minutes');
@@ -44,11 +53,8 @@ export async function getPlayersStatus(
       if (playerDetails.guild?.id) {
         const guildId = playerDetails.guild.id;
         const tournamentId = playerDetails.guild.tournament_id;
-        const token = encryptedToken
-          ? await decryptToken(encryptedToken, process.env.SECRET_ENCRYPTION_KEY!)
-          : undefined;
 
-        brawlDetails = await fetchBrawlDetails(guildId, tournamentId, playerData.username, token);
+        brawlDetails = await fetchBrawlDetails(guildId, tournamentId, playerData.username, encryptedToken);
       }
 
       logger.info(`Successfully fetched complete status data for all user ${user}`);

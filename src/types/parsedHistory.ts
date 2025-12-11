@@ -6,7 +6,7 @@ export interface ParsedHistory {
   type: historyTypes;
   player: string;
   affected_player: string;
-  data: ClaimLeagueRewardData | ClaimSeasonLeagueRewardData | ClaimDailyData | PurchaseData;
+  data: ClaimLeagueRewardData | ClaimSeasonLeagueRewardData | ClaimDailyData | PurchaseData | PackData;
   success: boolean;
   error: string | null;
   block_num: number;
@@ -15,13 +15,14 @@ export interface ParsedHistory {
     | ClaimLeagueRewardResult
     | ClaimSeasonLeagueRewardResult
     | ClaimDailyResult
-    | PurchaseResult;
+    | PurchaseResult
+    | PackResult;
   steem_price: number | null;
   sbd_price: number | null;
   is_owner: boolean;
 }
 
-export type historyTypes = 'claim_daily' | 'claim_reward' | 'purchase';
+export type historyTypes = 'claim_daily' | 'claim_reward' | 'purchase' | 'open_all' | 'open_pack';
 export type purchaseTypes =
   | 'reward_merits'
   | 'reward_draw'
@@ -210,6 +211,43 @@ export interface UnbindScrollData {
   qty: number;
   currency: string;
   data: UnbindScrollType;
+}
+
+export interface PackData {
+  edition: number,
+  qty: number,
+  type: string,
+  use_legendary_potions: boolean
+  use_gold_potions: boolean,
+  use_black_potions: boolean,
+  app: string;
+  n: string;
+}
+
+export interface PackCard {
+      uid:string,
+      player:string,
+      card_detail_id:number,
+      gold:boolean,
+      foil:number,
+      xp:number,
+      edition:number,
+      lock_days:string |number | null,
+      survival_mode_disabled:boolean,
+      created_date:string,
+      created_block:number,
+      created_tx:string,
+      mint:string | number | null,
+      collection_power:number,
+      bcx:number,
+      card_set:string,
+    bcx_unbound: number
+}
+
+
+export interface PackResult {
+  success: boolean;
+  cards: PackCard[];
 }
 
 export interface PurchaseResult {

@@ -1,5 +1,6 @@
 'use server';
 
+import { setUserTokenCookie } from '@/lib/auth/cookies';
 import logger from '@/lib/log/logger.server';
 import { LoginResponse } from '@/types/auth';
 
@@ -34,6 +35,9 @@ export async function loginWithSignature(
       splResponse.jwt_token,
       process.env.SECRET_ENCRYPTION_KEY
     );
+
+    // Store the encrypted token in a cookie
+    await setUserTokenCookie(username.toLowerCase(), encryptedToken);
 
     logger.info(`Login successful for user: ${username}`);
 

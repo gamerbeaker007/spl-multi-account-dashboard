@@ -4,6 +4,8 @@ import {
   ClaimDailyResultReward,
   ClaimLeagueRewardData,
   ClaimLeagueRewardResult,
+  PackData,
+  PackResult,
   ParsedHistory,
   PurchaseData,
   PurchaseResult,
@@ -27,6 +29,7 @@ import { SplSeasonInfo } from '@/types/spl/season';
 import { SPLSeasonRewards } from '@/types/spl/seasonRewards';
 import axios from 'axios';
 import * as rax from 'retry-axios';
+import { decryptToken } from '../auth/encryption';
 import { validateSplJwt } from '../auth/jwt/splJwtValidation';
 import logger from '../log/logger.server';
 
@@ -68,8 +71,8 @@ const VALID_PURCHASE_TYPES: purchaseTypes[] = [
  */
 function parseHistoryToInternalTypes(entry: SplHistory): ParsedHistory | null {
   try {
-    let parsedData: ClaimLeagueRewardData | ClaimDailyData | PurchaseData;
-    let parsedResult: ClaimLeagueRewardResult | ClaimDailyResult | PurchaseResult | null = null;
+    let parsedData: ClaimLeagueRewardData | ClaimDailyData | PurchaseData | PackData;
+    let parsedResult: ClaimLeagueRewardResult | ClaimDailyResult | PurchaseResult | PackResult  | null = null;
 
     // Parse data field based on type
     if (entry.type === 'claim_reward') {
@@ -102,6 +105,9 @@ function parseHistoryToInternalTypes(entry: SplHistory): ParsedHistory | null {
           | RewardMerits
           | RewardDraw;
       }
+    } else if (entry.type === 'open_all' || entry.type === 'open_pack') {
+      parsedResult =  JSON.parse(entry.result as string) as PackResult;
+      parsedData = JSON.parse(entry.data) as PackData;
     } else {
       logger.warn(`Unknown history entry type: ${entry.type}`);
       return null;
@@ -116,7 +122,7 @@ function parseHistoryToInternalTypes(entry: SplHistory): ParsedHistory | null {
       id: entry.id,
       block_id: entry.block_id,
       prev_block_id: entry.prev_block_id,
-      type: entry.type as 'claim_daily' | 'claim_reward' | 'purchase',
+      type: entry.type as 'claim_daily' | 'claim_reward' | 'purchase' | 'open_all' | 'open_pack',
       player: entry.player,
       affected_player: entry.affected_player,
       data: parsedData,
@@ -272,23 +278,50 @@ export async function fetchCardCollection(username: string): Promise<SplCardColl
 }
 
 /**
- * Helper function to get the JWT token from cookies in server-side contexts
+ * Helper function to get the JWT token, decrypt it, and return authorization header
+ * @param player - The player username
+ * @param encryptedToken - Optional encrypted token. If not provided, will fetch from cookies
  */
 export async function getAuthorizationHeader(
   player: string,
-  decryptedToken: string
+  encryptedToken?: string | null
 ): Promise<Record<string, string> | undefined> {
   try {
-    const authToken = await validateSplJwt(decryptedToken);
-    const headers: Record<string, string> = {};
-    if (authToken && authToken.valid && authToken.username === player) {
-      headers.Authorization = `Bearer ${decryptedToken}`;
-      logger.debug(`Using Bearer token for authenticated request`);
+    // Use provided token or fetch from cookies
+    let tokenToUse = encryptedToken;
+
+    if (!tokenToUse) {
+      const { getUserTokenCookie } = await import('@/lib/auth/cookies');
+      tokenToUse = await getUserTokenCookie(player);
     }
 
-    return headers ? headers : undefined;
+    if (!tokenToUse) {
+      logger.debug(`No token found for player: ${player}`);
+      return undefined;
+    }
+
+    // Decrypt the token
+    const decryptedToken = await decryptToken(tokenToUse, process.env.SECRET_ENCRYPTION_KEY!);
+
+    if (!decryptedToken) {
+      logger.warn(`Failed to decrypt token for player: ${player}`);
+      return undefined;
+    }
+
+    // Validate the JWT
+    const authToken = await validateSplJwt(decryptedToken);
+
+    if (authToken && authToken.valid && authToken.username === player) {
+      logger.debug(`Using Bearer token for authenticated request for player: ${player}`);
+      return {
+        Authorization: `Bearer ${decryptedToken}`,
+      };
+    }
+
+    logger.warn(`Token validation failed for player: ${player}`);
+    return undefined;
   } catch (error) {
-    logger.warn(`Failed to read auth token from cookies: ${JSON.stringify(error)}`);
+    logger.warn(`Failed to get auth token for ${player}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     return undefined;
   }
 }
@@ -296,8 +329,8 @@ export async function getAuthorizationHeader(
 //https://api.splinterlands.com/dailies/progress?format=modern
 export async function fetchDailyProgress(
   player: string,
-  decryptedToken: string,
-  format: SplFormat
+  format: SplFormat,
+  encryptedToken?: string | null
 ): Promise<SplDailyProgress> {
   const url = '/dailies/progress';
   logger.debug('Fetching daily progress from Splinterlands API');
@@ -305,7 +338,7 @@ export async function fetchDailyProgress(
   const params = {
     format: format,
   };
-  const headers = await getAuthorizationHeader(player, decryptedToken);
+  const headers = await getAuthorizationHeader(player, encryptedToken);
 
   try {
     const res = await splBaseClient.get(url, { params, headers });
@@ -502,7 +535,7 @@ export async function fetchBrawlDetails(
   guildId: string,
   trounamenetId: string,
   player: string,
-  decryptedToken?: string
+  encryptedToken?: string | null
 ): Promise<SplBrawlDetails> {
   const url = '/tournaments/find_brawl';
   logger.debug('Fetching brawl details from Splinterlands API');
@@ -513,7 +546,7 @@ export async function fetchBrawlDetails(
     username: player,
   };
 
-  const headers = decryptedToken ? await getAuthorizationHeader(player, decryptedToken) : undefined;
+  const headers = await getAuthorizationHeader(player, encryptedToken);
 
   try {
     const res = await splBaseClient.get(url, { params, headers });
@@ -540,9 +573,9 @@ export async function fetchBrawlDetails(
  */
 export async function fetchPlayerHistory(
   player: string,
-  decryptedToken: string,
   types: string, // comma-separated list of types
-  beforeBlock?: number
+  beforeBlock?: number,
+  encryptedToken?: string | null
 ): Promise<ParsedHistory[]> {
   const url = '/players/history';
   logger.debug(`Fetching player history for player: ${player}`);
@@ -560,7 +593,7 @@ export async function fetchPlayerHistory(
 
   try {
     // Get authorization header
-    const authHeaders = await getAuthorizationHeader(player, decryptedToken);
+    const authHeaders = await getAuthorizationHeader(player, encryptedToken);
 
     const response = await splBaseClient.get(url, {
       params,
@@ -600,10 +633,10 @@ const DEFAULT_LIMIT = 500;
  */
 export async function fetchPlayerHistoryByDateRange(
   player: string,
-  decryptedToken: string,
   types: string,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
+  encryptedToken?: string | null
 ): Promise<ParsedHistory[]> {
   logger.debug(
     `Fetching player history for ${player} between ${startDate.toISOString()} and ${endDate.toISOString()}`
@@ -629,7 +662,7 @@ export async function fetchPlayerHistoryByDateRange(
         `History fetch iteration ${iterationCount} for ${player}, before_block: ${lastBlockNum}`
       );
 
-      const batch = await fetchPlayerHistory(player, decryptedToken, types, lastBlockNum);
+      const batch = await fetchPlayerHistory(player, types, lastBlockNum, encryptedToken);
 
       if (batch.length === 0) {
         hasMoreData = false;
@@ -648,7 +681,9 @@ export async function fetchPlayerHistoryByDateRange(
       const oldestEntry = batch[batch.length - 1];
       const oldestDate = new Date(oldestEntry.created_date);
 
+      console.log(`Oldest entry date in batch: ${oldestDate.toISOString()}`);
       if (oldestDate < startDate) {
+        console.log('Reached entries older than start date, stopping fetch.');
         hasMoreData = false;
         break;
       }
@@ -658,6 +693,7 @@ export async function fetchPlayerHistoryByDateRange(
 
       // If we got less than the limit, we've reached the end
       if (batch.length < DEFAULT_LIMIT) {
+        console.log('Fetched less than limit, no more data available.');
         hasMoreData = false;
       }
     } catch (error) {

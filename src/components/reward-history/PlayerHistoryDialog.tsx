@@ -1,6 +1,7 @@
 'use client';
 
 import { usePlayerHistory } from '@/hooks/usePlayerHistory';
+import { SplCardDetail } from '@/types/spl/cardDetails';
 import { EmojiEvents as RewardIcon } from '@mui/icons-material';
 import {
   Alert,
@@ -17,13 +18,11 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import { RewardSection } from './reward-section/RewardSection';
-import { SplCardDetail } from '@/types/spl/cardDetails';
 
 interface PlayerHistoryDialogProps {
   open: boolean;
   onClose: () => void;
   player: string;
-  token: string;
   seasonId: number;
   cardDetails?: SplCardDetail[];
 }
@@ -32,7 +31,6 @@ export function PlayerHistoryDialog({
   open,
   onClose,
   player,
-  token,
   seasonId,
   cardDetails,
 }: PlayerHistoryDialogProps) {
@@ -41,11 +39,11 @@ export function PlayerHistoryDialog({
     usePlayerHistory();
 
   const handleFetchCurrentSeason = async () => {
-    await fetchHistory(player, token, currentSeasonId);
+    await fetchHistory(player, currentSeasonId);
   };
 
   const handleFetchPreviousSeason = async () => {
-    await fetchHistory(player, token, currentSeasonId - 1);
+    await fetchHistory(player, currentSeasonId - 1);
   };
 
   const dailyEntries = rewardHistory

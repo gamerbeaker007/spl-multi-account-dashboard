@@ -1,5 +1,6 @@
 'use client';
 
+import { logoutAllUsersAction, logoutUserAction } from '@/lib/actions/getUserToken';
 import { loginWithSignature } from '@/lib/actions/login';
 import { KeychainKeyTypes, KeychainSDK } from 'keychain-sdk';
 import React, {
@@ -321,6 +322,9 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) 
     try {
       setError(null);
 
+      // Remove token cookie
+      await logoutUserAction(username);
+
       // Use functional update to ensure we have the latest state
       setAuthenticatedUsers(currentUsers => {
         const updatedUsers = currentUsers.filter(u => u.username !== username.toLowerCase());
@@ -344,6 +348,9 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) 
   const logoutAll = async () => {
     try {
       setError(null);
+
+      // Clear all token cookies
+      await logoutAllUsersAction();
 
       // Clear all authenticated users
       setAuthenticatedUsers([]);

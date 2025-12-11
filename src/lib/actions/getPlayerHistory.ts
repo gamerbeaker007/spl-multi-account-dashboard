@@ -1,6 +1,6 @@
 'use server';
 import { fetchPlayerHistoryByDateRange, getSeasonDateRange } from '@/lib/api/splApi';
-import { decryptToken } from '@/lib/auth/encryption';
+import { getUserTokenCookie } from '@/lib/auth/cookies';
 import logger from '@/lib/log/logger.server';
 import {
   aggregatePurchaseRewards,
@@ -13,20 +13,22 @@ import { cacheLife } from 'next/cache';
 const ALL_HISTORY_TYPES = 'claim_reward,claim_daily,purchase';
 
 // Server action for fetching player history
-export async function getPlayerHistory(player: string, encryptedToken: string, seasonId?: number) {
+export async function getPlayerHistory(player: string, seasonId?: number) {
+  if (!player) {
+    throw new Error('Missing required parameter: player');
+  }
+
+  // Fetch token from cookies BEFORE cache scope
+  const encryptedToken = await getUserTokenCookie(player);
+
+  return await getPlayerHistoryCached(player, encryptedToken, seasonId);
+}
+
+async function getPlayerHistoryCached(player: string, encryptedToken: string | null, seasonId?: number) {
   'use cache';
   cacheLife('minutes');
 
   try {
-    if (!player || !encryptedToken) {
-      throw new Error('Missing required parameters: player and token');
-    }
-
-    const decryptedToken = await decryptToken(encryptedToken, process.env.SECRET_ENCRYPTION_KEY!);
-
-    if (!decryptedToken) {
-      throw new Error('Failed to decrypt token');
-    }
 
     if (seasonId) {
       logger.info(`Getting season rewards for player ${player} for season ${seasonId}`);
@@ -38,10 +40,10 @@ export async function getPlayerHistory(player: string, encryptedToken: string, s
 
       const allHistory = await fetchPlayerHistoryByDateRange(
         player,
-        decryptedToken,
         ALL_HISTORY_TYPES,
         seasonRange.startDate,
-        seasonRange.endDate
+        seasonRange.endDate,
+        encryptedToken
       );
 
       const purchaseEntries = allHistory
