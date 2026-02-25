@@ -2,8 +2,10 @@
 
 import { UsernameProvider } from '@/contexts/UsernameContext';
 import { CssBaseline } from '@mui/material';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+// Defined outside the component — static object, never recreated on re-render.
 const theme = createTheme({
   palette: {
     mode: 'dark',
@@ -19,6 +21,7 @@ const theme = createTheme({
     },
   },
   typography: {
+    // --font-geist-sans is injected by next/font in layout.tsx
     fontFamily: ['var(--font-geist-sans)', 'Arial', 'sans-serif'].join(','),
   },
 });
@@ -29,9 +32,13 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <UsernameProvider>{children}</UsernameProvider>
-    </ThemeProvider>
+    // AppRouterCacheProvider extracts Emotion styles during SSR so they are
+    // available in the initial HTML — prevents FOUC and hydration mismatches.
+    <AppRouterCacheProvider options={{ enableCssLayer: true }}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <UsernameProvider>{children}</UsernameProvider>
+      </ThemeProvider>
+    </AppRouterCacheProvider>
   );
 }

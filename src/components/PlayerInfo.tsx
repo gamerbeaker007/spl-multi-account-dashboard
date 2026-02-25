@@ -19,6 +19,8 @@ function getHighestRatingFormat(playerDetails: SplPlayerDetails): {
   playerHighestFormatInfo: SplFormatInfo;
   format: SplFormat;
 } | null {
+  if (!playerDetails?.season_details) return null;
+
   const highest = Object.entries(playerDetails.season_details).reduce<{
     formatInfo: SplFormatInfo;
     format: SplFormat;

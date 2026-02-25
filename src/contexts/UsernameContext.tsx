@@ -8,6 +8,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 
@@ -52,6 +53,11 @@ const UsernameContext = createContext<UsernameContextType | undefined>(undefined
 const USERNAMES_STORAGE_KEY = 'spl-dashboard-usernames';
 const AUTH_STORAGE_KEY = 'spl-dashboard-auth-users';
 
+// Hive/Splinterlands username rules: 3-16 chars, starts with a letter,
+// only letters, numbers, dots, hyphens and underscores — no spaces.
+const isValidSplUsername = (username: string): boolean =>
+  /^[a-zA-Z][a-zA-Z0-9._-]{2,15}$/.test(username);
+
 export const useUsernameContext = () => {
   const context = useContext(UsernameContext);
   if (!context) {
@@ -73,81 +79,87 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [userRefreshTriggers, setUserRefreshTriggers] = useState<Record<string, number>>({});
 
-  // Initialize: Load usernames and auth users, validate tokens
+  // useRef for mounted guard — stable across renders, React Compiler-safe
+  const mountedRef = useRef(true);
+
+  // Initialize: read localStorage synchronously, then kick off async token validation.
+  // setIsInitialized(true) is called directly in the flat effect body so no nested
+  // try/finally or mutable `let` variables can prevent it from running.
   useEffect(() => {
-    // Only run on client side
-    if (typeof window === 'undefined') {
-      return;
-    }
+    mountedRef.current = true;
 
-    let mounted = true;
-
-    const initializeContext = () => {
-      try {
-        // Load usernames from localStorage
-        const storedUsernames = localStorage.getItem(USERNAMES_STORAGE_KEY);
-        if (storedUsernames) {
-          try {
-            const parsedUsernames = JSON.parse(storedUsernames);
-            if (Array.isArray(parsedUsernames)) {
-              setUsernamesState(parsedUsernames);
-            }
-          } catch (parseError) {
-            console.error('[UsernameContext] Error parsing usernames:', parseError);
-            localStorage.removeItem(USERNAMES_STORAGE_KEY);
+    // ── 1. Load usernames ────────────────────────────────────────────────────
+    try {
+      const raw = localStorage.getItem(USERNAMES_STORAGE_KEY);
+      if (raw) {
+        const parsed: unknown = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          const valid = (parsed as unknown[]).filter(
+            (u): u is string => typeof u === 'string' && isValidSplUsername(u)
+          );
+          if (valid.length !== parsed.length) {
+            console.warn(
+              `[UsernameContext] Removed ${parsed.length - valid.length} invalid username(s) from storage`
+            );
+            localStorage.setItem(USERNAMES_STORAGE_KEY, JSON.stringify(valid));
           }
-        }
-
-        // Load authenticated users from localStorage
-        const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
-        if (storedAuth) {
-          try {
-            const parsedAuth = JSON.parse(storedAuth);
-            if (Array.isArray(parsedAuth)) {
-              // Set authenticated users immediately
-              setAuthenticatedUsers(parsedAuth);
-
-              // Validate tokens asynchronously in the background
-              validateStoredTokens(parsedAuth)
-                .then(validatedUsers => {
-                  if (mounted) {
-                    setAuthenticatedUsers(validatedUsers);
-                    try {
-                      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(validatedUsers));
-                    } catch (error) {
-                      console.error('[UsernameContext] Error saving validated auth users:', error);
-                    }
-                  }
-                })
-                .catch(error => {
-                  console.error('[UsernameContext] Error validating tokens:', error);
-                  if (mounted) {
-                    setAuthenticatedUsers([]);
-                    localStorage.removeItem(AUTH_STORAGE_KEY);
-                  }
-                });
-            }
-          } catch (parseError) {
-            console.error('[UsernameContext] Error parsing auth data:', parseError);
-            localStorage.removeItem(AUTH_STORAGE_KEY);
-          }
-        }
-      } catch (error) {
-        console.error('[UsernameContext] Error during initialization:', error);
-      } finally {
-        // Always set initialized to true immediately after loading from localStorage
-        // Don't wait for async validation to complete
-        if (mounted) {
-          setIsInitialized(true);
+          setUsernamesState(valid);
+        } else {
+          console.warn('[UsernameContext] Stored usernames is not an array, discarding');
+          localStorage.removeItem(USERNAMES_STORAGE_KEY);
         }
       }
-    };
+    } catch (err) {
+      console.error('[UsernameContext] failed to load usernames from localStorage:', err);
+      localStorage.removeItem(USERNAMES_STORAGE_KEY);
+    }
 
-    // Run initialization immediately
-    initializeContext();
+    // ── 2. Load auth users ───────────────────────────────────────────────────
+    let rawAuth: AuthenticatedUser[] = [];
+    try {
+      const authRaw = localStorage.getItem(AUTH_STORAGE_KEY);
+      if (authRaw) {
+        const parsed: unknown = JSON.parse(authRaw);
+        if (Array.isArray(parsed)) {
+          rawAuth = parsed as AuthenticatedUser[];
+          setAuthenticatedUsers(rawAuth);
+        } else {
+          console.warn('[UsernameContext] Stored auth is not an array, discarding');
+          localStorage.removeItem(AUTH_STORAGE_KEY);
+        }
+      }
+    } catch (err) {
+      console.error('[UsernameContext] failed to load auth from localStorage:', err);
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+
+    // ── 3. Mark initialized ──────────────────────────────────────────────────
+    // This runs synchronously — nothing above is async — so it is guaranteed
+    // to execute before the effect returns.
+    setIsInitialized(true);
+
+    // ── 4. Background: validate stored tokens ────────────────────────────────
+    if (rawAuth.length > 0) {
+      validateStoredTokens(rawAuth)
+        .then(validatedUsers => {
+          if (!mountedRef.current) return;
+          setAuthenticatedUsers(validatedUsers);
+          try {
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(validatedUsers));
+          } catch (err) {
+            console.error('[UsernameContext] failed to save validated auth:', err);
+          }
+        })
+        .catch(err => {
+          console.error('[UsernameContext] token validation error:', err);
+          if (!mountedRef.current) return;
+          setAuthenticatedUsers([]);
+          localStorage.removeItem(AUTH_STORAGE_KEY);
+        });
+    }
 
     return () => {
-      mounted = false;
+      mountedRef.current = false;
     };
   }, []);
 
@@ -188,13 +200,18 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) 
   };
 
   const addUsername = (username: string) => {
-    if (!usernames.includes(username)) {
-      const newUsernames = [...usernames, username];
+    const normalized = username.trim().toLowerCase();
+    if (!isValidSplUsername(normalized)) {
+      console.warn(`[UsernameContext] Rejected invalid username: "${username}"`);
+      return;
+    }
+    if (!usernames.includes(normalized)) {
+      const newUsernames = [...usernames, normalized];
       setUsernames(newUsernames);
       // Trigger fetch for the newly added user
       setUserRefreshTriggers(prev => ({
         ...prev,
-        [username]: (prev[username] || 0) + 1,
+        [normalized]: (prev[normalized] || 0) + 1,
       }));
     }
   };

@@ -23,13 +23,25 @@ export default function UsernameManager() {
   const [, setAuthResults] = useState<Record<string, string>>({});
   const authCompletedRef = useRef(false);
 
+  const isValidSplUsername = (username: string): boolean => {
+    // Hive/Splinterlands: 3-16 chars, letters/numbers/dots/hyphens/underscores, no spaces
+    return /^[a-zA-Z][a-zA-Z0-9._-]{2,15}$/.test(username);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const trimmedUsername = newUsername.trim();
+    const trimmedUsername = newUsername.trim().toLowerCase();
 
     if (!trimmedUsername) {
       setError('Username cannot be empty');
+      return;
+    }
+
+    if (!isValidSplUsername(trimmedUsername)) {
+      setError(
+        'Invalid username: only letters, numbers, dots, hyphens and underscores are allowed'
+      );
       return;
     }
 
