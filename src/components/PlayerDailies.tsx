@@ -196,14 +196,15 @@ const DailyProgressCard = ({
 
 export default function PlayerDailies({ username, balances, playerDetails }: Props) {
   const { data, loading, fetchDailyProgress } = useDailyProgress(username);
-  const { refreshTrigger } = useUsernameContext();
+  const { userRefreshTriggers } = useUsernameContext();
 
-  // Refetch when refresh button is clicked
+  // Refetch when this user's per-user trigger fires (from sequential queue or per-card button)
   useEffect(() => {
-    if (refreshTrigger > 0) {
+    const userTrigger = userRefreshTriggers[username];
+    if (userTrigger && userTrigger > 0) {
       fetchDailyProgress();
     }
-  }, [refreshTrigger, fetchDailyProgress]);
+  }, [userRefreshTriggers, username, fetchDailyProgress]);
 
   const hasWildMatches = (playerDetails?.season_details?.wild?.battles ?? 0) > 0;
   const hasModernMatches = (playerDetails?.season_details?.modern?.battles ?? 0) > 0;

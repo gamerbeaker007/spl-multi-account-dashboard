@@ -15,6 +15,8 @@ export default function UsernameManager() {
     isInitialized,
     triggerRefreshAll,
     loginUser,
+    isRefreshingAll,
+    refreshQueueRemaining,
   } = useUsernameContext();
   const [newUsername, setNewUsername] = useState('');
   const [error, setError] = useState('');
@@ -190,10 +192,12 @@ export default function UsernameManager() {
                   color="success"
                   startIcon={<RefreshIcon />}
                   onClick={handleRefreshAll}
-                  disabled={usernames.length === 0}
+                  disabled={usernames.length === 0 || isRefreshingAll}
                   size="medium"
                 >
-                  Refresh All
+                  {isRefreshingAll
+                    ? `Refreshing (${usernames.length - refreshQueueRemaining + 1}/${usernames.length})...`
+                    : 'Refresh All'}
                 </Button>
               </Box>
             </Box>

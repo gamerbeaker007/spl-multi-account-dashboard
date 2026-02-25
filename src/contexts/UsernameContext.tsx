@@ -46,6 +46,12 @@ interface UsernameContextType {
   triggerRefreshAll: () => void;
   triggerRefreshUser: (username: string) => void;
   userRefreshTriggers: Record<string, number>;
+
+  // Sequential refresh queue
+  activeRefreshUser: string | null;
+  advanceRefreshQueue: () => void;
+  isRefreshingAll: boolean;
+  refreshQueueRemaining: number;
 }
 
 const UsernameContext = createContext<UsernameContextType | undefined>(undefined);
@@ -76,8 +82,9 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) 
   const [isInitialized, setIsInitialized] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const refreshTrigger = 0; // kept for interface backward-compatibility; queue system is now used
   const [userRefreshTriggers, setUserRefreshTriggers] = useState<Record<string, number>>({});
+  const [refreshQueue, setRefreshQueue] = useState<string[]>([]);
 
   // useRef for mounted guard — stable across renders, React Compiler-safe
   const mountedRef = useRef(true);
@@ -391,10 +398,20 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) 
     setError(null);
   };
 
+  // Sequential refresh queue helpers
+  const activeRefreshUser = refreshQueue.length > 0 ? refreshQueue[0] : null;
+  const isRefreshingAll = refreshQueue.length > 0;
+  const refreshQueueRemaining = refreshQueue.length;
+
+  const advanceRefreshQueue = useCallback(() => {
+    setRefreshQueue(prev => prev.slice(1));
+  }, []);
+
   // Refresh triggers
   const triggerRefreshAll = useCallback(() => {
-    setRefreshTrigger(prev => prev + 1);
-  }, []);
+    // Sequential: populate queue instead of firing all at once
+    setRefreshQueue([...usernames]);
+  }, [usernames]);
 
   const triggerRefreshUser = useCallback((username: string) => {
     setUserRefreshTriggers(prev => ({
@@ -430,6 +447,12 @@ export const UsernameProvider: React.FC<UsernameProviderProps> = ({ children }) 
     triggerRefreshAll,
     triggerRefreshUser,
     userRefreshTriggers,
+
+    // Sequential refresh queue
+    activeRefreshUser,
+    advanceRefreshQueue,
+    isRefreshingAll,
+    refreshQueueRemaining,
   };
 
   return <UsernameContext.Provider value={value}>{children}</UsernameContext.Provider>;

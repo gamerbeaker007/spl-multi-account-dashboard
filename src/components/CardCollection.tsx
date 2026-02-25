@@ -28,19 +28,20 @@ interface Props {
 
 export default function CardCollection({ username }: Props) {
   const { data, loading, error, refetch } = usePlayerCardCollection(username);
-  const { refreshTrigger } = useUsernameContext();
+  const { userRefreshTriggers } = useUsernameContext();
 
   // Fetch on mount
   useEffect(() => {
     refetch();
   }, [refetch]);
 
-  // Refetch when refresh button is clicked
+  // Refetch when this user's per-user trigger fires (from sequential queue or per-card button)
   useEffect(() => {
-    if (refreshTrigger > 0) {
+    const userTrigger = userRefreshTriggers[username];
+    if (userTrigger && userTrigger > 0) {
       refetch();
     }
-  }, [refreshTrigger, refetch]);
+  }, [userRefreshTriggers, username, refetch]);
 
   const [dialogOpen, setDialogOpen] = useState(false);
 

@@ -5,8 +5,9 @@ import { useUsernameContext } from '@/contexts/UsernameContext';
 import { usePlayerStatus } from '@/hooks/usePlayerStatus';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import DragHandleIcon from '@mui/icons-material/DragHandle';
-import { Alert, Box, CircularProgress, IconButton, Typography } from '@mui/material';
-import { useEffect } from 'react';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import { Alert, Box, CircularProgress, IconButton, Tooltip, Typography } from '@mui/material';
+import { useEffect, useRef } from 'react';
 import Leaderboard from './Leaderboard';
 import PlayerBalances from './PlayerBalances';
 import PlayerDailies from './PlayerDailies';
@@ -20,22 +21,36 @@ interface Props {
 
 export const PlayerCard = ({ username }: Props) => {
   const { data: player, loading, error, refetch } = usePlayerStatus(username);
-  const { refreshTrigger, userRefreshTriggers } = useUsernameContext();
+  const { userRefreshTriggers, activeRefreshUser, advanceRefreshQueue, triggerRefreshUser } =
+    useUsernameContext();
 
-  // Refetch when global refresh button is clicked OR when this specific user's trigger changes
+  // Track whether a refetch was triggered by the queue so we can advance when done
+  const startedFromQueueRef = useRef(false);
+
+  // When this card reaches the front of the refresh queue, fire a per-user trigger.
+  // This causes PlayerCard, PlayerDailies, and CardCollection to all refresh together.
   useEffect(() => {
-    if (refreshTrigger > 0) {
-      refetch();
+    if (activeRefreshUser === username) {
+      startedFromQueueRef.current = true;
+      triggerRefreshUser(username);
     }
-  }, [refreshTrigger, refetch]);
+  }, [activeRefreshUser, username, triggerRefreshUser]);
 
-  // Refetch when this specific user's trigger changes (e.g., when added)
+  // Per-user trigger: handles both queue-triggered and per-card button refreshes
   useEffect(() => {
     const userTrigger = userRefreshTriggers[username];
     if (userTrigger && userTrigger > 0) {
       refetch();
     }
   }, [userRefreshTriggers, username, refetch]);
+
+  // When loading completes after a queue-triggered refetch, advance the queue
+  useEffect(() => {
+    if (!loading && startedFromQueueRef.current) {
+      startedFromQueueRef.current = false;
+      advanceRefreshQueue();
+    }
+  }, [loading, advanceRefreshQueue]);
 
   const {
     attributes,
@@ -158,6 +173,29 @@ export const PlayerCard = ({ username }: Props) => {
       >
         <DragHandleIcon fontSize="small" />
       </IconButton>
+
+      {/* Per-card Refresh Button */}
+      <Tooltip title="Refresh">
+        <IconButton
+          onClick={() => triggerRefreshUser(username)}
+          disabled={loading}
+          sx={{
+            position: 'absolute',
+            top: 8,
+            right: 40,
+            opacity: loading ? 1 : 0.3,
+            transition: 'opacity 0.2s ease',
+            zIndex: 10,
+            '&:hover': { opacity: 1 },
+          }}
+          size="small"
+        >
+          <RefreshIcon
+            fontSize="small"
+            sx={loading ? { animation: 'spin 1s linear infinite', '@keyframes spin': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } } } : {}}
+          />
+        </IconButton>
+      </Tooltip>
 
       <PlayerInfo username={player.username} playerDetails={player.playerDetails} />
 
