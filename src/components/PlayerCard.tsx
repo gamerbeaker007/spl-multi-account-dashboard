@@ -2,6 +2,7 @@
 
 import GuildInfo from '@/components/PlayerBrawl';
 import { useUsernameContext } from '@/contexts/UsernameContext';
+import { usePlayerCardCollection } from '@/hooks/usePlayerCardCollection';
 import { usePlayerStatus } from '@/hooks/usePlayerStatus';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import DragHandleIcon from '@mui/icons-material/DragHandle';
@@ -21,36 +22,63 @@ interface Props {
 
 export const PlayerCard = ({ username }: Props) => {
   const { data: player, loading, error, refetch } = usePlayerStatus(username);
+  const {
+    data: collectionData,
+    loading: collectionLoading,
+    refetch: collectionRefetch,
+  } = usePlayerCardCollection(username);
   const { userRefreshTriggers, activeRefreshUser, advanceRefreshQueue, triggerRefreshUser } =
     useUsernameContext();
 
-  // Track whether a refetch was triggered by the queue so we can advance when done
+  // Track queue state with refs to avoid stale-closure issues
   const startedFromQueueRef = useRef(false);
+  // Becomes true once we observe at least one loading flag go true, confirming fetches started
+  const queueFetchStartedRef = useRef(false);
+
+  // Initial collection fetch on mount
+  useEffect(() => {
+    collectionRefetch();
+  }, [collectionRefetch]);
 
   // When this card reaches the front of the refresh queue, fire a per-user trigger.
-  // This causes PlayerCard, PlayerDailies, and CardCollection to all refresh together.
+  // This causes PlayerCard and PlayerDailies to refresh while collection also refetches below.
   useEffect(() => {
     if (activeRefreshUser === username) {
       startedFromQueueRef.current = true;
+      queueFetchStartedRef.current = false;
       triggerRefreshUser(username);
     }
   }, [activeRefreshUser, username, triggerRefreshUser]);
 
-  // Per-user trigger: handles both queue-triggered and per-card button refreshes
+  // Per-user trigger: refetch status AND collection (queue OR per-card button)
   useEffect(() => {
     const userTrigger = userRefreshTriggers[username];
     if (userTrigger && userTrigger > 0) {
       refetch();
+      collectionRefetch();
     }
-  }, [userRefreshTriggers, username, refetch]);
+  }, [userRefreshTriggers, username, refetch, collectionRefetch]);
 
-  // When loading completes after a queue-triggered refetch, advance the queue
+  // Once loading begins, mark it so the advance check knows fetches actually started
   useEffect(() => {
-    if (!loading && startedFromQueueRef.current) {
+    if ((loading || collectionLoading) && startedFromQueueRef.current) {
+      queueFetchStartedRef.current = true;
+    }
+  }, [loading, collectionLoading]);
+
+  // Advance the queue only when BOTH status and collection have finished loading
+  useEffect(() => {
+    if (
+      startedFromQueueRef.current &&
+      queueFetchStartedRef.current &&
+      !loading &&
+      !collectionLoading
+    ) {
       startedFromQueueRef.current = false;
+      queueFetchStartedRef.current = false;
       advanceRefreshQueue();
     }
-  }, [loading, advanceRefreshQueue]);
+  }, [loading, collectionLoading, advanceRefreshQueue]);
 
   const {
     attributes,
@@ -178,12 +206,12 @@ export const PlayerCard = ({ username }: Props) => {
       <Tooltip title="Refresh">
         <IconButton
           onClick={() => triggerRefreshUser(username)}
-          disabled={loading}
+          disabled={loading || collectionLoading}
           sx={{
             position: 'absolute',
             top: 8,
             right: 40,
-            opacity: loading ? 1 : 0.3,
+            opacity: loading || collectionLoading ? 1 : 0.3,
             transition: 'opacity 0.2s ease',
             zIndex: 10,
             '&:hover': { opacity: 1 },
@@ -193,7 +221,7 @@ export const PlayerCard = ({ username }: Props) => {
           <RefreshIcon
             fontSize="small"
             sx={
-              loading
+              loading || collectionLoading
                 ? {
                     animation: 'spin 1s linear infinite',
                     '@keyframes spin': {
@@ -221,6 +249,8 @@ export const PlayerCard = ({ username }: Props) => {
           username={player.username}
           balances={player.balances}
           seasonRewards={player.seasonRewards}
+          collectionData={collectionData}
+          collectionLoading={collectionLoading}
         />
       </Box>
 

@@ -1,10 +1,10 @@
 'use client';
 
 import CardEditionDetails from '@/components/CardEditionDetails';
-import { useUsernameContext } from '@/contexts/UsernameContext';
 import { usePlayerCardCollection } from '@/hooks/usePlayerCardCollection';
 import { hammer_icon_url } from '@/lib/staticsIconUrls';
 import { largeNumberFormat } from '@/lib/utils';
+import { PlayerCardCollectionData } from '@/types/playerCardCollection';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
 import {
@@ -24,24 +24,29 @@ import { BalanceItem } from './BalanceItem';
 
 interface Props {
   username: string;
+  externalData?: PlayerCardCollectionData | null;
+  externalLoading?: boolean;
 }
 
-export default function CardCollection({ username }: Props) {
-  const { data, loading, error, refetch } = usePlayerCardCollection(username);
-  const { userRefreshTriggers } = useUsernameContext();
+export default function CardCollection({ username, externalData, externalLoading }: Props) {
+  // Internal hook — used only for initial mount fetch; during queue/per-card refresh
+  // data flows in from PlayerCard via externalData to avoid duplicate API calls.
+  const {
+    data: internalData,
+    loading: internalLoading,
+    error,
+    refetch,
+  } = usePlayerCardCollection(username);
 
-  // Fetch on mount
+  // Fetch on mount if no external data is provided yet
   useEffect(() => {
-    refetch();
-  }, [refetch]);
-
-  // Refetch when this user's per-user trigger fires (from sequential queue or per-card button)
-  useEffect(() => {
-    const userTrigger = userRefreshTriggers[username];
-    if (userTrigger && userTrigger > 0) {
+    if (externalData === undefined) {
       refetch();
     }
-  }, [userRefreshTriggers, username, refetch]);
+  }, [refetch, externalData]);
+
+  const data = externalData !== undefined ? externalData : internalData;
+  const loading = externalLoading !== undefined ? externalLoading : internalLoading;
 
   const [dialogOpen, setDialogOpen] = useState(false);
 
