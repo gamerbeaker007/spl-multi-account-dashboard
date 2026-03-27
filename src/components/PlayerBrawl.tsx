@@ -30,8 +30,8 @@ const statusColor: Record<number, string> = {
 
 export default function GuildInfo({ username, playerDetails, brawlDetails }: Props) {
   const playerBrawls = brawlDetails?.players?.find(p => p.player === username) || null;
-  const brawlCycleRAW = brawlDetails?.id.split('-').find(id => id.startsWith('BC')) || '';
-  const brawlCycle = brawlCycleRAW.split('BC')[1];
+  const brawlCycleRAW = brawlDetails?.id?.split('-').find(id => id.startsWith('BC')) ?? '';
+  const brawlCycle = brawlCycleRAW.split('BC')[1] ?? '';
 
   const battleColor =
     (playerBrawls?.total_battles ?? 0) - (playerBrawls?.entered_battles ?? 0) > 0
