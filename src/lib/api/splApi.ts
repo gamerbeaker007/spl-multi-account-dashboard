@@ -475,6 +475,25 @@ export async function fetchSeasonInfo(seasonId: number): Promise<SplSeasonInfo> 
   }
 }
 
+/** Fetch the current (active) season without needing an ID. */
+export async function fetchCurrentSeason(): Promise<SplSeasonInfo> {
+  try {
+    const response = await splBaseClient.get('/settings');
+    if (response.status === 200 && response.data) {
+      return {
+        id: response.data.season.id,
+        ends: response.data.season.ends,
+      } as SplSeasonInfo;
+    }
+    throw new Error('Current season request failed');
+  } catch (error) {
+    logger.error(
+      `Failed to fetch current season: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
 /**
  * Fetch card details from Splinterlands API
  */
@@ -580,10 +599,14 @@ export async function fetchPlayerHistory(
       }
 
       const rawHistory = response.data as SplHistory[];
+      console.log('rawResult', rawHistory.length);
+      console.log('rawResult', rawHistory);
       // Parse all entries to V2 format
       const parsedHistory = rawHistory
         .map(parseHistoryToInternalTypes)
         .filter((entry): entry is ParsedHistory => entry !== null); // Filter out nulls
+      console.log('parsedResult', parsedHistory.length);
+      console.log('parsedResult', parsedHistory);
 
       return parsedHistory as ParsedHistory[];
     } else {

@@ -12,9 +12,10 @@ import { PlayerHistoryDialog } from './PlayerHistoryDialog';
 interface PlayerHistoryButtonProps {
   username: string;
   seasonId?: number;
+  joinDate?: string;
 }
 
-export function PlayerHistoryButton({ username, seasonId }: PlayerHistoryButtonProps) {
+export function PlayerHistoryButton({ username, seasonId, joinDate }: PlayerHistoryButtonProps) {
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [balanceDialogOpen, setBalanceDialogOpen] = useState(false);
   const { getUserToken } = useUsernameContext();
@@ -63,6 +64,7 @@ export function PlayerHistoryButton({ username, seasonId }: PlayerHistoryButtonP
             player={username}
             token={userToken}
             seasonId={seasonId ?? 0}
+            joinDate={joinDate}
           />
         </>
       )}

@@ -1,17 +1,20 @@
 import {
   getSeasonDates,
   getTokenBalanceSummary,
-  getUnclaimedSPSSummary,
+  getUnclaimedSummaries,
 } from '@/lib/actions/getTokenBalance';
 import {
   BalanceHistoryTokenType,
   SeasonBalanceHistory,
   TokenBalanceSummary,
+  UnclaimedTokenType,
 } from '@/types/spl/balanceHistory';
 import { useCallback, useState } from 'react';
 
-const BALANCE_TOKENS: BalanceHistoryTokenType[] = ['GLINT', 'DEC', 'MERITS', 'VOUCHER', 'SPS'];
-const ALL_TOKEN_KEYS = [...BALANCE_TOKENS, 'UNCLAIMED_SPS'];
+// other options possible: 'SPSP', 'SPSP-IN', 'SPSP-OUT'
+const BALANCE_TOKENS = ['GLINT', 'DEC', 'MERITS', 'VOUCHER', 'SPS'];
+const UNCLAIMED_TOKENS = ['UNCLAIMED_SPS', 'UNCLAIMED_VOUCHER'];
+const ALL_TOKEN_KEYS = [...BALANCE_TOKENS, ...UNCLAIMED_TOKENS];
 
 export type TokenFetchStatus = 'pending' | 'fetching' | 'done' | 'error';
 
@@ -54,9 +57,8 @@ export function useBalanceHistory(): UseBalanceHistoryReturn {
       });
 
       try {
-        // Get season date range first
-        const { start, end } = await getSeasonDates(seasonId);
-        setState(prev => ({ ...prev }));
+        // Get season date range + spillover window
+        const { start, end, spilloverEnd } = await getSeasonDates(seasonId);
 
         const summaries: TokenBalanceSummary[] = [];
 
@@ -73,9 +75,10 @@ export function useBalanceHistory(): UseBalanceHistoryReturn {
             const summary = await getTokenBalanceSummary(
               username,
               encryptedToken,
-              token,
+              token as BalanceHistoryTokenType,
               start,
-              end
+              end,
+              spilloverEnd
             );
             summaries.push(summary);
             setState(prev => ({
@@ -98,28 +101,35 @@ export function useBalanceHistory(): UseBalanceHistoryReturn {
           }
         }
 
-        // Unclaimed SPS
-        setState(prev => ({
-          ...prev,
-          progress: prev.progress.map(p =>
-            p.token === 'UNCLAIMED_SPS' ? { ...p, status: 'fetching' } : p
-          ),
-        }));
+        // Unclaimed SPS + VOUCHER
+        const unclaimedTokens = UNCLAIMED_TOKENS;
+        for (const ut of unclaimedTokens) {
+          setState(prev => ({
+            ...prev,
+            progress: prev.progress.map(p => (p.token === ut ? { ...p, status: 'fetching' } : p)),
+          }));
+        }
 
-        let unclaimedSummary: TokenBalanceSummary | null = null;
+        let unclaimedSummaries: TokenBalanceSummary[] = [];
         try {
-          unclaimedSummary = await getUnclaimedSPSSummary(username, encryptedToken, start, end);
+          unclaimedSummaries = await getUnclaimedSummaries(
+            username,
+            encryptedToken,
+            start,
+            end,
+            spilloverEnd
+          );
           setState(prev => ({
             ...prev,
             progress: prev.progress.map(p =>
-              p.token === 'UNCLAIMED_SPS' ? { ...p, status: 'done' } : p
+              unclaimedTokens.includes(p.token) ? { ...p, status: 'done' } : p
             ),
           }));
         } catch (unclaimedErr) {
           setState(prev => ({
             ...prev,
             progress: prev.progress.map(p =>
-              p.token === 'UNCLAIMED_SPS'
+              unclaimedTokens.includes(p.token)
                 ? {
                     ...p,
                     status: 'error',
@@ -138,7 +148,7 @@ export function useBalanceHistory(): UseBalanceHistoryReturn {
             seasonId,
             dateRange: { start, end },
             balanceHistory: summaries,
-            unclaimedHistory: unclaimedSummary ? [unclaimedSummary] : [],
+            unclaimedHistory: unclaimedSummaries,
           },
         }));
       } catch (error) {

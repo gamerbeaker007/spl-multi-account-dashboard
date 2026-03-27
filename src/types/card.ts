@@ -13,6 +13,7 @@ import {
   edition_conclave_arcana_icon_url,
   edition_conclave_extra_icon_url,
   edition_conclave_rewards_icon_url,
+  edition_dice_icon_url,
   edition_escalation_icon_url,
   edition_eternal_icon_url,
   edition_foundation_icon_url,
@@ -73,6 +74,7 @@ export const editionMap: Record<number, EidtionTypeDef> = {
     displayName: 'Dice',
     urlName: 'dice',
     setName: 'untamed',
+    setIcon: edition_dice_icon_url,
   },
   6: {
     displayName: 'Gladius',

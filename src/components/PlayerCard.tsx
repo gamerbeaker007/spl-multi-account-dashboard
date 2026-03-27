@@ -241,6 +241,7 @@ export const PlayerCard = ({ username }: Props) => {
       <PlayerHistoryButton
         username={player.username}
         seasonId={player?.seasonRewards?.season_reward_info.season}
+        joinDate={player.playerDetails?.join_date}
       />
 
       <Box>

@@ -1,5 +1,6 @@
 'use client';
 
+import { SeasonsProvider } from '@/contexts/SeasonsContext';
 import { UsernameProvider } from '@/contexts/UsernameContext';
 import { CssBaseline } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
@@ -37,7 +38,9 @@ export function Providers({ children }: ProvidersProps) {
     <AppRouterCacheProvider options={{ enableCssLayer: true }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <UsernameProvider>{children}</UsernameProvider>
+        <SeasonsProvider>
+          <UsernameProvider>{children}</UsernameProvider>
+        </SeasonsProvider>
       </ThemeProvider>
     </AppRouterCacheProvider>
   );

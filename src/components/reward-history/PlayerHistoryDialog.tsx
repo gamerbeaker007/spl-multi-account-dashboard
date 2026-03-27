@@ -77,7 +77,6 @@ export function PlayerHistoryDialog({
       <DialogContent>
         {/* Season Controls */}
         <Paper sx={{ p: 2, mb: 2 }}>
-          <Typography variant="h6" gutterBottom></Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
             <Button
               variant={prevLoaded ? 'contained' : 'outlined'}

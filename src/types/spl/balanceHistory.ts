@@ -35,7 +35,19 @@ export interface SplUnclaimedBalanceHistoryItem {
   block_result: string;
 }
 
-export type BalanceHistoryTokenType = 'DEC' | 'SPS' | 'MERITS' | 'VOUCHER' | 'CREDITS' | 'GLINT';
+export type BalanceHistoryTokenType =
+  | 'DEC'
+  | 'DEC-B'
+  | 'SPS'
+  | 'SPSP'
+  | 'SPSP-IN'
+  | 'SPSP-OUT'
+  | 'MERITS'
+  | 'VOUCHER'
+  | 'VOUCHER-G'
+  | 'CREDITS'
+  | 'GLINT';
+
 export type UnclaimedTokenType = 'SPS' | 'VOUCHER';
 
 // Aggregated summary per token
