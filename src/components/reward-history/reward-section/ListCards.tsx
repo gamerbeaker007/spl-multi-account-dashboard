@@ -108,7 +108,6 @@ export const ListCards = ({ entry, cardDetails }: Props) => {
                           key={card.card.card_detail_id}
                           rewardItemCard={card}
                           cardDetails={cardDetails}
-                          zoom={'65%'}
                         />
                       ))}
                     </Box>
@@ -123,7 +122,6 @@ export const ListCards = ({ entry, cardDetails }: Props) => {
                           key={card.card.card_detail_id}
                           rewardItemCard={card}
                           cardDetails={cardDetails}
-                          zoom={'65%'}
                         />
                       ))}
                     </Box>

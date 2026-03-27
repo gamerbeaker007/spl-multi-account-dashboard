@@ -55,21 +55,21 @@ export function Card({ rewardItemCard, cardDetails, zoom = '100%' }: Props) {
     <Box position="relative" flexShrink={0} overflow="hidden" sx={{ zoom: zoom }}>
       <Box
         position="absolute"
-        top={-15}
-        right={-15}
+        top={-8}
+        right={-8}
         display="flex"
         alignItems="center"
         justifyContent="center"
         zIndex={1}
       >
-        <GiVerticalBanner size={75} color="red" />
+        <GiVerticalBanner size={38} color="red" />
         <Typography
           variant="body1"
           sx={{
             position: 'absolute',
             color: 'white',
             fontWeight: 'bold',
-            fontSize: '1.0rem',
+            fontSize: '0.6rem',
             textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
           }}
         >
@@ -78,7 +78,7 @@ export function Card({ rewardItemCard, cardDetails, zoom = '100%' }: Props) {
       </Box>
       <Box
         position="absolute"
-        bottom={30}
+        bottom={12}
         display="flex"
         alignItems="center"
         justifyContent="center"
@@ -103,7 +103,7 @@ export function Card({ rewardItemCard, cardDetails, zoom = '100%' }: Props) {
         alt={cardName}
         width={iconSize}
         height={iconSize}
-        style={{ width: 'auto', height: 'auto' }}
+        style={{ width: iconSize, height: 'auto' }}
       />
     </Box>
   );
