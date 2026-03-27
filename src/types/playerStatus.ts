@@ -8,12 +8,16 @@ export interface PlayerStatusData {
   username: string;
   timestamp: string;
   balances?: SplBalance[];
+  balancesError?: string;
   draws?: {
     frontier: SplFrontierDrawStatus;
     ranked: SplRankedDrawStatus;
   };
+  drawsError?: string;
   playerDetails?: SplPlayerDetails;
-  seasonRewards?: SPLSeasonRewards;
   brawlDetails?: SplBrawlDetails;
+  detailsError?: string;
+  seasonRewards?: SPLSeasonRewards;
+  seasonRewardsError?: string;
   error?: string;
 }
