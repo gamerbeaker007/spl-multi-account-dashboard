@@ -1,6 +1,7 @@
 'use client';
 
 import { useUsernameContext } from '@/contexts/UsernameContext';
+import { CompletedDrawsDialog } from '@/components/CompletedDrawsDialog';
 import {
   closestCenter,
   DndContext,
@@ -10,13 +11,24 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { Alert, Box, Container, Typography } from '@mui/material';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import ExploreIcon from '@mui/icons-material/Explore';
+import { Alert, Box, Button, Container, Stack, Typography } from '@mui/material';
+import { useState } from 'react';
 import { PlayerCard } from './PlayerCard';
 import UsernameManager from './UsernameManager';
 
 export default function PlayerStatusDashboard() {
-  const { usernames, reorderUsernames, isInitialized } = useUsernameContext();
+  const { usernames, reorderUsernames, isInitialized, authenticatedUsers, getUserToken } =
+    useUsernameContext();
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
+
+  const [frontierOpen, setFrontierOpen] = useState(false);
+  const [rankedOpen, setRankedOpen] = useState(false);
+
+  // Pick the first authenticated user (one is enough for player_entries)
+  const firstAuth = authenticatedUsers.find(u => u.isAuthenticated) ?? null;
+  const authToken = firstAuth ? getUserToken(firstAuth.username) : null;
 
   // Wait for context to initialize before rendering
   if (!isInitialized) {
@@ -47,9 +59,29 @@ export default function PlayerStatusDashboard() {
 
   return (
     <Container maxWidth="xl" sx={{ px: { xs: 2, md: 6, lg: 8 } }}>
-      <Typography variant="h4" gutterBottom>
-        Splinterlands Multi-Account Dashboard
-      </Typography>
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={1} flexWrap="wrap" gap={1}>
+        <Typography variant="h4">
+          Splinterlands Multi-Account Dashboard
+        </Typography>
+        <Stack direction="row" spacing={1}>
+          <Button
+            variant="outlined"
+            startIcon={<ExploreIcon />}
+            onClick={() => setFrontierOpen(true)}
+            size="small"
+          >
+            Frontier Draws
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<EmojiEventsIcon />}
+            onClick={() => setRankedOpen(true)}
+            size="small"
+          >
+            Ranked Draws
+          </Button>
+        </Stack>
+      </Box>
 
       {/* User Management Section */}
       <UsernameManager />
@@ -75,6 +107,23 @@ export default function PlayerStatusDashboard() {
       {usernames.length === 0 && (
         <Alert severity="info">Add some player usernames to get started!</Alert>
       )}
+
+      <CompletedDrawsDialog
+        open={frontierOpen}
+        onClose={() => setFrontierOpen(false)}
+        type="frontier"
+        dashboardUsernames={usernames}
+        authorizedUsername={firstAuth?.username}
+        authorizedToken={authToken}
+      />
+      <CompletedDrawsDialog
+        open={rankedOpen}
+        onClose={() => setRankedOpen(false)}
+        type="ranked"
+        dashboardUsernames={usernames}
+        authorizedUsername={firstAuth?.username}
+        authorizedToken={authToken}
+      />
     </Container>
   );
 }

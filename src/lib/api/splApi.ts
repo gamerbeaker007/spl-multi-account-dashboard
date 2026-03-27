@@ -25,7 +25,13 @@ import { SplCardCollection } from '@/types/spl/card';
 import { SplCardDetail } from '@/types/spl/cardDetails';
 import { SplDailyProgress } from '@/types/spl/dailies';
 import { SplPlayerDetails } from '@/types/spl/details';
-import { SplFrontierDrawStatus, SplRankedDrawStatus } from '@/types/spl/draws';
+import {
+  SplCompletedDrawsResponse,
+  SplDrawEntry,
+  SplDrawPrize,
+  SplFrontierDrawStatus,
+  SplRankedDrawStatus,
+} from '@/types/spl/draws';
 import { SplFormat } from '@/types/spl/format';
 import { SplHistory } from '@/types/spl/history';
 import { SplCardListingPriceEntry } from '@/types/spl/market';
@@ -231,7 +237,168 @@ export async function fetchFrontierDraws(username: string): Promise<SplFrontierD
   }
 }
 
-//   'https://api.splinterlands.com/market/for_sale_grouped' \
+// https://api.splinterlands.com/frontier_draws/complete
+/**
+ * Fetch completed frontier draws. If a username + decryptedToken are provided,
+ * the response includes the requesting player's own entry counts.
+ */
+export async function fetchFrontierCompletedDraws(
+  player?: string,
+  decryptedToken?: string
+): Promise<SplCompletedDrawsResponse> {
+  const url = '/frontier_draws/complete';
+  logger.debug('Fetching completed frontier draws from Splinterlands API');
+
+  const headers =
+    player && decryptedToken
+      ? await getAuthorizationHeader(player, decryptedToken)
+      : undefined;
+
+  try {
+    const res = await splBaseClient.get(url, { headers });
+    const data = res.data;
+
+    if (!data || !Array.isArray(data.draws)) {
+      throw new Error('Invalid response from Splinterlands API: expected draws array');
+    }
+
+    return data as SplCompletedDrawsResponse;
+  } catch (error) {
+    logger.error(
+      `Failed to fetch completed frontier draws: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+// https://api.splinterlands.com/ranked_draws/complete
+/**
+ * Fetch completed ranked draws. If a username + decryptedToken are provided,
+ * the response includes the requesting player's own entry counts.
+ */
+export async function fetchRankedCompletedDraws(
+  player?: string,
+  decryptedToken?: string
+): Promise<SplCompletedDrawsResponse> {
+  const url = '/ranked_draws/complete';
+  logger.debug('Fetching completed ranked draws from Splinterlands API');
+
+  const headers =
+    player && decryptedToken
+      ? await getAuthorizationHeader(player, decryptedToken)
+      : undefined;
+
+  try {
+    const res = await splBaseClient.get(url, { headers });
+    const data = res.data;
+
+    if (!data || !Array.isArray(data.draws)) {
+      throw new Error('Invalid response from Splinterlands API: expected draws array');
+    }
+
+    return data as SplCompletedDrawsResponse;
+  } catch (error) {
+    logger.error(
+      `Failed to fetch completed ranked draws: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+// https://api.splinterlands.com/frontier_draws/entries_completed?id=1024
+/**
+ * Fetch all player entries for a completed frontier draw.
+ */
+export async function fetchFrontierDrawEntries(drawId: number): Promise<SplDrawEntry[]> {
+  const url = '/frontier_draws/entries_completed';
+  logger.debug(`Fetching frontier draw entries for draw ${drawId}`);
+
+  try {
+    const res = await splBaseClient.get(url, { params: { id: drawId } });
+    const data = res.data;
+
+    if (!data || !Array.isArray(data)) {
+      throw new Error('Invalid response from Splinterlands API: expected array');
+    }
+
+    return data as SplDrawEntry[];
+  } catch (error) {
+    logger.error(
+      `Failed to fetch frontier draw entries for ${drawId}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+// https://api.splinterlands.com/ranked_draws/entries_completed?id=23
+/**
+ * Fetch all player entries for a completed ranked draw.
+ */
+export async function fetchRankedDrawEntries(drawId: number): Promise<SplDrawEntry[]> {
+  const url = '/ranked_draws/entries_completed';
+  logger.debug(`Fetching ranked draw entries for draw ${drawId}`);
+
+  try {
+    const res = await splBaseClient.get(url, { params: { id: drawId } });
+    const data = res.data;
+
+    if (!data || !Array.isArray(data)) {
+      throw new Error('Invalid response from Splinterlands API: expected array');
+    }
+
+    return data as SplDrawEntry[];
+  } catch (error) {
+    logger.error(
+      `Failed to fetch ranked draw entries for ${drawId}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+// https://api.splinterlands.com/frontier_draws/available_prizes?at_date=2026-03-23T13:00:00.000Z
+export async function fetchFrontierAvailablePrizes(atDate: string): Promise<SplDrawPrize[]> {
+  const url = '/frontier_draws/available_prizes';
+  logger.debug(`Fetching frontier available prizes at ${atDate}`);
+
+  try {
+    const res = await splBaseClient.get(url, { params: { at_date: atDate } });
+    const data = res.data;
+
+    if (!data || !Array.isArray(data)) {
+      throw new Error('Invalid response from Splinterlands API: expected array');
+    }
+
+    return data as SplDrawPrize[];
+  } catch (error) {
+    logger.error(
+      `Failed to fetch frontier available prizes: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+// https://api.splinterlands.com/ranked_draws/available_prizes?at_date=2026-03-27T13:00:00.000Z
+export async function fetchRankedAvailablePrizes(atDate: string): Promise<SplDrawPrize[]> {
+  const url = '/ranked_draws/available_prizes';
+  logger.debug(`Fetching ranked available prizes at ${atDate}`);
+
+  try {
+    const res = await splBaseClient.get(url, { params: { at_date: atDate } });
+    const data = res.data;
+
+    if (!data || !Array.isArray(data)) {
+      throw new Error('Invalid response from Splinterlands API: expected array');
+    }
+
+    return data as SplDrawPrize[];
+  } catch (error) {
+    logger.error(
+      `Failed to fetch ranked available prizes: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
 export async function fetchListingPrices(): Promise<SplCardListingPriceEntry[]> {
   const url = '/market/for_sale_grouped';
   logger.debug('Fetching market for sale grouped from Splinterlands API');
