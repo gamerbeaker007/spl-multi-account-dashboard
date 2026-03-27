@@ -7,7 +7,6 @@ import {
   BalanceHistoryTokenType,
   SeasonBalanceHistory,
   TokenBalanceSummary,
-  UnclaimedTokenType,
 } from '@/types/spl/balanceHistory';
 import { useCallback, useState } from 'react';
 

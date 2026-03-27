@@ -102,7 +102,7 @@ export function Card({ rewardItemCard, cardDetails, zoom = '100%' }: Props) {
         src={imageUrl}
         alt={cardName}
         width={iconSize}
-        height={iconSize}
+        height={Math.round(iconSize * (771 / 551))}
         style={{ width: iconSize, height: 'auto' }}
       />
     </Box>

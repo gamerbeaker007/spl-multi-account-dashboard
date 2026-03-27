@@ -2,7 +2,14 @@
 
 import { getAllSeasons } from '@/lib/actions/getSeasonList';
 import { SplSeasonInfo } from '@/types/spl/season';
-import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 
 interface SeasonsContextType {
   seasons: SplSeasonInfo[];

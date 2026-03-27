@@ -599,14 +599,10 @@ export async function fetchPlayerHistory(
       }
 
       const rawHistory = response.data as SplHistory[];
-      console.log('rawResult', rawHistory.length);
-      console.log('rawResult', rawHistory);
       // Parse all entries to V2 format
       const parsedHistory = rawHistory
         .map(parseHistoryToInternalTypes)
         .filter((entry): entry is ParsedHistory => entry !== null); // Filter out nulls
-      console.log('parsedResult', parsedHistory.length);
-      console.log('parsedResult', parsedHistory);
 
       return parsedHistory as ParsedHistory[];
     } else {

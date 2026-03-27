@@ -7,7 +7,7 @@ import { usePlayerStatus } from '@/hooks/usePlayerStatus';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import DragHandleIcon from '@mui/icons-material/DragHandle';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { Alert, Box, CircularProgress, IconButton, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, CircularProgress, IconButton, Typography } from '@mui/material';
 import { useEffect, useRef } from 'react';
 import Leaderboard from './Leaderboard';
 import PlayerBalances from './PlayerBalances';
@@ -203,37 +203,36 @@ export const PlayerCard = ({ username }: Props) => {
       </IconButton>
 
       {/* Per-card Refresh Button */}
-      <Tooltip title="Refresh">
-        <IconButton
-          onClick={() => triggerRefreshUser(username)}
-          disabled={loading || collectionLoading}
-          sx={{
-            position: 'absolute',
-            top: 8,
-            right: 40,
-            opacity: loading || collectionLoading ? 1 : 0.3,
-            transition: 'opacity 0.2s ease',
-            zIndex: 10,
-            '&:hover': { opacity: 1 },
-          }}
-          size="small"
-        >
-          <RefreshIcon
-            fontSize="small"
-            sx={
-              loading || collectionLoading
-                ? {
-                    animation: 'spin 1s linear infinite',
-                    '@keyframes spin': {
-                      from: { transform: 'rotate(0deg)' },
-                      to: { transform: 'rotate(360deg)' },
-                    },
-                  }
-                : {}
-            }
-          />
-        </IconButton>
-      </Tooltip>
+      <IconButton
+        onClick={() => triggerRefreshUser(username)}
+        disabled={loading || collectionLoading}
+        title="Refresh"
+        sx={{
+          position: 'absolute',
+          top: 8,
+          right: 40,
+          opacity: loading || collectionLoading ? 1 : 0.3,
+          transition: 'opacity 0.2s ease',
+          zIndex: 10,
+          '&:hover': { opacity: 1 },
+        }}
+        size="small"
+      >
+        <RefreshIcon
+          fontSize="small"
+          sx={
+            loading || collectionLoading
+              ? {
+                  animation: 'spin 1s linear infinite',
+                  '@keyframes spin': {
+                    from: { transform: 'rotate(0deg)' },
+                    to: { transform: 'rotate(360deg)' },
+                  },
+                }
+              : {}
+          }
+        />
+      </IconButton>
 
       <PlayerInfo username={player.username} playerDetails={player.playerDetails} />
 
