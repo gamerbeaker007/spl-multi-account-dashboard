@@ -1,6 +1,7 @@
 'use client';
 
 import { usePlayerHistory } from '@/hooks/usePlayerHistory';
+import { SplCardDetail } from '@/types/spl/cardDetails';
 import { EmojiEvents as RewardIcon } from '@mui/icons-material';
 import {
   Alert,
@@ -17,7 +18,6 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import { RewardSection } from './reward-section/RewardSection';
-import { SplCardDetail } from '@/types/spl/cardDetails';
 
 interface PlayerHistoryDialogProps {
   open: boolean;
@@ -37,16 +37,28 @@ export function PlayerHistoryDialog({
   cardDetails,
 }: PlayerHistoryDialogProps) {
   const [currentSeasonId] = useState(seasonId);
+  const [loadedSeasonId, setLoadedSeasonId] = useState<number | null>(null);
   const { isLoading, error, rewardHistory, fetchHistory, clearHistory, clearError } =
     usePlayerHistory();
 
   const handleFetchCurrentSeason = async () => {
     await fetchHistory(player, token, currentSeasonId);
+    setLoadedSeasonId(currentSeasonId);
   };
 
   const handleFetchPreviousSeason = async () => {
     await fetchHistory(player, token, currentSeasonId - 1);
+    setLoadedSeasonId(currentSeasonId - 1);
   };
+
+  const handleClearHistory = () => {
+    clearHistory();
+    setLoadedSeasonId(null);
+  };
+
+  const prevLoaded = loadedSeasonId === currentSeasonId - 1;
+  const currLoaded = loadedSeasonId === currentSeasonId;
+  const noneLoaded = loadedSeasonId === null;
 
   const dailyEntries = rewardHistory
     ? rewardHistory.allEntries.filter(entry => entry.type === 'claim_daily').length
@@ -65,27 +77,34 @@ export function PlayerHistoryDialog({
       <DialogContent>
         {/* Season Controls */}
         <Paper sx={{ p: 2, mb: 2 }}>
-          <Typography variant="h6" gutterBottom></Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
             <Button
-              variant="outlined"
+              variant={prevLoaded ? 'contained' : 'outlined'}
               onClick={handleFetchPreviousSeason}
               disabled={isLoading}
               startIcon={<RewardIcon />}
               sx={{ minWidth: 180 }}
-              color="secondary"
+              color={prevLoaded ? 'success' : 'secondary'}
             >
-              {isLoading ? 'Fetching...' : `Previous Season ${currentSeasonId - 1}`}
+              {isLoading && prevLoaded ? 'Fetching...' : `Previous Season ${currentSeasonId - 1}`}
             </Button>
             <Button
-              variant="contained"
+              variant={currLoaded || noneLoaded ? 'contained' : 'outlined'}
               onClick={handleFetchCurrentSeason}
               disabled={isLoading}
-              startIcon={isLoading ? <CircularProgress size={20} /> : <RewardIcon />}
+              startIcon={
+                isLoading && (currLoaded || noneLoaded) ? (
+                  <CircularProgress size={20} />
+                ) : (
+                  <RewardIcon />
+                )
+              }
               sx={{ minWidth: 180 }}
-              color="primary"
+              color={currLoaded ? 'success' : noneLoaded ? 'primary' : 'secondary'}
             >
-              {isLoading ? 'Fetching...' : `Current Season ${currentSeasonId}`}
+              {isLoading && (currLoaded || noneLoaded)
+                ? 'Fetching...'
+                : `Current Season ${currentSeasonId}`}
             </Button>
           </Stack>
         </Paper>
@@ -151,7 +170,7 @@ export function PlayerHistoryDialog({
 
       <DialogActions>
         {rewardHistory && rewardHistory.totalEntries > 0 && (
-          <Button onClick={clearHistory} color="secondary">
+          <Button onClick={handleClearHistory} color="secondary">
             Clear History
           </Button>
         )}

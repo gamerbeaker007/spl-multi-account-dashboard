@@ -1,42 +1,12 @@
-// Simple server-side logger
-interface LogLevel {
-  INFO: string;
-  WARN: string;
-  ERROR: string;
-  DEBUG: string;
-}
+const isDebug = process.env.NODE_ENV === 'development' && process.env.DEBUG_LOGS === 'true';
 
-const LOG_LEVELS: LogLevel = {
-  INFO: 'INFO',
-  WARN: 'WARN',
-  ERROR: 'ERROR',
-  DEBUG: 'DEBUG',
-} as const;
+const logger = {
+  info: (msg: string) => console.log(`[INFO] ${msg}`),
+  warn: (msg: string) => console.warn(`[WARN] ${msg}`),
+  error: (msg: string) => console.error(`[ERROR] ${msg}`),
+  debug: (msg: string) => {
+    if (isDebug) console.log(`[DEBUG] ${msg}`);
+  },
+};
 
-class Logger {
-  private formatMessage(level: string, message: string): string {
-    const timestamp = new Date().toISOString();
-    return `[${timestamp}] [${level}] ${message}`;
-  }
-
-  info(message: string): void {
-    console.log(this.formatMessage(LOG_LEVELS.INFO, message));
-  }
-
-  warn(message: string): void {
-    console.warn(this.formatMessage(LOG_LEVELS.WARN, message));
-  }
-
-  error(message: string): void {
-    console.error(this.formatMessage(LOG_LEVELS.ERROR, message));
-  }
-
-  debug(message: string): void {
-    if (process.env.NODE_ENV === 'development' && process.env.DEBUG_LOGS === 'true') {
-      console.log(this.formatMessage(LOG_LEVELS.DEBUG, message));
-    }
-  }
-}
-
-const logger = new Logger();
 export default logger;

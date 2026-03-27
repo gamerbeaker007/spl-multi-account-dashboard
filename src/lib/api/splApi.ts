@@ -13,6 +13,12 @@ import {
   RewardMerits,
 } from '@/types/parsedHistory';
 import { SplLoginResponse } from '@/types/spl/auth';
+import {
+  BalanceHistoryTokenType,
+  SplBalanceHistoryItem,
+  SplUnclaimedBalanceHistoryItem,
+  UnclaimedTokenType,
+} from '@/types/spl/balanceHistory';
 import { SplBalance } from '@/types/spl/balances';
 import { SplBrawlDetails } from '@/types/spl/brawl';
 import { SplCardCollection } from '@/types/spl/card';
@@ -469,6 +475,25 @@ export async function fetchSeasonInfo(seasonId: number): Promise<SplSeasonInfo> 
   }
 }
 
+/** Fetch the current (active) season without needing an ID. */
+export async function fetchCurrentSeason(): Promise<SplSeasonInfo> {
+  try {
+    const response = await splBaseClient.get('/settings');
+    if (response.status === 200 && response.data) {
+      return {
+        id: response.data.season.id,
+        ends: response.data.season.ends,
+      } as SplSeasonInfo;
+    }
+    throw new Error('Current season request failed');
+  } catch (error) {
+    logger.error(
+      `Failed to fetch current season: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
 /**
  * Fetch card details from Splinterlands API
  */
@@ -574,10 +599,14 @@ export async function fetchPlayerHistory(
       }
 
       const rawHistory = response.data as SplHistory[];
+      console.log('rawResult', rawHistory.length);
+      console.log('rawResult', rawHistory);
       // Parse all entries to V2 format
       const parsedHistory = rawHistory
         .map(parseHistoryToInternalTypes)
         .filter((entry): entry is ParsedHistory => entry !== null); // Filter out nulls
+      console.log('parsedResult', parsedHistory.length);
+      console.log('parsedResult', parsedHistory);
 
       return parsedHistory as ParsedHistory[];
     } else {
@@ -678,4 +707,213 @@ export async function fetchPlayerHistoryByDateRange(
   );
 
   return sortedEntries;
+}
+
+const BALANCE_HISTORY_LIMIT = 1000;
+const BALANCE_HISTORY_MAX_ITERATIONS = 200;
+
+// https://api.splinterlands.com/players/balance_history?username=beaker007&token_type=GLINT&limit=50
+/**
+ * Fetch a single page of balance history for a token.
+ * Pagination uses dual-cursor: `from` (created_date) + `last_update_date` from previous page's last item.
+ */
+export async function fetchBalanceHistoryPage(
+  username: string,
+  tokenType: BalanceHistoryTokenType,
+  decryptedToken: string,
+  fromDate?: string,
+  lastUpdateDate?: string,
+  limit: number = BALANCE_HISTORY_LIMIT
+): Promise<SplBalanceHistoryItem[]> {
+  const url = '/players/balance_history';
+
+  const params: Record<string, string | number> = {
+    username,
+    token_type: tokenType,
+    limit,
+  };
+  if (fromDate) params.from = fromDate;
+  if (lastUpdateDate) params.last_update_date = lastUpdateDate;
+
+  const headers = await getAuthorizationHeader(username, decryptedToken);
+
+  try {
+    const res = await splBaseClient.get(url, { params, headers });
+    const data = res.data;
+
+    if (!data || !Array.isArray(data)) {
+      return [];
+    }
+
+    return data as SplBalanceHistoryItem[];
+  } catch (error) {
+    logger.error(
+      `Failed to fetch balance history for ${username}/${tokenType}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+/**
+ * Fetch all balance history for a token within a date range using dual-cursor pagination.
+ * Uses `from` (created_date) and `last_update_date` from the last item of each page.
+ */
+export async function fetchBalanceHistoryByDateRange(
+  username: string,
+  tokenType: BalanceHistoryTokenType,
+  decryptedToken: string,
+  startDate: Date,
+  endDate: Date
+): Promise<SplBalanceHistoryItem[]> {
+  logger.info(
+    `Fetching balance history for ${username}/${tokenType} between ${startDate.toISOString()} and ${endDate.toISOString()}`
+  );
+
+  const allEntries: SplBalanceHistoryItem[] = [];
+  let fromDate: string | undefined;
+  let lastUpdateDate: string | undefined;
+  let iterationCount = 0;
+
+  while (iterationCount < BALANCE_HISTORY_MAX_ITERATIONS) {
+    iterationCount++;
+
+    if (iterationCount > 1) {
+      await new Promise(resolve => setTimeout(resolve, DEFAULT_DELAY_MS));
+    }
+
+    const batch = await fetchBalanceHistoryPage(
+      username,
+      tokenType,
+      decryptedToken,
+      fromDate,
+      lastUpdateDate,
+      BALANCE_HISTORY_LIMIT
+    );
+
+    if (batch.length === 0) break;
+
+    // Filter entries within date range
+    const filteredBatch = batch.filter(entry => {
+      const entryDate = new Date(entry.created_date);
+      return entryDate >= startDate && entryDate <= endDate;
+    });
+    allEntries.push(...filteredBatch);
+
+    // Update cursors from last item for next page
+    const lastItem = batch[batch.length - 1];
+    fromDate = lastItem.created_date;
+    lastUpdateDate = lastItem.last_update_date;
+
+    // Stop if oldest entry in batch is before our start date
+    if (new Date(lastItem.created_date) < startDate) break;
+
+    // Stop if we got less than limit (no more data)
+    if (batch.length < BALANCE_HISTORY_LIMIT) break;
+  }
+
+  logger.info(
+    `Fetched ${allEntries.length} balance history entries for ${username}/${tokenType} in ${iterationCount} iterations`
+  );
+
+  return allEntries;
+}
+
+// https://api.splinterlands.com/players/unclaimed_balance_history?username=beaker007&token_type=SPS,VOUCHER&limit=50
+/**
+ * Fetch a single page of unclaimed balance history.
+ * Pagination uses id-based offset from previous page's last item.
+ */
+export async function fetchUnclaimedBalanceHistoryPage(
+  username: string,
+  tokenTypes: UnclaimedTokenType[],
+  decryptedToken: string,
+  offset?: string,
+  limit: number = BALANCE_HISTORY_LIMIT
+): Promise<SplUnclaimedBalanceHistoryItem[]> {
+  const url = '/players/unclaimed_balance_history';
+
+  const params: Record<string, string | number> = {
+    username,
+    token_type: tokenTypes.join(','),
+    limit,
+  };
+  if (offset) params.offset = offset;
+
+  const headers = await getAuthorizationHeader(username, decryptedToken);
+
+  try {
+    const res = await splBaseClient.get(url, { params, headers });
+    const data = res.data;
+
+    if (!data || !Array.isArray(data)) {
+      return [];
+    }
+
+    return data as SplUnclaimedBalanceHistoryItem[];
+  } catch (error) {
+    logger.error(
+      `Failed to fetch unclaimed balance history for ${username}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+    throw error;
+  }
+}
+
+/**
+ * Fetch all unclaimed balance history within a date range using id-based offset pagination.
+ */
+export async function fetchUnclaimedBalanceHistoryByDateRange(
+  username: string,
+  tokenTypes: UnclaimedTokenType[],
+  decryptedToken: string,
+  startDate: Date,
+  endDate: Date
+): Promise<SplUnclaimedBalanceHistoryItem[]> {
+  logger.info(
+    `Fetching unclaimed balance history for ${username}/${tokenTypes.join(',')} between ${startDate.toISOString()} and ${endDate.toISOString()}`
+  );
+
+  const allEntries: SplUnclaimedBalanceHistoryItem[] = [];
+  let offset: string | undefined;
+  let iterationCount = 0;
+
+  while (iterationCount < BALANCE_HISTORY_MAX_ITERATIONS) {
+    iterationCount++;
+
+    if (iterationCount > 1) {
+      await new Promise(resolve => setTimeout(resolve, DEFAULT_DELAY_MS));
+    }
+
+    const batch = await fetchUnclaimedBalanceHistoryPage(
+      username,
+      tokenTypes,
+      decryptedToken,
+      offset,
+      BALANCE_HISTORY_LIMIT
+    );
+
+    if (batch.length === 0) break;
+
+    // Filter entries within date range
+    const filteredBatch = batch.filter(entry => {
+      const entryDate = new Date(entry.created_date);
+      return entryDate >= startDate && entryDate <= endDate;
+    });
+    allEntries.push(...filteredBatch);
+
+    // Update offset from last item's id for next page
+    const lastItem = batch[batch.length - 1];
+    offset = lastItem.id;
+
+    // Stop if oldest entry in batch is before our start date
+    if (new Date(lastItem.created_date) < startDate) break;
+
+    // Stop if we got less than limit (no more data)
+    if (batch.length < BALANCE_HISTORY_LIMIT) break;
+  }
+
+  logger.info(
+    `Fetched ${allEntries.length} unclaimed balance history entries for ${username} in ${iterationCount} iterations`
+  );
+
+  return allEntries;
 }
