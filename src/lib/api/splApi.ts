@@ -616,7 +616,7 @@ export async function fetchPlayerHistory(
   }
 }
 
-const DEFAULT_DELAY_MS = 150;
+const DEFAULT_DELAY_MS = 100;
 const DEFAULT_LIMIT = 500;
 /**
  * Recursively fetch player history between two dates
@@ -766,7 +766,10 @@ export async function fetchBalanceHistoryByDateRange(
   );
 
   const allEntries: SplBalanceHistoryItem[] = [];
-  let fromDate: string | undefined;
+  // Start the cursor at endDate so we skip all history newer than the target window.
+  // Without this, high-volume tokens like SPS would page through months of recent
+  // entries before reaching the season window, easily hitting the iteration cap.
+  let fromDate: string | undefined = endDate.toISOString();
   let lastUpdateDate: string | undefined;
   let iterationCount = 0;
 

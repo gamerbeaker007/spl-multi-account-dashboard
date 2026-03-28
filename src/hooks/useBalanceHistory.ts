@@ -59,85 +59,89 @@ export function useBalanceHistory(): UseBalanceHistoryReturn {
         // Get season date range + spillover window
         const { start, end, spilloverEnd } = await getSeasonDates(seasonId);
 
-        const summaries: TokenBalanceSummary[] = [];
+        // Mark all tokens as fetching immediately before parallel fetch
+        setState(prev => ({
+          ...prev,
+          progress: prev.progress.map(p => ({ ...p, status: 'fetching' as TokenFetchStatus })),
+        }));
 
-        // Fetch tokens one-by-one — sequential = rate-limit friendly
-        for (const token of BALANCE_TOKENS) {
-          setState(prev => ({
-            ...prev,
-            progress: prev.progress.map(p =>
-              p.token === token ? { ...p, status: 'fetching' } : p
-            ),
-          }));
+        // Fetch all balance tokens in parallel — each updates its own progress on completion
+        const balancePromises = BALANCE_TOKENS.map(
+          async (token): Promise<TokenBalanceSummary | null> => {
+            try {
+              const summary = await getTokenBalanceSummary(
+                username,
+                encryptedToken,
+                token as BalanceHistoryTokenType,
+                start,
+                end,
+                spilloverEnd
+              );
+              setState(prev => ({
+                ...prev,
+                progress: prev.progress.map(p =>
+                  p.token === token ? { ...p, status: 'done' } : p
+                ),
+              }));
+              return summary;
+            } catch (tokenErr) {
+              setState(prev => ({
+                ...prev,
+                progress: prev.progress.map(p =>
+                  p.token === token
+                    ? {
+                        ...p,
+                        status: 'error',
+                        errorMessage: tokenErr instanceof Error ? tokenErr.message : 'Error',
+                      }
+                    : p
+                ),
+              }));
+              return null;
+            }
+          }
+        );
 
-          try {
-            const summary = await getTokenBalanceSummary(
-              username,
-              encryptedToken,
-              token as BalanceHistoryTokenType,
-              start,
-              end,
-              spilloverEnd
-            );
-            summaries.push(summary);
-            setState(prev => ({
-              ...prev,
-              progress: prev.progress.map(p => (p.token === token ? { ...p, status: 'done' } : p)),
-            }));
-          } catch (tokenErr) {
+        // Fetch unclaimed SPS + VOUCHER in parallel with balance tokens
+        const unclaimedPromise: Promise<TokenBalanceSummary[]> = getUnclaimedSummaries(
+          username,
+          encryptedToken,
+          start,
+          end,
+          spilloverEnd
+        )
+          .then(summaries => {
             setState(prev => ({
               ...prev,
               progress: prev.progress.map(p =>
-                p.token === token
+                UNCLAIMED_TOKENS.includes(p.token) ? { ...p, status: 'done' } : p
+              ),
+            }));
+            return summaries;
+          })
+          .catch((unclaimedErr: unknown) => {
+            setState(prev => ({
+              ...prev,
+              progress: prev.progress.map(p =>
+                UNCLAIMED_TOKENS.includes(p.token)
                   ? {
                       ...p,
                       status: 'error',
-                      errorMessage: tokenErr instanceof Error ? tokenErr.message : 'Error',
+                      errorMessage: unclaimedErr instanceof Error ? unclaimedErr.message : 'Error',
                     }
                   : p
               ),
             }));
-          }
-        }
+            return [];
+          });
 
-        // Unclaimed SPS + VOUCHER
-        const unclaimedTokens = UNCLAIMED_TOKENS;
-        for (const ut of unclaimedTokens) {
-          setState(prev => ({
-            ...prev,
-            progress: prev.progress.map(p => (p.token === ut ? { ...p, status: 'fetching' } : p)),
-          }));
-        }
+        // Wait for all fetches to complete in parallel
+        const [balanceResults, unclaimedSummaries] = await Promise.all([
+          Promise.all(balancePromises),
+          unclaimedPromise,
+        ]);
 
-        let unclaimedSummaries: TokenBalanceSummary[] = [];
-        try {
-          unclaimedSummaries = await getUnclaimedSummaries(
-            username,
-            encryptedToken,
-            start,
-            end,
-            spilloverEnd
-          );
-          setState(prev => ({
-            ...prev,
-            progress: prev.progress.map(p =>
-              unclaimedTokens.includes(p.token) ? { ...p, status: 'done' } : p
-            ),
-          }));
-        } catch (unclaimedErr) {
-          setState(prev => ({
-            ...prev,
-            progress: prev.progress.map(p =>
-              unclaimedTokens.includes(p.token)
-                ? {
-                    ...p,
-                    status: 'error',
-                    errorMessage: unclaimedErr instanceof Error ? unclaimedErr.message : 'Error',
-                  }
-                : p
-            ),
-          }));
-        }
+        const summaries = balanceResults.filter((s): s is TokenBalanceSummary => s !== null);
 
         setState(prev => ({
           ...prev,
