@@ -138,12 +138,16 @@ export function BalanceHistoryDialog({
               <Button
                 variant={prevLoaded ? 'contained' : 'outlined'}
                 onClick={handleFetchPreviousSeason}
-                disabled={isLoading}
+                disabled={isLoading || currentSeasonId <= 1}
                 startIcon={<AccountBalanceWalletIcon />}
                 sx={{ minWidth: 180 }}
                 color={prevLoaded ? 'success' : 'secondary'}
               >
-                {isLoading && prevLoaded ? 'Fetching…' : `Previous Season ${currentSeasonId - 1}`}
+                {isLoading && prevLoaded
+                  ? 'Fetching…'
+                  : currentSeasonId > 1
+                    ? `Previous Season ${currentSeasonId - 1}`
+                    : 'No Previous Season'}
               </Button>
               <Button
                 variant={currLoaded || noneLoaded ? 'contained' : 'outlined'}
