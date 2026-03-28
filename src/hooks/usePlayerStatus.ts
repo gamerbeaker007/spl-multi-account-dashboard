@@ -1,5 +1,6 @@
 import { useUsernameContext } from '@/contexts/UsernameContext';
 import { getPlayerBalances } from '@/lib/actions/getPlayerBalances';
+import { getPlayerBrawl } from '@/lib/actions/getPlayerBrawl';
 import { getPlayerDetails } from '@/lib/actions/getPlayerDetails';
 import { getPlayerDraws } from '@/lib/actions/getPlayerDraws';
 import { getPlayerSeasonRewards } from '@/lib/actions/getPlayerSeasonRewards';
@@ -40,7 +41,7 @@ export function usePlayerStatus(username: string): UsePlayerStatusReturn {
       const [balancesResult, drawsResult, detailsResult, seasonResult] = await Promise.allSettled([
         getPlayerBalances(username),
         getPlayerDraws(username),
-        getPlayerDetails(username, encryptedToken),
+        getPlayerDetails(username),
         getPlayerSeasonRewards(username),
       ]);
 
@@ -70,8 +71,7 @@ export function usePlayerStatus(username: string): UsePlayerStatusReturn {
       }
 
       if (detailsResult.status === 'fulfilled') {
-        result.playerDetails = detailsResult.value.playerDetails;
-        result.brawlDetails = detailsResult.value.brawlDetails;
+        result.playerDetails = detailsResult.value;
       } else {
         result.detailsError =
           detailsResult.reason instanceof Error
@@ -90,6 +90,25 @@ export function usePlayerStatus(username: string): UsePlayerStatusReturn {
 
       if (isMountedRef.current) {
         setData(result);
+      }
+
+      // Fetch brawl details separately if player has a guild
+      // This runs as its own server action to avoid timeout on the details call
+      if (detailsResult.status === 'fulfilled' && detailsResult.value.guild?.id) {
+        const guild = detailsResult.value.guild;
+        try {
+          const brawlDetails = await getPlayerBrawl(
+            guild.id,
+            guild.tournament_id,
+            username,
+            encryptedToken
+          );
+          if (isMountedRef.current) {
+            setData(prev => (prev ? { ...prev, brawlDetails } : prev));
+          }
+        } catch {
+          // Brawl details are non-critical, silently ignore failures
+        }
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch player status';

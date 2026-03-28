@@ -38,7 +38,7 @@ import logger from '../log/logger.server';
 
 const splBaseClient = axios.create({
   baseURL: 'https://api.splinterlands.com',
-  timeout: 60000,
+  timeout: 5000,
   headers: {
     'Accept-Encoding': 'gzip, deflate, br, zstd',
     'User-Agent': 'SPL-Data/1.0',
@@ -47,8 +47,7 @@ const splBaseClient = axios.create({
 
 rax.attach(splBaseClient);
 splBaseClient.defaults.raxConfig = {
-  retry: 10,
-  // Disable retry-axios internal delay — we drive all timing in onRetryAttempt
+  retry: 1,
   retryDelay: 0,
   backoffType: 'static',
   statusCodesToRetry: [
@@ -58,11 +57,8 @@ splBaseClient.defaults.raxConfig = {
   onRetryAttempt: async err => {
     const cfg = rax.getConfig(err);
     const attempt = cfg?.currentRetryAttempt ?? 1;
-    // Full jitter: random(0, min(cap, base * 2^attempt))
-    // Spreads concurrent retries across a window instead of all waking at once
-    const BASE_MS = 1_000;
-    const CAP_MS = 30_000;
-    const delay = Math.random() * Math.min(CAP_MS, BASE_MS * 2 ** attempt);
+    // Short jitter to stay within Vercel free-tier 10s limit
+    const delay = Math.random() * Math.min(500, 250 * 2 ** attempt);
     logger.warn(`Retry attempt #${attempt}, jitter delay ${Math.round(delay)}ms`);
     await new Promise(resolve => setTimeout(resolve, delay));
   },
