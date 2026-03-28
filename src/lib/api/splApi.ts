@@ -28,7 +28,7 @@ import { SplPlayerDetails } from '@/types/spl/details';
 import {
   SplCompletedDrawsResponse,
   SplDrawEntry,
-  SplDrawPrize,
+  SplDrawRecentWinner,
   SplFrontierDrawStatus,
   SplRankedDrawStatus,
 } from '@/types/spl/draws';
@@ -250,9 +250,7 @@ export async function fetchFrontierCompletedDraws(
   logger.debug('Fetching completed frontier draws from Splinterlands API');
 
   const headers =
-    player && decryptedToken
-      ? await getAuthorizationHeader(player, decryptedToken)
-      : undefined;
+    player && decryptedToken ? await getAuthorizationHeader(player, decryptedToken) : undefined;
 
   try {
     const res = await splBaseClient.get(url, { headers });
@@ -284,9 +282,7 @@ export async function fetchRankedCompletedDraws(
   logger.debug('Fetching completed ranked draws from Splinterlands API');
 
   const headers =
-    player && decryptedToken
-      ? await getAuthorizationHeader(player, decryptedToken)
-      : undefined;
+    player && decryptedToken ? await getAuthorizationHeader(player, decryptedToken) : undefined;
 
   try {
     const res = await splBaseClient.get(url, { headers });
@@ -355,45 +351,45 @@ export async function fetchRankedDrawEntries(drawId: number): Promise<SplDrawEnt
   }
 }
 
-// https://api.splinterlands.com/frontier_draws/available_prizes?at_date=2026-03-23T13:00:00.000Z
-export async function fetchFrontierAvailablePrizes(atDate: string): Promise<SplDrawPrize[]> {
-  const url = '/frontier_draws/available_prizes';
-  logger.debug(`Fetching frontier available prizes at ${atDate}`);
+// https://api.splinterlands.com/frontier_draws/recent_prizes?foil=2
+export async function fetchFrontierRecentPrizes(foil: number): Promise<SplDrawRecentWinner[]> {
+  const url = '/frontier_draws/recent_prizes';
+  logger.debug(`Fetching frontier recent prizes for foil ${foil}`);
 
   try {
-    const res = await splBaseClient.get(url, { params: { at_date: atDate } });
+    const res = await splBaseClient.get(url, { params: { foil } });
     const data = res.data;
 
-    if (!data || !Array.isArray(data)) {
-      throw new Error('Invalid response from Splinterlands API: expected array');
-    }
+    if (Array.isArray(data)) return data.map(item => ({ ...item, foil })) as SplDrawRecentWinner[];
+    if (data && Array.isArray(data.mints))
+      return data.mints.map((item: SplDrawRecentWinner) => ({ ...item, foil }));
 
-    return data as SplDrawPrize[];
+    throw new Error('Invalid response from Splinterlands API: expected array');
   } catch (error) {
     logger.error(
-      `Failed to fetch frontier available prizes: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `Failed to fetch frontier recent prizes (foil ${foil}): ${error instanceof Error ? error.message : 'Unknown error'}`
     );
     throw error;
   }
 }
 
-// https://api.splinterlands.com/ranked_draws/available_prizes?at_date=2026-03-27T13:00:00.000Z
-export async function fetchRankedAvailablePrizes(atDate: string): Promise<SplDrawPrize[]> {
-  const url = '/ranked_draws/available_prizes';
-  logger.debug(`Fetching ranked available prizes at ${atDate}`);
+// https://api.splinterlands.com/ranked_draws/recent_prizes?foil=2
+export async function fetchRankedRecentPrizes(foil: number): Promise<SplDrawRecentWinner[]> {
+  const url = '/ranked_draws/recent_prizes';
+  logger.debug(`Fetching ranked recent prizes for foil ${foil}`);
 
   try {
-    const res = await splBaseClient.get(url, { params: { at_date: atDate } });
+    const res = await splBaseClient.get(url, { params: { foil } });
     const data = res.data;
 
-    if (!data || !Array.isArray(data)) {
-      throw new Error('Invalid response from Splinterlands API: expected array');
-    }
+    if (Array.isArray(data)) return data.map(item => ({ ...item, foil })) as SplDrawRecentWinner[];
+    if (data && Array.isArray(data.mints))
+      return data.mints.map((item: SplDrawRecentWinner) => ({ ...item, foil }));
 
-    return data as SplDrawPrize[];
+    throw new Error('Invalid response from Splinterlands API: expected array');
   } catch (error) {
     logger.error(
-      `Failed to fetch ranked available prizes: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `Failed to fetch ranked recent prizes (foil ${foil}): ${error instanceof Error ? error.message : 'Unknown error'}`
     );
     throw error;
   }

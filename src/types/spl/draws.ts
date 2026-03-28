@@ -61,18 +61,18 @@ export type SplDrawEntry = {
   last_update_date: string;
 };
 
-export type SplDrawPrize = {
+/** A single prize winner from /ranked_draws/recent_prizes or /frontier_draws/recent_prizes, enriched with foil */
+export type SplDrawRecentWinner = {
+  uid: string;
   card_detail_id: number;
-  card_xp: number;
-  card_edition: number;
-  card_tier: number;
-  card_foil: number;
-  card_uid: string;
-  card_mint: string;
-};
-
-export type SplDrawWinner = {
-  player: string;
-  entries: number;
-  prize: SplDrawPrize;
+  xp: number;
+  gold: boolean;
+  mint: string;
+  mint_player: string | null;
+  mint_date: string | null;
+  mint_block: number | null;
+  mint_tx: string | null;
+  guild_name: string | null;
+  player_avatar: string | null;
+  foil: number;
 };
