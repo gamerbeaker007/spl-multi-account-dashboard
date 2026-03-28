@@ -1,7 +1,7 @@
 'use client';
 
-import { TokenProgress, useBalanceHistory } from '@/hooks/useBalanceHistory';
 import { useSeasonsContext } from '@/contexts/SeasonsContext';
+import { TokenProgress, useBalanceHistory } from '@/hooks/useBalanceHistory';
 import { SplSeasonInfo } from '@/types/spl/season';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
