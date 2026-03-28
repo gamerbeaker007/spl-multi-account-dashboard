@@ -48,15 +48,23 @@ const splBaseClient = axios.create({
 rax.attach(splBaseClient);
 splBaseClient.defaults.raxConfig = {
   retry: 10,
-  retryDelay: 1000,
-  backoffType: 'exponential',
+  // Disable retry-axios internal delay — we drive all timing in onRetryAttempt
+  retryDelay: 0,
+  backoffType: 'static',
   statusCodesToRetry: [
     [429, 429],
     [500, 599],
   ],
   onRetryAttempt: async err => {
     const cfg = rax.getConfig(err);
-    logger.warn(`Retry attempt #${cfg?.currentRetryAttempt}`);
+    const attempt = cfg?.currentRetryAttempt ?? 1;
+    // Full jitter: random(0, min(cap, base * 2^attempt))
+    // Spreads concurrent retries across a window instead of all waking at once
+    const BASE_MS = 1_000;
+    const CAP_MS = 30_000;
+    const delay = Math.random() * Math.min(CAP_MS, BASE_MS * 2 ** attempt);
+    logger.warn(`Retry attempt #${attempt}, jitter delay ${Math.round(delay)}ms`);
+    await new Promise(resolve => setTimeout(resolve, delay));
   },
 };
 
@@ -431,11 +439,17 @@ export async function getSeasonDateRange(seasonId: number): Promise<{
 }> {
   logger.debug(`Getting date range for season ${seasonId}`);
 
+  if (!seasonId || seasonId < 1) {
+    throw new Error(`Invalid seasonId: ${seasonId}. Season ID must be a positive integer.`);
+  }
+
   try {
     // Fetch current season
     const currentSeason = await fetchSeasonInfo(seasonId);
-    const previousSeason = await fetchSeasonInfo(seasonId - 1);
-    return { startDate: new Date(previousSeason.ends), endDate: new Date(currentSeason.ends) };
+    // Season 1 has no previous season; use the Unix epoch as a safe start date
+    const startDate =
+      seasonId > 1 ? new Date((await fetchSeasonInfo(seasonId - 1)).ends) : new Date(0);
+    return { startDate, endDate: new Date(currentSeason.ends) };
   } catch (error) {
     logger.error(
       `Failed to get season date range for ${seasonId}: ${error instanceof Error ? error.message : 'Unknown error'}`

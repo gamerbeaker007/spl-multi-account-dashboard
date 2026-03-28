@@ -50,22 +50,26 @@ export function PlayerHistoryButton({ username, seasonId, joinDate }: PlayerHist
             </Button>
           </Stack>
 
-          <PlayerHistoryDialog
-            open={historyDialogOpen}
-            onClose={() => setHistoryDialogOpen(false)}
-            player={username}
-            token={userToken}
-            seasonId={seasonId ?? 0}
-            cardDetails={cardDetails}
-          />
-          <BalanceHistoryDialog
-            open={balanceDialogOpen}
-            onClose={() => setBalanceDialogOpen(false)}
-            player={username}
-            token={userToken}
-            seasonId={seasonId ?? 0}
-            joinDate={joinDate}
-          />
+          {seasonId && (
+            <PlayerHistoryDialog
+              open={historyDialogOpen}
+              onClose={() => setHistoryDialogOpen(false)}
+              player={username}
+              token={userToken}
+              seasonId={seasonId}
+              cardDetails={cardDetails}
+            />
+          )}
+          {seasonId && (
+            <BalanceHistoryDialog
+              open={balanceDialogOpen}
+              onClose={() => setBalanceDialogOpen(false)}
+              player={username}
+              token={userToken}
+              seasonId={seasonId}
+              joinDate={joinDate}
+            />
+          )}
         </>
       )}
     </Box>

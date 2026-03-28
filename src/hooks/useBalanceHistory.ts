@@ -108,7 +108,8 @@ export function useBalanceHistory(): UseBalanceHistoryReturn {
           encryptedToken,
           start,
           end,
-          spilloverEnd
+          spilloverEnd,
+          seasonId
         )
           .then(summaries => {
             setState(prev => ({

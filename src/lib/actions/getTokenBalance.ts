@@ -167,14 +167,25 @@ export async function getTokenBalanceSummary(
   return aggregateTokenItems(token, items);
 }
 
+// Unclaimed SPS/VOUCHER history only exists from season 93 onwards.
+const UNCLAIMED_HISTORY_FIRST_SEASON = 93;
+
 /** Fetch and aggregate unclaimed balance history (SPS + VOUCHER), including spillover. */
 export async function getUnclaimedSummaries(
   username: string,
   encryptedToken: string,
   start: string,
   end: string,
-  spilloverEnd?: string | null
+  spilloverEnd?: string | null,
+  seasonId?: number
 ): Promise<TokenBalanceSummary[]> {
+  if (seasonId !== undefined && seasonId < UNCLAIMED_HISTORY_FIRST_SEASON) {
+    logger.info(
+      `getUnclaimedSummaries ${username}: skipping — season ${seasonId} predates unclaimed SPS history (first season: ${UNCLAIMED_HISTORY_FIRST_SEASON})`
+    );
+    return [];
+  }
+
   const decryptedToken = await decryptToken(encryptedToken, process.env.SECRET_ENCRYPTION_KEY!);
   if (!decryptedToken) throw new Error('Failed to decrypt token');
 

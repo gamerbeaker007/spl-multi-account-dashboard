@@ -30,6 +30,8 @@ export const PlayerCard = ({ username }: Props) => {
   const { userRefreshTriggers, activeRefreshUser, advanceRefreshQueue, triggerRefreshUser } =
     useUsernameContext();
 
+  const userTrigger = userRefreshTriggers[username];
+
   // Track queue state with refs to avoid stale-closure issues
   const startedFromQueueRef = useRef(false);
   // Becomes true once we observe at least one loading flag go true, confirming fetches started
@@ -52,12 +54,11 @@ export const PlayerCard = ({ username }: Props) => {
 
   // Per-user trigger: refetch status AND collection (queue OR per-card button)
   useEffect(() => {
-    const userTrigger = userRefreshTriggers[username];
     if (userTrigger && userTrigger > 0) {
       refetch();
       collectionRefetch();
     }
-  }, [userRefreshTriggers, username, refetch, collectionRefetch]);
+  }, [userTrigger, refetch, collectionRefetch]);
 
   // Once loading begins, mark it so the advance check knows fetches actually started
   useEffect(() => {
