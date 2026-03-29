@@ -96,7 +96,7 @@ export function aggregateRewards(entries: ParsedHistory[]): RewardSummary {
           if (tierResult?.potions) {
             Object.entries(tierResult.potions).forEach(([potionType, potionData]) => {
               summary.totalPotionsUsed[potionType] =
-                (summary.totalPotionsUsed[potionType] || 0) + (potionData.charges_used || 0);
+                (summary.totalPotionsUsed[potionType] || 0) + (potionData?.charges_used || 0);
             });
           }
         });

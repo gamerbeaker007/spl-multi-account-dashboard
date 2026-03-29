@@ -34,8 +34,8 @@ export const ListPotionsUsed = ({ entry }: Props) => {
       break;
     case 'claim_daily':
       const claimDailyEntry = entry.result as ClaimDailyResult;
-      potionUsed.gold.charges_used = claimDailyEntry.potions?.gold.charges_used || 0;
-      potionUsed.legendary.charges_used = claimDailyEntry.potions?.legendary.charges_used || 0;
+      potionUsed.gold.charges_used = claimDailyEntry.potions?.gold?.charges_used || 0;
+      potionUsed.legendary.charges_used = claimDailyEntry.potions?.legendary?.charges_used || 0;
       break;
     case 'claim_reward':
       if (!entry.result) break; // season league rewards do not has result
