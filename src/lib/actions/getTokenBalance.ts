@@ -2,7 +2,7 @@
 
 import {
   fetchBalanceHistoryByDateRange,
-  fetchSeasonInfo,
+  fetchSeasonEndDate,
   fetchUnclaimedBalanceHistoryByDateRange,
   getSeasonDateRange,
 } from '@/lib/api/splApi';
@@ -105,7 +105,7 @@ export async function getSeasonDates(
   let spilloverEnd: string | null = null;
   if (end < new Date()) {
     try {
-      const nextSeason = await fetchSeasonInfo(seasonId + 1);
+      const nextSeason = await fetchSeasonEndDate(seasonId + 1);
       spilloverEnd = new Date(nextSeason.ends).toISOString();
     } catch {
       // Next season doesn't exist yet — no spillover to capture

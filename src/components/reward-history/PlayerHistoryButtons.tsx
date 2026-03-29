@@ -15,7 +15,7 @@ interface PlayerHistoryButtonProps {
   joinDate?: string;
 }
 
-export function PlayerHistoryButton({ username, seasonId, joinDate }: PlayerHistoryButtonProps) {
+export function PlayerHistoryButtons({ username, seasonId, joinDate }: PlayerHistoryButtonProps) {
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [balanceDialogOpen, setBalanceDialogOpen] = useState(false);
   const { getUserToken } = useUsernameContext();
@@ -25,7 +25,7 @@ export function PlayerHistoryButton({ username, seasonId, joinDate }: PlayerHist
 
   return (
     <Box width="100%" sx={{ mb: 2 }}>
-      {userToken && (
+      {userToken && seasonId && (
         <>
           <Stack direction="row" spacing={1}>
             <Button
@@ -50,26 +50,22 @@ export function PlayerHistoryButton({ username, seasonId, joinDate }: PlayerHist
             </Button>
           </Stack>
 
-          {seasonId && (
-            <PlayerHistoryDialog
-              open={historyDialogOpen}
-              onClose={() => setHistoryDialogOpen(false)}
-              player={username}
-              token={userToken}
-              seasonId={seasonId}
-              cardDetails={cardDetails}
-            />
-          )}
-          {seasonId && (
-            <BalanceHistoryDialog
-              open={balanceDialogOpen}
-              onClose={() => setBalanceDialogOpen(false)}
-              player={username}
-              token={userToken}
-              seasonId={seasonId}
-              joinDate={joinDate}
-            />
-          )}
+          <PlayerHistoryDialog
+            open={historyDialogOpen}
+            onClose={() => setHistoryDialogOpen(false)}
+            player={username}
+            token={userToken}
+            seasonId={seasonId}
+            cardDetails={cardDetails}
+          />
+          <BalanceHistoryDialog
+            open={balanceDialogOpen}
+            onClose={() => setBalanceDialogOpen(false)}
+            player={username}
+            token={userToken}
+            seasonId={seasonId}
+            joinDate={joinDate}
+          />
         </>
       )}
     </Box>

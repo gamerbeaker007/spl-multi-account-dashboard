@@ -1,9 +1,9 @@
 export interface SplSeasonRewardInfo {
   season: number;
-  wild_glint: number;
-  modern_glint: number;
-  survival_glint: number;
-  foundation_glint: number;
+  wild_glint: number | null;
+  modern_glint: number | null;
+  survival_glint: number | null;
+  foundation_glint: number | null;
 }
 
 export interface SPLSeasonRewards {

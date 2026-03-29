@@ -29,7 +29,7 @@ import { SplFrontierDrawStatus, SplRankedDrawStatus } from '@/types/spl/draws';
 import { SplFormat } from '@/types/spl/format';
 import { SplHistory } from '@/types/spl/history';
 import { SplCardListingPriceEntry } from '@/types/spl/market';
-import { SplSeasonInfo } from '@/types/spl/season';
+import { SplSeasonInfo as SplSeasonEndDate } from '@/types/spl/season';
 import { SPLSeasonRewards } from '@/types/spl/seasonRewards';
 import axios from 'axios';
 import * as rax from 'retry-axios';
@@ -441,10 +441,10 @@ export async function getSeasonDateRange(seasonId: number): Promise<{
 
   try {
     // Fetch current season
-    const currentSeason = await fetchSeasonInfo(seasonId);
+    const currentSeason = await fetchSeasonEndDate(seasonId);
     // Season 1 has no previous season; use the Unix epoch as a safe start date
     const startDate =
-      seasonId > 1 ? new Date((await fetchSeasonInfo(seasonId - 1)).ends) : new Date(0);
+      seasonId > 1 ? new Date((await fetchSeasonEndDate(seasonId - 1)).ends) : new Date(0);
     return { startDate, endDate: new Date(currentSeason.ends) };
   } catch (error) {
     logger.error(
@@ -458,7 +458,7 @@ export async function getSeasonDateRange(seasonId: number): Promise<{
 /**
  * Fetch season information including start and end dates
  */
-export async function fetchSeasonInfo(seasonId: number): Promise<SplSeasonInfo> {
+export async function fetchSeasonEndDate(seasonId: number): Promise<SplSeasonEndDate> {
   const url = '/season';
   logger.debug(`Fetching season info for season: ${seasonId}`);
 
@@ -473,7 +473,7 @@ export async function fetchSeasonInfo(seasonId: number): Promise<SplSeasonInfo> 
         throw new Error('Invalid response from Splinterlands API: no season data');
       }
 
-      return response.data as SplSeasonInfo;
+      return response.data as SplSeasonEndDate;
     } else {
       throw new Error('Season info request failed');
     }
@@ -486,14 +486,14 @@ export async function fetchSeasonInfo(seasonId: number): Promise<SplSeasonInfo> 
 }
 
 /** Fetch the current (active) season without needing an ID. */
-export async function fetchCurrentSeason(): Promise<SplSeasonInfo> {
+export async function fetchCurrentSeason(): Promise<SplSeasonEndDate> {
   try {
     const response = await splBaseClient.get('/settings');
     if (response.status === 200 && response.data) {
       return {
         id: response.data.season.id,
         ends: response.data.season.ends,
-      } as SplSeasonInfo;
+      } as SplSeasonEndDate;
     }
     throw new Error('Current season request failed');
   } catch (error) {

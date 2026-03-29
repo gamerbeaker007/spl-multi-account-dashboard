@@ -3,7 +3,6 @@ import { getPlayerBalances } from '@/lib/actions/getPlayerBalances';
 import { getPlayerBrawl } from '@/lib/actions/getPlayerBrawl';
 import { getPlayerDetails } from '@/lib/actions/getPlayerDetails';
 import { getPlayerDraws } from '@/lib/actions/getPlayerDraws';
-import { getPlayerSeasonRewards } from '@/lib/actions/getPlayerSeasonRewards';
 import { PlayerStatusData } from '@/types/playerStatus';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -38,11 +37,10 @@ export function usePlayerStatus(username: string): UsePlayerStatusReturn {
     try {
       const encryptedToken = getUserToken(username);
 
-      const [balancesResult, drawsResult, detailsResult, seasonResult] = await Promise.allSettled([
+      const [balancesResult, drawsResult, detailsResult] = await Promise.allSettled([
         getPlayerBalances(username),
         getPlayerDraws(username),
         getPlayerDetails(username),
-        getPlayerSeasonRewards(username),
       ]);
 
       if (!isMountedRef.current) return;
@@ -77,15 +75,6 @@ export function usePlayerStatus(username: string): UsePlayerStatusReturn {
           detailsResult.reason instanceof Error
             ? detailsResult.reason.message
             : 'Failed to fetch player details';
-      }
-
-      if (seasonResult.status === 'fulfilled') {
-        result.seasonRewards = seasonResult.value;
-      } else {
-        result.seasonRewardsError =
-          seasonResult.reason instanceof Error
-            ? seasonResult.reason.message
-            : 'Failed to fetch season rewards';
       }
 
       if (isMountedRef.current) {

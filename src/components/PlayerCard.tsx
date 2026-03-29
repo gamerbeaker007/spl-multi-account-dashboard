@@ -1,8 +1,10 @@
 'use client';
 
 import GuildInfo from '@/components/PlayerBrawl';
+import { useSeasonsContext } from '@/contexts/SeasonsContext';
 import { useUsernameContext } from '@/contexts/UsernameContext';
 import { usePlayerCardCollection } from '@/hooks/usePlayerCardCollection';
+import { usePlayerSeasonRewards } from '@/hooks/usePlayerSeasonRewards';
 import { usePlayerStatus } from '@/hooks/usePlayerStatus';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import DragHandleIcon from '@mui/icons-material/DragHandle';
@@ -14,7 +16,7 @@ import PlayerBalances from './PlayerBalances';
 import PlayerDailies from './PlayerDailies';
 import PlayerDraws from './PlayerDraws';
 import PlayerInfo from './PlayerInfo';
-import { PlayerHistoryButton } from './reward-history/PlayerHistoryButton';
+import { PlayerHistoryButtons } from './reward-history/PlayerHistoryButtons';
 
 interface Props {
   username: string;
@@ -27,6 +29,14 @@ export const PlayerCard = ({ username }: Props) => {
     loading: collectionLoading,
     refetch: collectionRefetch,
   } = usePlayerCardCollection(username);
+  const {
+    seasonRewards,
+    loading: seasonRewardsLoading,
+    error: seasonRewardsError,
+    refetch: seasonRewardsRefetch,
+  } = usePlayerSeasonRewards(username);
+  const { seasons } = useSeasonsContext();
+  const currentSeasonId = seasons[0]?.id; //for tesitng make undefined to disable season rewards until we have a better way to determine the correct season
   const { userRefreshTriggers, activeRefreshUser, advanceRefreshQueue, triggerRefreshUser } =
     useUsernameContext();
 
@@ -57,8 +67,9 @@ export const PlayerCard = ({ username }: Props) => {
     if (userTrigger && userTrigger > 0) {
       refetch();
       collectionRefetch();
+      seasonRewardsRefetch();
     }
-  }, [userTrigger, refetch, collectionRefetch]);
+  }, [userTrigger, refetch, collectionRefetch, seasonRewardsRefetch]);
 
   // Once loading begins, mark it so the advance check knows fetches actually started
   useEffect(() => {
@@ -238,9 +249,9 @@ export const PlayerCard = ({ username }: Props) => {
       <PlayerInfo username={player.username} playerDetails={player.playerDetails} />
 
       {/* History Button - Shows only when authorized */}
-      <PlayerHistoryButton
+      <PlayerHistoryButtons
         username={player.username}
-        seasonId={player?.seasonRewards?.season_reward_info.season}
+        seasonId={currentSeasonId}
         joinDate={player.playerDetails?.join_date}
       />
 
@@ -249,7 +260,9 @@ export const PlayerCard = ({ username }: Props) => {
         <PlayerBalances
           username={player.username}
           balances={player.balances}
-          seasonRewards={player.seasonRewards}
+          seasonRewards={seasonRewards ?? undefined}
+          glintLoading={seasonRewardsLoading}
+          glintError={seasonRewardsError}
           collectionData={collectionData}
           collectionLoading={collectionLoading}
         />

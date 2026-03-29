@@ -3,7 +3,6 @@
 // Server action for fetching player status
 import {
   fetchBrawlDetails,
-  fetchCurrentRewards,
   fetchFrontierDraws,
   fetchPlayerBalances,
   fetchPlayerDetails,
@@ -31,14 +30,12 @@ export async function getPlayersStatus(
     };
 
     try {
-      const [balances, frontierDraws, rankedDraws, playerDetails, currenSeasonRewards] =
-        await Promise.all([
-          fetchPlayerBalances(user),
-          fetchFrontierDraws(user),
-          fetchRankedDraws(user),
-          fetchPlayerDetails(user),
-          fetchCurrentRewards(user),
-        ]);
+      const [balances, frontierDraws, rankedDraws, playerDetails] = await Promise.all([
+        fetchPlayerBalances(user),
+        fetchFrontierDraws(user),
+        fetchRankedDraws(user),
+        fetchPlayerDetails(user),
+      ]);
 
       let brawlDetails = null;
       if (playerDetails.guild?.id) {
@@ -60,7 +57,6 @@ export async function getPlayersStatus(
           ranked: rankedDraws,
         },
         playerDetails,
-        seasonRewards: currenSeasonRewards,
         brawlDetails: brawlDetails as SplBrawlDetails,
       };
     } catch (userError) {
