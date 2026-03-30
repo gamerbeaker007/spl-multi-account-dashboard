@@ -442,9 +442,11 @@ export async function getSeasonDateRange(seasonId: number): Promise<{
   try {
     // Fetch current season
     const currentSeason = await fetchSeasonEndDate(seasonId);
-    // Season 1 has no previous season; use the Unix epoch as a safe start date
+    // Season 1 has no previous season; assume 2 weeks before end date
     const startDate =
-      seasonId > 1 ? new Date((await fetchSeasonEndDate(seasonId - 1)).ends) : new Date(0);
+      seasonId > 1
+        ? new Date((await fetchSeasonEndDate(seasonId - 1)).ends)
+        : new Date(new Date(currentSeason.ends).getTime() - 2 * 7 * 24 * 60 * 60 * 1000);
     return { startDate, endDate: new Date(currentSeason.ends) };
   } catch (error) {
     logger.error(
